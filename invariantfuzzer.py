@@ -3,12 +3,12 @@ from z3 import *
 
 x, xp = Ints('x xp') 
 
-P = lambda x: x == 0
-B = lambda x: x < 5
-T = lambda x, xp: xp == x + 1
-Q = lambda x: x == 5 
+P_given = lambda x: x == 0
+B_given = lambda x: x < 5
+T_given = lambda x, xp: xp == x + 1
+Q_given = lambda x: x == 5 
 
-s = 10
+K = 10
 
 # Returns true or a counterexample
 def Check(mkConstraints, I, P , B, T , Q):
@@ -16,9 +16,12 @@ def Check(mkConstraints, I, P , B, T , Q):
     # Add the negation of the conjunction of constraints
     s.add(Not(mkConstraints(I, P , B, T , Q)))
     r = s.check()
-    if r == sat:
+    output = r.__repr__()
+    if output == "sat":
+        print("sat")
         return s.model()
-    elif r == unsat:
+    elif output == "unsat":
+        print("O")
         return {}
     else:
         print("Solver can't verify or disprove, it says: %s for invariant %s" %(r, I))
@@ -35,26 +38,23 @@ def System(I, P , B, T , Q):
 
 
 cex_List = []
+# Correct invariant is x <= 5
 I_guess = lambda x: x < 3
 
-for i in range(s):
-    cex = Check(System, I_guess, P, B, T, Q)
-    if cex == {}:
-        break
+for i in range(K):
+    cex = Check(System, I_guess, P_given, B_given, T_given, Q_given)
+    # if isinstance(cex, NoneType):
+    #     break
+
     
-    # This is an approximation to the correct code, it runs; but for it only gives 3 distinct counterexamples; after that it just starts repeating the counterexamples, why?
-    I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex[xp] , t == cex[x])
-
-    # This is actual code, which doesn't even run.
-
-    # if I_guess(cex[x]):
-    #     print(cex[x])
-    #     I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex[xp] )
-    # else:
-    #     I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex[x])
+    # This is actual code, which gives same counterexamples after 3 different ones. (Actually after these it, there are no more - the issue is that Z3 still considers the system solvable?)
+    if( cex.evaluate(I_guess(x)) ):
+        I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(xp) )
+    else:
+        I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(x))
+    
     cex_List.append(cex)
 
 
 # Print the list of counterexamples.
 print(cex_List)
-
