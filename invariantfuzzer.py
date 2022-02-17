@@ -18,10 +18,10 @@ def Check(mkConstraints, I, P , B, T , Q):
     r = s.check()
     output = r.__repr__()
     if output == "sat":
-        print("sat")
+        #print("sat")
         return s.model()
     elif output == "unsat":
-        print("O")
+        #print("unsat")
         return {}
     else:
         print("Solver can't verify or disprove, it says: %s for invariant %s" %(r, I))
