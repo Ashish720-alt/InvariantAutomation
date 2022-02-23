@@ -3,10 +3,10 @@ from z3 import *
 
 x, xp = Ints('x xp') 
 
-P_given = Lambda([x], x == 0)
-B_given = Lambda([x], x < 5)
-T_given = Lambda([x, xp], xp == x + 1)
-Q_given = Lambda([x], x == 5)
+P_given = x == 0
+B_given = x < 5
+T_given = xp == x + 1
+Q_given = x == 5
 
 K = 10
 
@@ -31,42 +31,35 @@ def Check(mkConstraints, I_i, I_f, P , B, T , Q):
 #Need to change this!!
 def System(I_i, I_f, P , B, T , Q):
     # P(x) -> I(x)
-    c1 = Implies(P.body(), I_i.body())
+    c1 = Implies(P , I_i )
     # P(x) /\ B(x) /\ T(x,xp) -> I(xp) 
-    c2 = Implies(And(B.body(), I_i.body(), T.body()) , I_f.body()) 
+    c2 = Implies(And(B , I_i , T ) , I_f ) 
     # I(x) /\ ~B(x) -> Q(x)
-    c3 = Implies(And(I_i.body(), Not(B.body())), Q.body()) 
+    c3 = Implies(And(I_i , Not(B )), Q ) 
     return And(c1, c2, c3)
 
 
 cex_List = []
 # Correct invariant is x <= 5
-I_guess_i = Lambda([x], x < 3) # I_guess_i(xp)
-I_guess_f = Lambda([xp], xp < 3) 
+I_guess_i = x < 3
+I_guess_f = xp < 3 # replace all occurrences of x in I_guess_i by xp
 
 for i in range(K):
     cex = Check(System, I_guess_i, I_guess_f, P_given, B_given, T_given, Q_given)
     if cex is None:
         break
     # This is actual code, which gives same counterexamples after 3 different ones. (Actually after these it, there are no more - the issue is that Z3 still considers the system solvable?)
-    if( cex.evaluate(I_guess(x)) ):
-        I_guess_i = Lambda ( [t], Or( I_guess.body(t), t == cex.evaluate(xp) ) )  # Check this update procedure!!
-        #print("What?")
+    if( cex.evaluate(I_guess_i(x)) ):
+        I_guess_i = Or( I_guess_i, x = cex.evaluate(xp) )
+        #I_guess_i = Lambda ( [t], Or( I_guess.body(t), t == cex.evaluate(xp) ) )  # Check this update procedure!!
+
     else:
-        I_guess = Lambda([t], Or( I_guess.body(t), t == cex.evaluate(x) ) )
-        #print("No-What?")
+        I_guess_i = Or( I_guess_i, x = cex.evaluate(xp) )
+        #I_guess_i = Lambda([t], Or( I_guess.body(t), t == cex.evaluate(x) ) )
+
 
     cex_List.append(cex)
 
 
 # Print the list of counterexamples.
 print(cex_List)
-
-
-
-''' Predicate(x) = (x < 5) <- I(x)  ; 
-I = Lambda([x], x < 5)
-I.body(x) <- Var[0] < 5
-I(xp) , I(y)
-
-'''
