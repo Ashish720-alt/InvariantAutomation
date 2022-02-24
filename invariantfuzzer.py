@@ -27,8 +27,6 @@ def Check(mkConstraints, I, P , B, T , Q):
         print("Solver can't verify or disprove, it says: %s for invariant %s" %(r, I))
 
 #Returns the conjunction of the CHC clauses of the system 
-
-#Need to change this!!
 def System(I, P , B, T , Q):
     # P(x) -> I(x)
     c1 = Implies(P[x], I[x])
@@ -40,9 +38,9 @@ def System(I, P , B, T , Q):
 
 
 cex_List = []
+
 # Correct invariant is x <= 5
 I_guess = Lambda([u], u < 3) 
-
 
 for i in range(K):
     cex = Check(System, I_guess, P_given, B_given, T_given, Q_given)
@@ -50,14 +48,14 @@ for i in range(K):
         break
     # This is actual code, which gives same counterexamples after 3 different ones. (Actually after these it, there are no more - the issue is that Z3 still considers the system solvable?)
     if( cex.evaluate(I_guess[x]) ):
-        I_guess = simplify(Lambda ( [u], Or( I_guess[u], u == cex.evaluate(xp) ) ))  # Check this update procedure!!
+        I_guess = simplify(Lambda ([u], Or( I_guess[u], u == cex.evaluate(xp) ) ))  
     else:
         I_guess = simplify(Lambda([u], Or( I_guess[u], u == cex.evaluate(x) ) ))
 
     cex_List.append(cex)
 
-# Prints the invariant.
-print(simplify(I_guess[x]))
+# Prints the final invariant.
+# print(simplify(I_guess[x]))
 
 # Print the list of counterexamples.
 print(cex_List)
