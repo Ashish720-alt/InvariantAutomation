@@ -1,5 +1,7 @@
 from z3 import *
 
+'''For basic examples, it doesn't repeat cex, but for many cex it repeats. For eg I_guess = I_guess = Lambda([u], u < -1) , it repeats. It also gives segfault, 
+but only after printing whole solution '''
 
 u, up, x, xp = Ints('u up x xp') 
 

@@ -1,5 +1,6 @@
 from z3 import *
 
+#For basic examples, it doesn't repeat cex, but for many cex it repeats. For eg I_guess = lambda x: x < -1, it repeats.
 
 x, xp = Ints('x xp')
 
@@ -41,7 +42,7 @@ cex_List = []
 #I_guess_predicate = x < 3
 I_guess = lambda x: x < -1
 # predicate should be the body of I_guess!
-predicate = x < 2
+predicate = I_guess(x)
 
 
 for i in range(K):
