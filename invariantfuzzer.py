@@ -24,7 +24,7 @@ def C3(I):
     return Implies(And(I(x), Not(B(x))), Q(x))
 
 def System(I):
-    return And(C1(I), c2(I), c3(I))
+    return And(C1(I), C2(I), C3(I))
 
 # Returns true or a counterexample
 def Check(C, I):
