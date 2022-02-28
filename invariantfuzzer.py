@@ -1,9 +1,12 @@
 from z3 import *
+import numpy as np 
 
 # Although same code as *_lambda.py, this always works (never repeats cex)
+# For I_g = x > 2, C3's cexlist repeats cex.
 
 s = 10
 
+# Only for 1 variable case
 x, xp = Ints('x xp')
 
 P = lambda x: x == 0
@@ -12,7 +15,7 @@ T = lambda x, xp: xp == x + 1
 Q = lambda x: x == 5
 
 # Correct invariant is x <= 5
-I_g = lambda x: x < 0
+I_g = lambda x: x < -1
 
 def C1(I):
     return Implies(P(x), I(x))
@@ -60,7 +63,7 @@ def GenerateCexList_C1 (I):
     
     return cex_List
 
-# There are two options to search for here - encode both?
+# There are two options to search for here - In fact if we want cex for original invariant, then we need to take the And option, no; otherwise we get a cex chain, no?
 def GenerateCexList_C2 (I):
     cex_List = []
     I_u = I
@@ -99,12 +102,21 @@ def GenerateCexList_C3 (I):
     
     return cex_List
 
+def distance_point_predicate(z, P):
+    predicate = P(x)
+    S = np.array([], ndmin = 3)
+    # Convert P(x) into np.array form and store in x.
+    # compute distance of point z from P
 
+# Get cexList for each Clause.s
 C1_cexList = GenerateCexList_C1 (I_g)
 print(C1_cexList)
+
 
 C2_cexList = GenerateCexList_C2 ( I_g)
 print(C2_cexList)
 
 C3_cexList = GenerateCexList_C3 ( I_g)
 print(C3_cexList)
+
+
