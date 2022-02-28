@@ -2,7 +2,7 @@ from z3 import *
 import numpy as np 
 
 # Although same code as *_lambda.py, this always works (never repeats cex)
-# For I_g = x > 2, C3's cexlist repeats cex.
+# For I_g = x > 2, C3's cexlist repeats cex; only gets x = 6 and x = 7. But actually x = 6,7,8,9,10,11, .. infinity are all cex.
 
 s = 10
 
@@ -15,7 +15,7 @@ T = lambda x, xp: xp == x + 1
 Q = lambda x: x == 5
 
 # Correct invariant is x <= 5
-I_g = lambda x: x < -1
+I_g = lambda x: x > 2
 
 def C1(I):
     return Implies(P(x), I(x))
@@ -105,7 +105,7 @@ def GenerateCexList_C3 (I):
 def distance_point_predicate(z, P):
     predicate = P(x)
     S = np.array([], ndmin = 3)
-    # Convert P(x) into np.array form and store in x.
+    # Convert P(x) into np.array form and store in S.
     # compute distance of point z from P
 
 # Get cexList for each Clause.s
