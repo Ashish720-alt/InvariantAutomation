@@ -1,5 +1,5 @@
 from z3 import *
-import numpy as np 
+import numpy as np
 
 # Although same code as *_lambda.py, this always works (never repeats cex)
 # For I_g = x > 2, C3's cexlist repeats cex; only gets x = 6 and x = 7. But actually x = 6,7,8,9,10,11, .. infinity are all cex.
@@ -57,10 +57,10 @@ def GenerateCexList_C1 (I):
         else:
             I_u = lambda t, old_I_u=I_u: Or(old_I_u(t), t == cex.evaluate(x))
         cex_List.append(cex)
-    
+
     # Print the list of counterexamples.
     # print(cex_List)
-    
+
     return cex_List
 
 # There are two options to search for here - In fact if we want cex for original invariant, then we need to take the And option, no; otherwise we get a cex chain, no?
@@ -77,10 +77,10 @@ def GenerateCexList_C2 (I):
         else:
             I_u = lambda t, old_I_u=I_u: Or(old_I_u(t), t == cex.evaluate(xp), t == cex.evaluate(x))
         cex_List.append(cex)
-    
+
     # Print the list of counterexamples.
     # print(cex_List)
-    
+
     return cex_List
 
 def GenerateCexList_C3 (I):
@@ -92,14 +92,17 @@ def GenerateCexList_C3 (I):
         if cex is None:
             break
         if i == 0:
-            I_u = lambda x: And(predicate, x != cex.evaluate(x))
+            # I_u = lambda x: And(predicate, x != cex.evaluate(x))
+            I_u = lambda x: And(predicate, Or(x > cex.evaluate(x), x < cex.evaluate(x)))
+        if i == 1:
+            I_u = lambda t, old_I_u=I_u: And(old_I_u(t), Or(x > cex.evaluate(x), x < cex.evaluate(x)))
         else:
             I_u = lambda t, old_I_u=I_u: And(old_I_u(t), t != cex.evaluate(x))
         cex_List.append(cex)
-    
+
     # Print the list of counterexamples.
     # print(cex_List)
-    
+
     return cex_List
 
 def distance_point_predicate(z, P):
@@ -118,5 +121,3 @@ print(C2_cexList)
 
 C3_cexList = GenerateCexList_C3 ( I_g)
 print(C3_cexList)
-
-
