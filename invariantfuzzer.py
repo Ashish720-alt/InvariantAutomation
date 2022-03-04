@@ -102,12 +102,6 @@ def GenerateCexList_C3 (I):
     
     return cex_List
 
-def distance_point_predicate(z, P):
-    predicate = P(x)
-    S = np.array([], ndmin = 3)
-    # Convert P(x) into np.array form and store in S.
-    # compute distance of point z from P
-
 # Get cexList for each Clause.s
 C1_cexList = GenerateCexList_C1 (I_g)
 print(C1_cexList)
@@ -118,5 +112,52 @@ print(C2_cexList)
 
 C3_cexList = GenerateCexList_C3 ( I_g)
 print(C3_cexList)
+
+
+'''Operator code:
+g = 2
+ge = 1
+eq = 0
+le = -1
+l = -2 '''
+
+P1 = np.array([1,0,0], ndmin = 3)
+
+def distance_point_hyperplane ( p, L):
+    x = float(p[0])
+    L_endpoint_1 = float(L[2]) / float(L[0]) # For 1D only; for > 1 D, compute both endpoints, and distance is minimum of distance from these endpoints and also check distance of line and whether this distance lies within segment
+    d = x - L_endpoint_1
+    if (L[1] == 0):
+        return abs(d)
+    if ((L[1] > 0 and L[0]*d > 0) or (L[1] < 0 and L[0]*d < 0)):  # L[0]*d > 0 is short for (L[0]>0 and d > 0 ) or (L[0] < 0 and d < 0)
+        d = 0
+    return abs(d)
+
+def distance_point_conjunctiveClause (p , C):
+    d = float('inf')
+    for L in C:
+        d = min(d, distance_point_hyperplane(p, L))
+    return d
+
+def distance_point_DNF(p, D):
+    d = float('inf')
+    for C in D:
+        d = min(d, distance_point_conjunctiveClause(p, C))
+    return d
+
+#Testing:
+print(distance_point_hyperplane( np.array( [1], ndmin = 1), np.array([2,-2,3] , ndmin = 1)) )
+
+print(distance_point_conjunctiveClause( np.array( [-3], ndmin = 1), np.array( [ [1,1,10], [1,0,0] ] , ndmin = 2)) ) 
+
+print(distance_point_DNF( np.array( [-3], ndmin = 1), np.array( [ [ [-7,-2,3], [1,0,2], [3, 1, 4] ], [ [1,1,10], [1,0,0] ] ] , dtype=object   )) )
+
+def distance_point_predicate(z, P):
+    predicate = P(x)
+    S = np.array([], ndmin = 3)
+    # Convert P(x) into np.array form and store in S. <- This is hard!
+    # compute distance of point z from P <- This is implemented by function distance_point_DNF.
+
+
 
 
