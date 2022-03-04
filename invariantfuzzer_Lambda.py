@@ -1,14 +1,13 @@
 from z3 import *
 
-'''For basic examples, it doesn't repeat cex, but for many cex it repeats. For eg I_guess = I_guess = Lambda([u], u < -1) , it repeats. It also gives segfault, 
-but only after printing whole solution '''
+#For basic examples, it doesn't repeat cex, but for many cex it repeats. For eg I_guess = lambda x: x < -1, it repeats.
 
-u, up, x, xp = Ints('u up x xp') 
+x, xp = Ints('x xp')
 
-P_given = Lambda([u], u == 0)
-B_given = Lambda([u], u < 5)
-T_given = Lambda([u], Lambda ([up] , up == u + 1 ))
-Q_given = Lambda([u], u == 5)
+P_given = lambda x: x == 0
+B_given = lambda x: x < 5
+T_given = lambda x, xp: xp == x + 1
+Q_given = lambda x: x == 5
 
 K = 10
 
@@ -20,48 +19,57 @@ def Check(mkConstraints, I, P , B, T , Q):
     r = s.check()
     output = r.__repr__()
     if output == "sat":
-        #print("sat")
         return s.model()
     elif output == "unsat":
-        #print("unsat")
-        return
+        return None
     else:
         print("Solver can't verify or disprove, it says: %s for invariant %s" %(r, I))
+        return None
 
-#Returns the conjunction of the CHC clauses of the system 
+#Returns the conjunction of the CHC clauses of the system
 def System(I, P , B, T , Q):
     # P(x) -> I(x)
-    c1 = Implies(P[x], I[x])
-    # P(x) /\ B(x) /\ T(x,xp) -> I(xp) 
-    c2 = Implies( And(B[x], I[x], T[x][xp] ) , I[xp]) 
+    c1 = Implies(P(x), I(x))
+    # P(x) /\ B(x) /\ T(x,xp) -> I(xp)
+    c2 = Implies(And(B(x), I(x), T(x, xp)) , I(xp))
     # I(x) /\ ~B(x) -> Q(x)
-    c3 = Implies( And(I[x], Not(B[x]) ) , Q[x]) 
+    c3 = Implies(And(I(x), Not(B(x))), Q(x))
     return And(c1, c2, c3)
 
 
-
-
 cex_List = []
-
 # Correct invariant is x <= 5
-I_guess = Lambda([u], u < -1) 
+#I_guess_predicate = x < 3
+I_guess = lambda x: x < -1
+# predicate should be the body of I_guess!
+predicate = I_guess(x)
+
 
 for i in range(K):
     cex = Check(System, I_guess, P_given, B_given, T_given, Q_given)
     if cex is None:
         break
-    # Updating the invariant to get different cex
-    if( cex.evaluate(I_guess[x]) ):
-        I_guess = simplify(Lambda ([u], Or( I_guess[u], u == cex.evaluate(xp) ) ))  
+
+    if i == 0:
+        if( cex.evaluate(I_guess(x)) ):
+            I_guess = lambda x: Or(predicate, x == cex.evaluate(xp))
+        elif (cex.evaluate(I_guess(xp))):
+            I_guess = lambda x: Or(predicate, x == cex.evaluate(x))
     else:
-        I_guess = simplify(Lambda([u], Or( I_guess[u], u == cex.evaluate(x) ) ))
+        if( cex.evaluate(I_guess(x)) ):
+            I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(xp) )
+        else:
+            I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(x))
+
+    # This is actual code, which gives same counterexamples after 3 different ones. (Actually after these it, there are no more - the issue is that Z3 still considers the system solvable?)
+    # if( cex.evaluate(I_guess(x)) ):
+    #     I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(xp) )
+    # else:
+    #     I_guess = lambda t, old_I_guess=I_guess: Or(old_I_guess(t), t == cex.evaluate(x))
 
     cex_List.append(cex)
 
-# Prints the final invariant.
-print(simplify(I_guess[x]))
+
 
 # Print the list of counterexamples.
 print(cex_List)
-
-
