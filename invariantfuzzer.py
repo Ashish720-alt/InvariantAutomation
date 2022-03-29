@@ -7,10 +7,13 @@ K1 = 1
 K2 = 2
 K3 = 1
 
-SB = 2
+SB = 5
 SD = 5
 
-max_time = 5000
+max_time = 3600 # 1 hour
+
+max_disjuncts = 4
+max_conjuncts = 5
 
 # Only for 1 variable case
 x, xp = Ints('x xp')
@@ -51,8 +54,23 @@ def convert_DNF_to_lambda (D):
         return lambda x: False
     return lambda t: Or(convert_conjunctiveClause_to_lambda( D[0])(t), convert_DNF_to_lambda( D[1:])(t) )
 
+class partial_transition_function:
+    def __init__(self, DNF , transition_matrix):
+        self.b = DNF
+        self.t = transition_matrix
+
 def convert_transition_matrix_to_lambda (A):
     return lambda x, xp: xp == int(A[0,0])*x + int(A[0,1])
+
+def convert_transition_function_to_lambda (f):
+    if len(f) == 0:
+        return lambda x, xp: True
+    else: 
+        return lambda x, xp: xp == If( convert_DNF_to_lambda(f[0].b)(x), convert_transition_matrix_to_lambda(f[0].t)(x, xp), convert_transition_function_to_lambda(f[1:])(x, xp) )
+
+def total_transition_function (A):
+    return [ partial_transition_function(np.array([1,2,0], ndmin = 3), A ), partial_transition_function(np.array([1,-1,0], ndmin = 3), A ) ]
+
 
 # Testing the function:
 # P1 = np.array( [ [[1,0,0] , [1,0,-1]] , [[1,2,1]] ] , dtype=object) 
@@ -63,6 +81,79 @@ def convert_transition_matrix_to_lambda (A):
 # print(X(2,3), X(3,3))
 ''' ********************************************************************************************************************'''
 
+''' ********************************************************************************************************************'''
+# 'COC' is short for coefficients, operators, constants
+def extract_COC_from_predicate(P):
+    return (  np.concatenate((P[0:1], P[2:] )) , P[1:2]   )
+
+def extract_COC_from_conjunctiveClause_internal(C):
+    if np.size(C) == 0:
+        return [ np.empty(0), np.empty(0) ]
+    COC1 = extract_COC_from_predicate(C[0])
+    COC2 = extract_COC_from_conjunctiveClause_internal(C[1:])
+    return  [ np.concatenate(( COC1[0] , COC2[0] ))  , np.concatenate((COC1[1], COC2[1]))  ]
+
+def extract_COC_from_conjunctiveClause(C):
+    A = extract_COC_from_conjunctiveClause_internal(C)
+    A[0] = (A[0].reshape(-1, 2)).astype(int)
+    A[1] = A[1].astype(int)
+    return A
+
+def get_predicate_from_COC ( cc , o):
+    return np.concatenate((np.concatenate((cc[0:1] , np.array([o]) )) , cc[1:2] ))
+
+
+def get_DNF_from_COC_internal ( CC, O):
+    if np.size(O) == 0:
+        return np.empty(0)
+    A1 = get_predicate_from_COC( CC[0], O[0]  )
+    A2 = get_DNF_from_COC_internal (CC[1: ] , O[1: ])
+    return np.concatenate (( A1, A2 ))
+
+def get_DNF_from_COC (COC):
+    CC = COC[0]
+    O = COC[1]
+    A = get_DNF_from_COC_internal(CC, O)
+    A = (A.reshape(-1, 3)).astype(int)
+    return A
+
+# print(extract_COC_from_predicate(np.array([6,1,6]) ) )
+# print(extract_COC_from_conjunctiveClause( np.array([[1,2,3], [4,5,6] , [7,8,9]] ) ) )
+# print(get_predicate_from_COC( np.array([1,3]) , 2) )
+# print(get_DNF_from_COC( [np.array( [[1,3], [4,6], [7,9]] ), np.array([2,5,8]) ] ) )
+# print (get_DNF_from_COC(extract_COC_from_conjunctiveClause( np.array([[1,2,3], [4,5,6] , [7,8,9]] ))) )
+
+
+# This assumes that T_function is a bijective function i.e. each partial transition matrix is non-singular, and that their respective domains are bijective (clearly too strong!)
+# Also inverse matrix will not always have integer values!!!
+class partial_transition_function:
+    def __init__(self, DNF , transition_matrix):
+        self.b = DNF
+        self.t = transition_matrix
+
+def inverse_transition_function (f):
+    if len(f) == 0:
+        return []
+    transition_matrix = f[0].t
+    inverse_partial_transition_matrix = np.linalg.inv(f[0].t).astype(int)
+    DNF = f[0].b
+
+    new_DNF = np.empty(0)
+    for C in DNF:
+        temp = extract_COC_from_conjunctiveClause(C)
+        temp[0] = np.dot(temp[0], inverse_partial_transition_matrix.transpose() )
+        new_CC = get_DNF_from_COC( temp )
+        if (np.size(new_DNF) == 0):
+            new_DNF = new_CC.reshape(1,-1,3)
+        else:
+            new_DNF = np.append(new_DNF, new_CC.reshape(1,-1,3), axis = 0)
+    return [partial_transition_function( new_DNF , inverse_partial_transition_matrix )] + inverse_transition_function(f[1:]) 
+
+
+''' ********************************************************************************************************************'''
+
+
+
 # Although same code as *_lambda.py, this always works (never repeats cex); it starting repeating cex after I switched from lambda to converted lambda form.
 
 programConstants = [-2,0,1,5]
@@ -70,12 +161,22 @@ programConstants = [-2,0,1,5]
 P_array = np.array( [ [[1,0,0] ] ] , dtype=object)
 B_array = np.array( [ [[1,-2,5] ] ] , dtype=object)
 Q_array = np.array( [ [[1,0,5] ] ] , dtype=object)
-T_array = np.array( [[1,1], [0,1]] , ndmin = 2 )
+T_function = [partial_transition_function(np.array([1,2,0] , ndmin = 3), np.array( [[1,1], [0,1]] , ndmin = 2 ) ), 
+    partial_transition_function(np.array([1,-1,0], ndmin = 3), np.array( [[1,1], [0,1]] , ndmin = 2 ) )] 
+# T_function = total_transition_function(np.array( [[1,1], [0,1]] , ndmin = 2 ))
 
 P = convert_DNF_to_lambda(P_array)
 B = convert_DNF_to_lambda(B_array)
 Q = convert_DNF_to_lambda(Q_array)
-T = convert_transition_matrix_to_lambda(T_array)
+# T = lambda x, xp: xp == If(x > 0, x + 1 , x + 2)
+T_inv = inverse_transition_function(T_function)
+T = convert_transition_function_to_lambda( T_function)
+
+
+
+
+
+
 
 ''' ********************************************************************************************************************'''
 
@@ -173,7 +274,7 @@ def print_DNF (D, s):
 # print_DNF(np.array( [[[1,0,0], [1,1,2] , [1,-2,3]] , [[1,0,43], [1,-1,2] , [1,2,3]]] , ndmin = 3))
 ''' ********************************************************************************************************************'''
 
-
+''' ********************************************************************************************************************'''
 def C1(I):
     return Implies(P(x), I(x))
 
@@ -229,6 +330,7 @@ def GenerateCexList_C3 (I , number_of_cex):
     else:
         return [cex] + GenerateCexList_C3( lambda t: And( I(t), t != cex.evaluate(x) ) ,  number_of_cex - 1  )
 
+''' ********************************************************************************************************************'''
 
 ''' ********************************************************************************************************************'''
 '''Operator code:
@@ -291,47 +393,46 @@ def sample_points_from_DNF ( D , number_of_points, sample_list):
         print("Sampler can't sample, it says: %s" %(r))
         return sample_list
 
-def unroll_chain_from_starting_point ( pt_matrix, transition_matrix, conditional_predicate, number_of_points, sample_list):
+# Assumes transition function is a total function.
+def unroll_chain_from_starting_point ( pt_matrix, transition_function, conditional_predicate, number_of_points, sample_list):
     if (number_of_points == 0):
         return sample_list
-    pt = simplify(pt_matrix[0])
-    if (simplify(conditional_predicate(pt))):
-        sample_list.append(pt.as_long())
-        return unroll_chain_from_starting_point(  np.dot(transition_matrix, pt_matrix), transition_matrix, conditional_predicate, number_of_points - 1 , sample_list)
+    pt = int(pt_matrix[0]) # pt = simplify(pt_matrix[0])
+    if (simplify(conditional_predicate(int(pt)))):
+        sample_list.append(pt) #sample_list.append(pt.as_long())
+        pt = int(pt_matrix[0])
+        new_pt_matrix = np.empty( 2 , int)
+        for partial_tf in transition_function:
+            if ( simplify(convert_DNF_to_lambda(partial_tf.b)(pt)) ):
+                new_pt_matrix[:] = np.dot(  pt_matrix, np.transpose(partial_tf.t) )
+        return unroll_chain_from_starting_point(  new_pt_matrix, transition_function, conditional_predicate, number_of_points - 1 , sample_list)
     else:
         return sample_list
-
-# #Testing 'unroll_chain_from_starting_point' function
-# p_m = np.array([0,1], dtype = object)
-# final_list = []
-# unroll_chain_from_starting_point(p_m, T_array, B, SD + 1, final_list)
-# print(final_list)
 
 def get_positive_points( sampling_breadth, sampling_depth):
     temp_list = []
     sample_points_from_DNF(P, sampling_breadth, temp_list)
     breadth_list_of_positive_points = []
     for sample in temp_list:
-        breadth_list_of_positive_points.append(sample.evaluate(x))
+        breadth_list_of_positive_points.append(sample.evaluate(x).as_long())
     list_of_positive_points = []
     for pt in breadth_list_of_positive_points:
-        pt_matrix = np.array([pt, 1], ndmin = 1, dtype = object)
-        unroll_chain_from_starting_point(pt_matrix, T_array, B, SD + 1, list_of_positive_points)
+        pt_matrix = np.array([int(pt), 1], int)
+        unroll_chain_from_starting_point(pt_matrix, T_function, B, SD + 1, list_of_positive_points)
     list_of_positive_points = list(set(list_of_positive_points)) #remove duplicates
     return list_of_positive_points
 
 
-# At this moment, we assume that T_array^-1 is well defined i.e. T_array is non-singular
 def get_negative_points( sampling_breadth, sampling_depth):
     temp_list = []
     sample_points_from_DNF( lambda t: And( Not(Q(t)), Not(B(t)) ) , sampling_breadth, temp_list)
     breadth_list_of_negative_points = []
     for sample in temp_list:
-        breadth_list_of_negative_points.append(sample.evaluate(x))
+        breadth_list_of_negative_points.append(sample.evaluate(x).as_long())
     list_of_negative_points = []
     for pt in breadth_list_of_negative_points:
-        pt_matrix = np.array([pt, 1], ndmin = 1, dtype = object)
-        unroll_chain_from_starting_point(pt_matrix, np.linalg.inv(T_array).astype(int), lambda t: Or( Not(Q(t)), B(t) ), SD + 1, list_of_negative_points )
+        pt_matrix = np.array([int(pt), 1], int)
+        unroll_chain_from_starting_point(pt_matrix, T_inv , lambda t: Or( Not(Q(t)), B(t) ), SD + 1, list_of_negative_points )
     list_of_negative_points = list(set(list_of_negative_points)) #remove duplicates
     return list_of_negative_points
 
@@ -345,11 +446,12 @@ def get_negative_points( sampling_breadth, sampling_depth):
 ''' ********************************************************************************************************************'''
 
 def J1(I, cexList):
+    num = len(cexList)
     error = 0
     for cex in cexList:
         point = np.array( [cex.evaluate(x).as_long() ], ndmin = 1, dtype = object) 
         error = max(error, distance_point_DNF(point, I))
-    return error
+    return error + num
 
 # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
 def J2(cexList):
@@ -357,34 +459,43 @@ def J2(cexList):
     return num
 
 def J3(Q, cexList):
+    num = len(cexList)
     error = 0
     for cex in cexList:
         point = np.array([cex.evaluate(x).as_long() ], ndmin = 1, dtype = object) 
         error = max(error, distance_point_DNF(point, Q))
-    return error
+    return error + num
 
 
 ''' ********************************************************************************************************************'''
 
 # Correct invariant is x <= 5
 # Eg: I_g_array = np.array([1,0,0], ndmin = 3)
+# Here in all strategies, we assume that conjunctive clause size is same.
 
 '''
-mutation_strategy code:
-1 -> smallConstants
-2 -> octagonaldomain
-3 -> nearProgramConstants
+degenerate_MC code:
+(1,k) -> smallConstants(k)
+(2,_) -> octagonaldomain
+(3,k) -> nearProgramConstants(k)
+
+
+{ 0, 2, 4}
+k = 3
+
+{ [-3, 7] }
+
 '''
 # Implement timeout functionality!!!
-def random_invariant_guess (timeout, mutation_strategy):
+def random_invariant_guess (timeout, degenerate_MC, no_of_conjuncts , no_of_disjuncts):
     cost = float('inf')
     while (cost != 0):
-        if (mutation_strategy == 1):
-            I_g_array = guess_invariant_smallConstants(6, 1, 1, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
-        elif (mutation_strategy == 2):
-            I_g_array = guess_invariant_octagonaldomain(programConstants, 1, 1, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
-        elif (mutation_strategy == 3):
-            I_g_array = guess_invariant_nearProgramConstants(programConstants, 1, 1, 1,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+        if (degenerate_MC[0] == 1):
+            I_g_array = guess_invariant_smallConstants(degenerate_MC[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+        elif (degenerate_MC[0] == 2):
+            I_g_array = guess_invariant_octagonaldomain(programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+        elif (degenerate_MC[0] == 3):
+            I_g_array = guess_invariant_nearProgramConstants(programConstants, degenerate_MC[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         I_g = convert_DNF_to_lambda(I_g_array)
 
         print_DNF(I_g_array, 0)
@@ -408,7 +519,7 @@ def random_invariant_guess (timeout, mutation_strategy):
     return
 
 
-random_invariant_guess(3, 3)
+random_invariant_guess(max_time, (2,10), max_conjuncts, max_disjuncts )
 
 
 
