@@ -1,5 +1,6 @@
 from z3 import *
 import numpy as np
+from scipy.optimize import minimize, LinearConstraint
 
 s = 10
 
@@ -204,6 +205,47 @@ def get_all_program_constants():
 programConstants = get_all_program_constants()
 ''' ********************************************************************************************************************'''
 
+''' ********************************************************************************************************************'''
+# Let normalized versions only have <= or < operators.
+def normalize_predicate (P):
+    if (P[n] > 0):
+        return np.array( np.multiply(P, -1), ndmin = 2)
+    elif (P[n] == 0):
+        temp1, temp2 = np.multiply(P, -1) , P
+        temp1[n] = -1
+        temp2[n] = -1
+        return np.array([temp1, temp2], ndmin = 2 )
+    return np.array(P, ndmin = 2)
+
+def normalize_conjunctiveClause (C):
+    if (len(C) == 0):
+        return np.empty(shape = (0,n+2), dtype = int)
+    return np.concatenate(( normalize_predicate(C[0]) , normalize_conjunctiveClause(C[1:]) ))
+
+def normalize_DNF_internal (D, conjunct_size): 
+    if (len(D) == 0):
+        return np.empty(shape = (0,conjunct_size,n+2), dtype = int)
+    C = normalize_conjunctiveClause(D[0])
+    padding_predicate = np.array([0,0,0,-1,0], ndmin = 1)
+    while (len(C) < conjunct_size):
+        C = np.concatenate((C, np.array( padding_predicate, ndmin = 2) ))
+    return np.concatenate(( np.array(C, ndmin = 3) , normalize_DNF_internal(D[1:], conjunct_size) ))
+
+def normalize_DNF (D):
+    max_size = 0
+    for C in D:
+        curr_size = 0
+        for P in C:
+            curr_size = curr_size + ( 2 if (P[n] == 0) else 1)
+        max_size = max(max_size, curr_size)
+    return normalize_DNF_internal(D, max_size)
+
+
+# print(normalize_predicate(np.array([1,2,0,-1,4])))
+# print(normalize_conjunctiveClause( np.array( [ [1,2,3,1,10], [1,3,1,0,0] , [1,3,1,-2,0] ] , ndmin = 2)) ) 
+# print(normalize_DNF(np.array( [ [[1,0,0,0,1] , [0,1,0,0,1] ], [[0,0,1,0,1] , [0,0,0,-2,0]] , [[0,0,1,-1,0] , [0,0,0,1,0]] ]) )  )
+''' ********************************************************************************************************************'''
+
 
 ''' ********************************************************************************************************************'''
 
@@ -400,7 +442,6 @@ def GenerateCexList_C3 (I , number_of_cex):
 ''' ********************************************************************************************************************'''
 
 ''' ********************************************************************************************************************'''
-# This isn't complete!
 '''Operator code:
 g = 2
 ge = 1
@@ -408,21 +449,19 @@ eq = 0
 le = -1
 l = -2 '''
 
-def distance_point_hyperplane ( p, L, endpt1, endpt2):
-    L_predicate = convert_predicate_to_lambda( L)
-    if (L_predicate(p[0], p[1], p[2])):
-        return 0
-    dist1 = np.linalg.norm(p - endpt1)
-    dist2 = np.linalg.norm(p - endpt2)
-    dist3 = np.linalg.norm(np.cross(endpt2-endpt1, endpt1-p))/np.linalg.norm(endpt2-endpt1) # Assumes that endpt1 and endpt2 lies on L
-    
-    return min(dist1, dist2, dist3) # This isn't correct, need to check dist3 indeed lies between that segment
+def dist(x, p):
+    return np.linalg.norm(x - p)
 
-def distance_point_conjunctiveClause (p , C):
-    d = float('inf')
-    for L in C:
-        d = min(d, distance_point_hyperplane(p, L, np.array([0,0,1]) , np.array([0,0,2]) ))
-    return d
+def distance_point_conjunctiveClause(p, C):
+    C = normalize_conjunctiveClause(C)
+    A = extract_COC_from_conjunctiveClause(C)[0]
+    return float(minimize(
+        dist, 
+        np.zeros(3),
+        args=(p,),
+        constraints=[LinearConstraint(A[:, :-1], -np.inf, -A[:, -1])],
+    ).fun)
+
 
 def distance_point_DNF(p, D):
     d = float('inf')
@@ -431,9 +470,9 @@ def distance_point_DNF(p, D):
     return d
 
 #Testing:
-# print(distance_point_hyperplane( np.array( [1,2,3], ndmin = 1), np.array([2,1,3,-2,3] , ndmin = 1), np.array([0,0,1]) , np.array([0,0,2]) ) )
 # print(distance_point_conjunctiveClause( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) ) 
 # print(distance_point_DNF( np.array( [-3,3,1], ndmin = 1), np.array( [ [ [-7,1,3,-2,3], [1,2,1,0,2], [3,1,3, 1, 4] ], [ [1,3,1,1,10], [1,3,1,0,0], [0,0,0,0,0] ] ]    )) )
+
 
 ''' ********************************************************************************************************************'''
 
@@ -531,7 +570,6 @@ def J1(I, cexList):
         pt_z = cex.evaluate(z).as_long() # This line once gave error, with message: "AttributeError: 'ArithRef' object has no attribute 'as_long'", sometimes it doesn't even include z in cex?
         point = np.array( [pt_x, pt_y, pt_z ], ndmin = 1) 
         error = max(error, distance_point_DNF(point, I))
-    error = 0 # REMOVE THIS, when u fix distance computation!
     return error + num
 
 # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
@@ -548,7 +586,6 @@ def J3(Q, cexList):
         pt_z = cex.evaluate(z).as_long()
         point = np.array( [pt_x, pt_y, pt_z ], ndmin = 1) 
         error = max(error, distance_point_DNF(point, Q))
-    error = 0 # REMOVE THIS, when u fix distance computation!
     return error + num
 
 # Testing these functions
@@ -607,7 +644,7 @@ def random_invariant_guess (timeout, degenerate_MC, no_of_conjuncts , no_of_disj
         cost = K1*cost1 + K2*cost2 + K3*cost3
 
         # print(cost1, cost2, cost3)
-        print('   ',cost)
+        print('   ', cost)
         
     print(count)
     return
