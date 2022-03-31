@@ -600,10 +600,10 @@ def J3(Q, cexList):
 
 ''' ********************************************************************************************************************'''
 
-# Here in all strategies, we assume that conjunctive clause size is same.
+# Here in all our guess strategies, we assume that conjunctive clause size is same.
 
 '''
-degenerate_MC code:
+guess_strategy code:
 (1,k) -> smallConstants(k)
 (2,0) -> octagonaldomain
 (2,1) -> octagonaldomain_extended
@@ -611,20 +611,20 @@ degenerate_MC code:
 '''
 
 # Implement timeout functionality!!!
-def random_invariant_guess (timeout, degenerate_MC, no_of_conjuncts , no_of_disjuncts):
+def random_invariant_guess (timeout, guess_strategy, no_of_conjuncts , no_of_disjuncts):
     cost = float('inf')
     count = 0
     while (cost != 0):
         count = count + 1
-        if (degenerate_MC[0] == 1):
-            I_g_array = guess_invariant_smallConstants(degenerate_MC[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
-        elif (degenerate_MC[0] == 2):
-            if (degenerate_MC[1] == 0):
+        if (guess_strategy[0] == 1):
+            I_g_array = guess_invariant_smallConstants(guess_strategy[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+        elif (guess_strategy[0] == 2):
+            if (guess_strategy[1] == 0):
                 I_g_array = guess_invariant_octagonaldomain(programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
             else:
                 I_g_array = guess_invariant_octagonaldomain_extended(programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
-        elif (degenerate_MC[0] == 3):
-            I_g_array = guess_invariant_nearProgramConstants(programConstants, degenerate_MC[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+        elif (guess_strategy[0] == 3):
+            I_g_array = guess_invariant_nearProgramConstants(programConstants, guess_strategy[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         I_g = convert_DNF_to_lambda(I_g_array)
         print(count,'   ', end = '')
         print_DNF(I_g_array, 0)
