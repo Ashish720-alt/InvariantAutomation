@@ -11,10 +11,10 @@ K3 = 1
 SB = 5
 SD = 3
 
-max_time = 3600 # 1 hour
+max_guesses = 1000
 
 max_disjuncts = 2
-max_conjuncts = 2
+max_conjuncts = 3
 
 # Print warnings or not?
 ON = 1
@@ -24,8 +24,29 @@ DISPLAY_WARNINGS = ON
 # Number of variables
 n = 3
 
-# Only for 1 variable case
+# Only for 3 variable case
 x, y, z, xp, yp, zp = Ints('x y z xp yp zp')
+
+
+class partial_transition_function:
+    def __init__(self, DNF , transition_matrix):
+        self.b = DNF
+        self.t = transition_matrix
+
+def total_transition_function (A):
+    return [ partial_transition_function(np.array([0,0,0,0,0], ndmin = 3), A ) ]
+
+
+# Code Input
+P_array = np.array( [ [[1,0,0,0,1] , [0,1,0,0,1] ], [[0,0,1,0,1] , [0,0,0,0,0]] , [[0,0,1,0,0] , [0,0,0,0,0]] ])
+B_array = np.array( [ [[0,1,0,-2,1000] , [0,0,1,0,1] ] ] )
+Q_array = np.array( [ [[1,-1,0,1,0] ] ] )
+# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )), 
+    # partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )] 
+T_function = total_transition_function(np.array( [[1,1,0,0], [0,1,0,1], [0,0,1,0], [0,0,0,1]] , ndmin = 2 ))
+
+
+
 
 ''' ********************************************************************************************************************'''
 # for 3D case only
@@ -67,11 +88,6 @@ def convert_DNF_to_lambda (D):
 # S3 = convert_DNF_to_lambda( P1 )
 # print(S3(-2,1,3)) #To simplify expression, use simplify( .) function.
 
-class partial_transition_function:
-    def __init__(self, DNF , transition_matrix):
-        self.b = DNF
-        self.t = transition_matrix
-
 
 # A is a (n+1) * (n+1) matrix.
 def convert_transition_matrix_to_lambda (A):
@@ -85,8 +101,7 @@ def convert_transition_function_to_lambda (f):
         return lambda x, y, z, xp, yp, zp: xp == If( convert_DNF_to_lambda(f[0].b)(x,y,z), convert_transition_matrix_to_lambda(f[0].t)(x,y,z,xp,yp,zp), 
                                                                             convert_transition_function_to_lambda(f[1:])(x,y,z,xp,yp,zp) )
 
-def total_transition_function (A):
-    return [ partial_transition_function(np.array([0,0,0,0,0], ndmin = 3), A ) ]
+
 
 
 # Testing the functions.
@@ -169,19 +184,11 @@ def inverse_transition_function (f):
 
 ''' ********************************************************************************************************************'''
 
-P_array = np.array( [ [[1,0,0,0,1] , [0,1,0,0,1] ], [[0,0,1,0,1] , [0,0,0,0,0]] , [[0,0,1,0,0] , [0,0,0,0,0]] ])
-B_array = np.array( [ [[0,1,0,-2,1000] , [0,0,1,0,1] ] ] )
-Q_array = np.array( [ [[1,-1,0,1,0] ] ] )
-# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )), 
-    # partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )] 
-T_function = total_transition_function(np.array( [[1,1,0,0], [0,1,0,1], [0,0,1,0], [0,0,0,1]] , ndmin = 2 ))
-
 P = convert_DNF_to_lambda(P_array)
 B = convert_DNF_to_lambda(B_array)
 Q = convert_DNF_to_lambda(Q_array)
 T_inv = inverse_transition_function(T_function)
 T = convert_transition_function_to_lambda( T_function)
-
 
 ''' ********************************************************************************************************************'''
 def get_all_constants_in_2D_array( A ):
@@ -307,7 +314,7 @@ def guess_invariant_nearProgramConstants ( constants_in_program, k,  max_conjunc
         for j in range(conjunctive_clause_size):
             I[i, j, n] = np.random.choice([-2, -1, 0, 1, 2], p=operator_probability_matrix)
             while ( np.array_equal( I[i, j, 0:n] , np.zeros(n) ) ):  # Ensure that all coefficients of a predicate are not zero.
-                newcoefficients = p.random.choice(list_of_Constants, size=(n) )
+                newcoefficients = np.random.choice(list_of_Constants, size=(n) )
                 I[i, j, 0] = newcoefficients[0]
                 I[i, j, 1] = newcoefficients[1]
                 I[i, j, 2] = newcoefficients[2]
@@ -409,7 +416,8 @@ def GenerateCexList_C1 (I , number_of_cex):
     if cex is None:
         return []
     else:
-        return [cex] + GenerateCexList_C1( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x), v == cex.evaluate(y), w == cex.evaluate(z) ) ) ,  number_of_cex - 1  )
+        return [cex] + GenerateCexList_C1( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x, model_completion=True), 
+                                                            v == cex.evaluate(y, model_completion=True), w == cex.evaluate(z, model_completion=True) ) ) ,  number_of_cex - 1  )
 
 # There is another way to generate cex for this case which is not been coded and that is by excluding both x and xp points.
 def GenerateCexList_C2 (I , number_of_cex):
@@ -419,8 +427,10 @@ def GenerateCexList_C2 (I , number_of_cex):
     if cex is None:
         return []
     else:
-        return [cex] + GenerateCexList_C2( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x), v == cex.evaluate(y), w == cex.evaluate(z) ), 
-                                                            And(u == cex.evaluate(xp), v == cex.evaluate(yp), w == cex.evaluate(zp) )) ,  number_of_cex - 1  )
+        return [cex] + GenerateCexList_C2( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x, model_completion=True), v == cex.evaluate(y, model_completion=True), 
+                                                                        w == cex.evaluate(z, model_completion=True) ), 
+                                                            And(u == cex.evaluate(xp, model_completion=True), v == cex.evaluate(yp, model_completion=True), 
+                                                                        w == cex.evaluate(zp, model_completion=True) )) ,  number_of_cex - 1  )
 
 def GenerateCexList_C3 (I , number_of_cex):
     if (number_of_cex == 0):
@@ -429,7 +439,8 @@ def GenerateCexList_C3 (I , number_of_cex):
     if cex is None:
         return []
     else:
-        return [cex] + GenerateCexList_C3( lambda u,v,w: And( I(u,v,w), Or(u != cex.evaluate(x), v != cex.evaluate(y), w != cex.evaluate(z) ) ) ,  number_of_cex - 1   )
+        return [cex] + GenerateCexList_C3( lambda u,v,w: And( I(u,v,w), Not(And(u == cex.evaluate(x, model_completion=True), 
+                                                            v == cex.evaluate(y, model_completion=True), w == cex.evaluate(z, model_completion=True) ) ) )  ,  number_of_cex - 1   )
 
 
 # I_g_array = guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
@@ -564,10 +575,10 @@ def get_negative_points( sampling_breadth, sampling_depth):
 def J1(I, cexList):
     num = len(cexList)
     error = 0
-    for cex in cexList: # ERROR SOURCE: For some reason, if P has only 2 variables, sometimes cex only has x and y and no z term
-        pt_x = cex.evaluate(x).as_long()
-        pt_y = cex.evaluate(y).as_long()
-        pt_z = cex.evaluate(z).as_long() # This line once gave error, with message: "AttributeError: 'ArithRef' object has no attribute 'as_long'", sometimes it doesn't even include z in cex?
+    for cex in cexList: 
+        pt_x = cex.evaluate(x, model_completion=True).as_long()
+        pt_y = cex.evaluate(y, model_completion=True).as_long()
+        pt_z = cex.evaluate(z, model_completion=True).as_long() 
         point = np.array( [pt_x, pt_y, pt_z ], ndmin = 1) 
         error = max(error, distance_point_DNF(point, I))
     return error + num
@@ -610,11 +621,10 @@ guess_strategy code:
 (3,k) -> nearProgramConstants(k)
 '''
 
-# Implement timeout functionality!!!
-def random_invariant_guess (timeout, guess_strategy, no_of_conjuncts , no_of_disjuncts):
+def random_invariant_guess (guesses, guess_strategy, no_of_conjuncts , no_of_disjuncts):
     cost = float('inf')
     count = 0
-    while (cost != 0):
+    while (cost != 0 and count < guesses):
         count = count + 1
         if (guess_strategy[0] == 1):
             I_g_array = guess_invariant_smallConstants(guess_strategy[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
@@ -644,10 +654,8 @@ def random_invariant_guess (timeout, guess_strategy, no_of_conjuncts , no_of_dis
         cost = K1*cost1 + K2*cost2 + K3*cost3
 
         # print(cost1, cost2, cost3)
-        print('   ', cost)
-        
-    print(count)
+        print('   ', cost,'\n')
     return
 
 
-random_invariant_guess(max_time, (3,10), max_conjuncts, max_disjuncts )
+random_invariant_guess(max_guesses, (3,1), max_conjuncts, max_disjuncts )
