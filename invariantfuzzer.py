@@ -81,7 +81,16 @@ def convert_conjunctiveClause_to_lambda (C):
 def convert_DNF_to_lambda (D):
     if np.size(D) == 0:
         return lambda x,y,z: False
-    return lambda x,y,z: Or(convert_conjunctiveClause_to_lambda( D[0])(x,y,z), convert_DNF_to_lambda( D[1:])(x,y,z) )
+    return  Or([
+            And([
+                    Sum([
+                        D[i][j] * Int('x_%s_%s' % (i+1, j+1))
+                        for j in range(len(D[i]-2))
+                    ])
+                    
+                ]) 
+                for i in range(len(D))
+            ])
 
 # Testing the function:
 # P1 = np.array( [ [[1,2,3,0,0] , [1,2,3,0,-1]] , [[1,3,3,2,1] , [0,0,0,0,0] ] ] ) 
