@@ -43,6 +43,15 @@ def total_transition_function(A):
     return [partial_transition_function(np.array([0, 0, 0, 0, 0], ndmin=3), A)]
 
 
+# Code Input
+N = 3
+P_array = np.array( [ [[1,0,0,0,0] ] ])
+B_array = np.array( [ [ [1,0,0,-2,6]  ] ] )
+Q_array = np.array( [ [[1,0,0,0,6] ] ] )
+# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )),
+# partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )]
+T_function = total_transition_function(np.array( [[1,0,0,1], [0,1,0,0], [0,0,1,0], [0,0,0,1]] , ndmin = 2 ))
+
 """ Convert matrix to z3 expressions.
 """
 
@@ -106,11 +115,11 @@ def trans_func_to_z3expr(f):
 
 
 # Testing the functions.
-A = np.array([[1, 2, 3, 1], [2, 3, 1, 4], [1, 3, 1, 4], [0, 0, 0, 1]], ndmin=2)
-X = trans_matrix_to_z3expr(A)
-print(X, X)
-S = total_transition_function(A)
-print(S[0].b, S[0].t)
+# A = np.array([[1, 2, 3, 1], [2, 3, 1, 4], [1, 3, 1, 4], [0, 0, 0, 1]], ndmin=2)
+# X = trans_matrix_to_z3expr(A)
+# print(X, X)
+# S = total_transition_function(A)
+# print(S[0].b, S[0].t)
 
 
 """ COC Extraction.
@@ -119,26 +128,26 @@ COC is short for coefficients, operators, constants
 
 
 def extract_COC_from_predicate(P):
-    return (np.concatenate((P[0:n], P[n+1:])), P[n:n+1])
+    return (np.concatenate((P[0:N], P[N+1:])), P[N:N+1])
 
 
-def extract_COC_from_conjunctiveClause_internal(C):
+def extract_COC_from_conj_clause_internal(C):
     if np.size(C) == 0:
         return [np.empty(0), np.empty(0)]
     COC1 = extract_COC_from_predicate(C[0])
-    COC2 = extract_COC_from_conjunctiveClause_internal(C[1:])
+    COC2 = extract_COC_from_conj_clause_internal(C[1:])
     return [np.concatenate((COC1[0], COC2[0])), np.concatenate((COC1[1], COC2[1]))]
 
 
-def extract_COC_from_conjunctiveClause(C):
-    A = extract_COC_from_conjunctiveClause_internal(C)
-    A[0] = (A[0].reshape(-1, n+1)).astype(int)
+def extract_COC_from_conj_clause(C):
+    A = extract_COC_from_conj_clause_internal(C)
+    A[0] = (A[0].reshape(-1, N+1)).astype(int)
     A[1] = A[1].astype(int)
     return A
 
 
 def get_predicate_from_COC(cc, o):
-    return np.concatenate((np.concatenate((cc[0:n], np.array([o]))), cc[n:n+1]))
+    return np.concatenate((np.concatenate((cc[0:N], np.array([o]))), cc[N:N+1]))
 
 
 def get_DNF_from_COC_internal(CC, O):
@@ -153,14 +162,14 @@ def get_DNF_from_COC(COC):
     CC = COC[0]
     O = COC[1]
     A = get_DNF_from_COC_internal(CC, O)
-    A = (A.reshape(-1, n+2)).astype(int)
+    A = (A.reshape(-1, N+2)).astype(int)
     return A
 
 # print(extract_COC_from_predicate(np.array([6,2,3,1,6]) ) )
-# print(extract_COC_from_conjunctiveClause( np.array([[1,2,3,1,3], [4,2,3,-1,6] , [7,3,3,-2,9]] ) ) )
+# print(extract_COC_from_conj_clause( np.array([[1,2,3,1,3], [4,2,3,-1,6] , [7,3,3,-2,9]] ) ) )
 # print(get_predicate_from_COC( np.array([1,2,3,3]) , 2) )
 # print(get_DNF_from_COC( [np.array( [[1,2,3,3], [4,2,3,6], [7,2,3,9]] ), np.array([2,1,-1]) ] ) )
-# print (get_DNF_from_COC(extract_COC_from_conjunctiveClause( np.array([[1,1,1,-1,3], [4,5,3,-2,6] , [7,8,3,-1,9]] ))) )
+# print (get_DNF_from_COC(extract_COC_from_conj_clause( np.array([[1,1,1,-1,3], [4,5,3,-2,6] , [7,8,3,-1,9]] ))) )
 
 
 # This assumes that T_function is a bijective function i.e. each partial transition matrix is non-singular, and that their respective domains are bijective (clearly too strong!)
@@ -178,19 +187,19 @@ def inverse_transition_function(f):
             print(
                 "Transition function has a singular partial transition matrix, inverse isn't defined")
         # Singular Matrix, inverse doesn't exist!
-        inverse_partial_transition_matrix = np.eye(n+1)
+        inverse_partial_transition_matrix = np.eye(N+1)
     DNF = f[0].b
 
     new_DNF = np.empty(0)
     for C in DNF:
-        temp = extract_COC_from_conjunctiveClause(C)
+        temp = extract_COC_from_conj_clause(C)
         temp[0] = np.dot(
             temp[0], inverse_partial_transition_matrix.transpose())
         new_CC = get_DNF_from_COC(temp)
         if (np.size(new_DNF) == 0):
-            new_DNF = new_CC.reshape(1, -1, n+2)
+            new_DNF = new_CC.reshape(1, -1, N+2)
         else:
-            new_DNF = np.append(new_DNF, new_CC.reshape(1, -1, n+2), axis=0)
+            new_DNF = np.append(new_DNF, new_CC.reshape(1, -1, N+2), axis=0)
     return [partial_transition_function(new_DNF, inverse_partial_transition_matrix)] + inverse_transition_function(f[1:])
 
 
@@ -231,26 +240,26 @@ programConstants = get_all_program_constants()
 
 
 def normalize_predicate(P):
-    if (P[n] > 0):
+    if (P[N] > 0):
         return np.array(np.multiply(P, -1), ndmin=2)
-    elif (P[n] == 0):
+    elif (P[N] == 0):
         temp1, temp2 = np.multiply(P, -1), P
-        temp1[n] = -1
-        temp2[n] = -1
+        temp1[N] = -1
+        temp2[N] = -1
         return np.array([temp1, temp2], ndmin=2)
     return np.array(P, ndmin=2)
 
 
-def normalize_conjunctiveClause(C):
+def normalize_conj_clause(C):
     if (len(C) == 0):
-        return np.empty(shape=(0, n+2), dtype=int)
-    return np.concatenate((normalize_predicate(C[0]), normalize_conjunctiveClause(C[1:])))
+        return np.empty(shape=(0, N+2), dtype=int)
+    return np.concatenate((normalize_predicate(C[0]), normalize_conj_clause(C[1:])))
 
 
 def normalize_DNF_internal(D, conjunct_size):
     if (len(D) == 0):
-        return np.empty(shape=(0, conjunct_size, n+2), dtype=int)
-    C = normalize_conjunctiveClause(D[0])
+        return np.empty(shape=(0, conjunct_size, N+2), dtype=int)
+    C = normalize_conj_clause(D[0])
     padding_predicate = np.array([0, 0, 0, -1, 0], ndmin=1)
     while (len(C) < conjunct_size):
         C = np.concatenate((C, np.array(padding_predicate, ndmin=2)))
@@ -262,13 +271,13 @@ def normalize_DNF(D):
     for C in D:
         curr_size = 0
         for P in C:
-            curr_size = curr_size + (2 if (P[n] == 0) else 1)
+            curr_size = curr_size + (2 if (P[N] == 0) else 1)
         max_size = max(max_size, curr_size)
     return normalize_DNF_internal(D, max_size)
 
 
 # print(normalize_predicate(np.array([1,2,0,-1,4])))
-# print(normalize_conjunctiveClause( np.array( [ [1,2,3,1,10], [1,3,1,0,0] , [1,3,1,-2,0] ] , ndmin = 2)) )
+# print(normalize_conj_clause( np.array( [ [1,2,3,1,10], [1,3,1,0,0] , [1,3,1,-2,0] ] , ndmin = 2)) )
 # print(normalize_DNF(np.array( [ [[1,0,0,0,1] , [0,1,0,0,1] ], [[0,0,1,0,1] , [0,0,0,-2,0]] , [[0,0,1,-1,0] , [0,0,0,1,0]] ]) )  )
 
 
@@ -276,40 +285,40 @@ def normalize_DNF(D):
 """
 
 
-def guess_invariant_smallConstants(maxConstantValue, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
+def guess_small_constants(maxConstantValue, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
     conjunctive_clause_size = np.random.randint(
         1, max_conjunctive_clause_size + 1)
     number_of_disjuncts = np.random.randint(1, max_number_of_disjuncts + 1)
     I = np.random.randint(-1 * maxConstantValue, maxConstantValue + 1,
-                          size=(number_of_disjuncts, conjunctive_clause_size, n+2))
+                          size=(number_of_disjuncts, conjunctive_clause_size, N+2))
     for i in range(number_of_disjuncts):
         for j in range(conjunctive_clause_size):
-            I[i, j, n] = np.random.choice(
+            I[i, j, N] = np.random.choice(
                 [-2, -1, 0, 1, 2], p=operator_probability_matrix)
             # Ensure that all coefficients of a predicate are not zero.
-            while (np.array_equal(I[i, j, 0:n], np.zeros(n))):
+            while (np.array_equal(I[i, j, 0:N], np.zeros(N))):
                 newcoefficients = p.random.randint(
-                    -1 * maxConstantValue, maxConstantValue + 1, size=(n))
+                    -1 * maxConstantValue, maxConstantValue + 1, size=(N))
                 I[i, j, 0] = newcoefficients[0]
                 I[i, j, 1] = newcoefficients[1]
                 I[i, j, 2] = newcoefficients[2]
     return I
 
 
-def guess_invariant_octagonaldomain(listOfConstants, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
+def guess_octagonaldomain(listOfConstants, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
     conjunctive_clause_size = np.random.randint(
         1, max_conjunctive_clause_size + 1)
     number_of_disjuncts = np.random.randint(1, max_number_of_disjuncts + 1)
     I = np.random.choice(listOfConstants, size=(
-        number_of_disjuncts, conjunctive_clause_size, n + 2))
+        number_of_disjuncts, conjunctive_clause_size,  N + 2))
     for i in range(number_of_disjuncts):
         for j in range(conjunctive_clause_size):
-            I[i, j, n] = np.random.choice(
+            I[i, j, N] = np.random.choice(
                 [-2, -1, 0, 1, 2], p=operator_probability_matrix)
-            nonzero_coefficient_position = np.random.randint(0, n, size=(2))
+            nonzero_coefficient_position = np.random.randint(0, N, size=(2))
             nonzero_coefficient_value = np.random.choice(
                 [-1, 1], p=[0.5, 0.5], size=(2))
-            for k in range(n):
+            for k in range(N):
                 if k in nonzero_coefficient_position:
                     # position is a pair of a (list representing all positions in nonzero_coefficient_position which have value k) and the type of the list.
                     position = np.where(nonzero_coefficient_position == k)
@@ -319,28 +328,28 @@ def guess_invariant_octagonaldomain(listOfConstants, max_conjunctive_clause_size
     return I
 
 
-def guess_invariant_octagonaldomain_extended(listOfConstants, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
+def guess_octagonaldomain_extended(listOfConstants, max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
     conjunctive_clause_size = np.random.randint(
         1, max_conjunctive_clause_size + 1)
     number_of_disjuncts = np.random.randint(1, max_number_of_disjuncts + 1)
     I = np.random.choice(listOfConstants, size=(
-        number_of_disjuncts, conjunctive_clause_size, n + 2))
+        number_of_disjuncts, conjunctive_clause_size, N + 2))
     for i in range(number_of_disjuncts):
         for j in range(conjunctive_clause_size):
-            I[i, j, n] = np.random.choice(
+            I[i, j, N] = np.random.choice(
                 [-2, -1, 0, 1, 2], p=operator_probability_matrix)
-            newcoefficients = np.zeros(n)
+            newcoefficients = np.zeros(N)
             # Ensure that all coefficients of a predicate are not zero.
-            while (np.array_equal(newcoefficients, np.zeros(n))):
+            while (np.array_equal(newcoefficients, np.zeros(N))):
                 newcoefficients = np.random.choice(
-                    [-1, 0, 1], p=[0.33, 0.34, 0.33], size=(n))
+                    [-1, 0, 1], p=[0.33, 0.34, 0.33], size=(N))
                 I[i, j, 0] = newcoefficients[0]
                 I[i, j, 1] = newcoefficients[1]
                 I[i, j, 2] = newcoefficients[2]
     return I
 
 
-def guess_invariant_nearProgramConstants(constants_in_program, k,  max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
+def guess_near_prog_const(constants_in_program, k,  max_conjunctive_clause_size, max_number_of_disjuncts, operator_probability_matrix):
     conjunctive_clause_size = np.random.randint(
         1, max_conjunctive_clause_size + 1)
     number_of_disjuncts = np.random.randint(1, max_number_of_disjuncts + 1)
@@ -350,24 +359,24 @@ def guess_invariant_nearProgramConstants(constants_in_program, k,  max_conjuncti
             list(range(constant - k, constant + k + 1))
     list_of_Constants = list(set(list_of_Constants))  # remove duplicates
     I = np.random.choice(list_of_Constants, size=(
-        number_of_disjuncts, conjunctive_clause_size, n+2))
+        number_of_disjuncts, conjunctive_clause_size, N+2))
     for i in range(number_of_disjuncts):
         for j in range(conjunctive_clause_size):
-            I[i, j, n] = np.random.choice(
+            I[i, j, N] = np.random.choice(
                 [-2, -1, 0, 1, 2], p=operator_probability_matrix)
             # Ensure that all coefficients of a predicate are not zero.
-            while (np.array_equal(I[i, j, 0:n], np.zeros(n))):
-                newcoefficients = np.random.choice(list_of_Constants, size=(n))
+            while (np.array_equal(I[i, j, 0:N], np.zeros(N))):
+                newcoefficients = np.random.choice(list_of_Constants, size=(N))
                 I[i, j, 0] = newcoefficients[0]
                 I[i, j, 1] = newcoefficients[1]
                 I[i, j, 2] = newcoefficients[2]
     return I
 
 
-# print(guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
-# print(guess_invariant_octagonaldomain(programConstants, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
-# print(guess_invariant_octagonaldomain_extended(programConstants, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
-# print(guess_invariant_nearProgramConstants(programConstants, 2, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
+# print(guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
+# print(guess_octagonaldomain(programConstants, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
+# print(guess_octagonaldomain_extended(programConstants, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
+# print(guess_near_prog_const(programConstants, 2, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) ))
 
 """ 
 Printing Utility.
@@ -386,16 +395,6 @@ def print_DNF(D):
 """ Counter Example Generation.
 """
 
-# Code Input
-P_array = np.array([[[1, 0, 0, 0, 1], [0, 1, 0, 0, 1]], [[0, 0, 1, 0, 1], [
-                   0, 0, 0, 0, 0]], [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0]]])
-B_array = np.array([[[0, 1, 0, -2, 1000], [0, 0, 1, 0, 1]]])
-Q_array = np.array([[[1, -1, 0, 1, 0]]])
-# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )),
-# partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )]
-T_function = total_transition_function(
-    np.array([[1, 1, 0, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], ndmin=2))
-
 P = DNF_to_z3expr(P_array)
 B = DNF_to_z3expr(B_array)
 Q = DNF_to_z3expr(Q_array)
@@ -412,7 +411,7 @@ def C2(I):
 
 
 def C3(I):
-    return Implies(And(I, Not(B), Q))
+    return Implies(And(I, Not(B)), Q)
 
 
 def System(I):
@@ -424,6 +423,8 @@ def get_cex(C, num_cex, I):
     result = []
     s = Solver()
     s.add(Not(C))
+    print(Not(C))
+    print("======================")
     while len(result) < num_cex and s.check() == sat:
         m = s.model()
         result.append(m)
@@ -440,8 +441,9 @@ def get_cex(C, num_cex, I):
             block.append(c != m[d])
         s.add(Or(block))
     else:
-        if s.check() != unsat: 
-            print("Solver can't verify or disprove, it says: %s for invariant %s" % (s.model(), I))
+        if len(result) < num_cex and s.check() != unsat: 
+            print("Solver can't verify or disprove")
+            return result
     return result
     
 def get_cex_C1(I, number_of_cex):
@@ -453,31 +455,28 @@ def get_cex_C2(I, number_of_cex):
 def get_cex_C3(I, number_of_cex):
     return get_cex(C3(I), number_of_cex, I)
 
-I_g_array = guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
-I_g = DNF_to_z3expr(I_g_array)
-print(get_cex_C1(I_g, 10) ,'\n')
-print(get_cex_C2(I_g, 10), '\n')
-print(get_cex_C3(I_g, 10), '\n')
+# I_g_array = guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+# I_g = DNF_to_z3expr(I_g_array)
+# print("--------------------------------")
+# print(I_g)
+# print("--------------------------------")
+# print(get_cex_C1(I_g, 10) ,'\n')
+# print("--------------------------------")
+# print(get_cex_C2(I_g, 10), '\n')
+# print("--------------------------------")
+# print(get_cex_C3(I_g, 10), '\n')
 
 
-''' ********************************************************************************************************************'''
-
-''' ********************************************************************************************************************'''
-'''Operator code:
-g = 2
-ge = 1
-eq = 0
-le = -1
-l = -2 '''
-
+""" Distance Functions.
+"""
 
 def dist(x, p):
     return np.linalg.norm(x - p)
 
 
-def distance_point_conjunctiveClause(p, C):
-    C = normalize_conjunctiveClause(C)
-    A = extract_COC_from_conjunctiveClause(C)[0]
+def distance_point_conj_clauses(p, C):
+    C = normalize_conj_clause(C)
+    A = extract_COC_from_conj_clause(C)[0]
     return float(minimize(
         dist,
         np.zeros(3),
@@ -489,17 +488,17 @@ def distance_point_conjunctiveClause(p, C):
 def distance_point_DNF(p, D):
     d = float('inf')
     for C in D:
-        d = min(d, distance_point_conjunctiveClause(p, C))
+        d = min(d, distance_point_conj_clauses(p, C))
     return d
 
 # Testing:
-# print(distance_point_conjunctiveClause( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) )
+# print(distance_point_conj_clauses( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) )
 # print(distance_point_DNF( np.array( [-3,3,1], ndmin = 1), np.array( [ [ [-7,1,3,-2,3], [1,2,1,0,2], [3,1,3, 1, 4] ], [ [1,3,1,1,10], [1,3,1,0,0], [0,0,0,0,0] ] ]    )) )
 
 
-''' ********************************************************************************************************************'''
+""" Sampling Functions.
+"""
 
-''' ********************************************************************************************************************'''
 # This is specific for this clause system.
 
 
@@ -588,43 +587,47 @@ def get_negative_points(sampling_breadth, sampling_depth):
 # print(get_negative_points(SB, SD))
 
 
-''' ********************************************************************************************************************'''
+""" Cost Functions.
+"""
 
-''' ********************************************************************************************************************'''
+def J1(I, cex_list, n):
+    """
+    A cost function.
 
-
-def J1(I, cex_list):
-    num = len(cex_list)
+    :param I: I as a numpy array
+    :param cex_list: a list of counterexamples
+    :param n: number of variables
+    :return: the cost
+    """ 
     error = 0
     for cex in cex_list:
-        pt_x = cex.evaluate(x, model_completion=True).as_long()
-        pt_y = cex.evaluate(y, model_completion=True).as_long()
-        pt_z = cex.evaluate(z, model_completion=True).as_long()
-        point = np.array([pt_x, pt_y, pt_z], ndmin=1)
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long() for i in range(n)]
+        point = np.array(pt)
         error = max(error, distance_point_DNF(point, I))
-    return error + num
+    return error + len(cex_list)
 
 # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
-
-
 def J2(cex_list):
-    num = len(cex_list)
-    return num
+    return len(cex_list)
 
+def J3(Q:np.ndarray, cex_list, n):
+    """
+    A cost function.
 
-def J3(Q, cex_list):
-    num = len(cex_list)
+    :param Q: Q as a numpy array
+    :param cex_list: a list of counterexamples
+    :param n: number of variables
+    :return: the cost
+    """ 
     error = 0
     for cex in cex_list:
-        pt_x = cex.evaluate(x).as_long()
-        pt_y = cex.evaluate(y).as_long()
-        pt_z = cex.evaluate(z).as_long()
-        point = np.array([pt_x, pt_y, pt_z], ndmin=1)
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long() for i in range(n)]
+        point = np.array(pt)
         error = max(error, distance_point_DNF(point, Q))
-    return error + num
+    return error + len(cex_list)
 
 # Testing these functions
-# I_g_array = guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+# I_g_array = guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
 # I_g = convert_DNF_to_lambda(I_g_array)
 # cex_list1 = get_cex_C1(I_g, 10)
 # cex_list2 = get_cex_C2(I_g, 10)
@@ -648,24 +651,26 @@ guess_strategy code:
 '''
 
 
-def random_invariant_guess(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
+def guess_invariant(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
     cost = float('inf')
     count = 0
     while (cost != 0 and count < guesses):
         count += 1
         if (guess_strategy[0] == 1):
-            I_g_array = guess_invariant_smallConstants(
+            I_g_array = guess_small_constants(
                 guess_strategy[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         elif (guess_strategy[0] == 2):
             if (guess_strategy[1] == 0):
-                I_g_array = guess_invariant_octagonaldomain(
+                I_g_array = guess_octagonaldomain(
                     programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
             else:
-                I_g_array = guess_invariant_octagonaldomain_extended(
+                I_g_array = guess_octagonaldomain_extended(
                     programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         elif (guess_strategy[0] == 3):
-            I_g_array = guess_invariant_nearProgramConstants(
+            I_g_array = guess_near_prog_const(
                 programConstants, guess_strategy[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+        I_g_array = np.array([[[1, 0, 0, 0, 0]]])
+        print(I_g_array)
         I_g = DNF_to_z3expr(I_g_array)
         print(count, '   ', end='')
         print_DNF(I_g_array)
@@ -679,14 +684,15 @@ def random_invariant_guess(guesses, guess_strategy, no_of_conjuncts, no_of_disju
         # print(C3_cex_list)
 
         # Get costFunction
-        cost1 = J1(I_g_array, C1_cex_list)
+        cost1 = J1(I_g_array, C1_cex_list, N)
         cost2 = J2(C2_cex_list)
-        cost3 = J3(Q_array, C3_cex_list)
+        cost3 = J3(Q_array, C3_cex_list, N)
         cost = K1*cost1 + K2*cost2 + K3*cost3
 
-        # print(cost1, cost2, cost3)
+        # print(cost1, cost2, cost3)    
         print('   ', cost, '\n')
+        return
     return
 
 
-random_invariant_guess(max_guesses, (3, 1), max_conjuncts, max_disjuncts)
+guess_invariant(max_guesses, (2, 0), max_conjuncts, max_disjuncts)
