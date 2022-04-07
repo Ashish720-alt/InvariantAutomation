@@ -45,18 +45,19 @@ def total_transition_function(A):
 
 # Code Input
 N = 3
-P_array = np.array( [ [[1,0,0,0,0] ] ])
-B_array = np.array( [ [ [1,0,0,-2,6]  ] ] )
-Q_array = np.array( [ [[1,0,0,0,6] ] ] )
+P_array = np.array([[[1, 0, 0, 0, 0]]])
+B_array = np.array([[[1, 0, 0, -2, 6]]])
+Q_array = np.array([[[1, 0, 0, 0, 6]]])
 # T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )),
 # partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )]
-T_function = total_transition_function(np.array( [[1,0,0,1], [0,1,0,0], [0,0,1,0], [0,0,0,1]] , ndmin = 2 ))
+T_function = total_transition_function(
+    np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], ndmin=2))
 
 """ Convert matrix to z3 expressions.
 """
 
 
-def DNF_to_z3expr(D):
+def DNF_to_z3expr(D, p=''):
     if np.size(D) == 0:
         return True
     OP = {
@@ -73,7 +74,7 @@ def DNF_to_z3expr(D):
         And([
             OP[int(D[i][j][-2])](
                 Sum([
-                    D[i][j][k] * Int('x%s' % (k+1))
+                    D[i][j][k] * Int(('x%s'+p) % k)
                     for k in range(d2-2)
                 ]),
                 int(D[i][j][-1])
@@ -82,6 +83,10 @@ def DNF_to_z3expr(D):
         ])
         for i in range(d0)
     ])
+
+
+def DNF_to_z3expr_prime(D):
+    return DNF_to_z3expr(D, 'p')
 
 
 # Testing the function:
@@ -108,11 +113,10 @@ def trans_matrix_to_z3expr(A):
 def trans_func_to_z3expr(f):
     ret = True
     for i in range(len(f)-1, -1, -1):
-        a = If(DNF_to_z3expr(f[i].b),
-               trans_matrix_to_z3expr(f[i].t),
-               ret)
+        ret = If(DNF_to_z3expr(f[i].b),
+                 trans_matrix_to_z3expr(f[i].t),
+                 ret)
     return ret
-
 
 # Testing the functions.
 # A = np.array([[1, 2, 3, 1], [2, 3, 1, 4], [1, 3, 1, 4], [0, 0, 0, 1]], ndmin=2)
@@ -406,8 +410,8 @@ def C1(I):
     return Implies(P, I)
 
 
-def C2(I):
-    return Implies(And(B, I, T), I)
+def C2(I, I_prime):
+    return Implies(And(B, I, T), I_prime)
 
 
 def C3(I):
@@ -417,14 +421,15 @@ def C3(I):
 def System(I):
     return And(C1(I), C2(I), C3(I))
 
+
 """ Get a list of counterexamples.
 """
-def get_cex(C, num_cex, I):
+
+
+def get_cex(C, num_cex):
     result = []
     s = Solver()
     s.add(Not(C))
-    print(Not(C))
-    print("======================")
     while len(result) < num_cex and s.check() == sat:
         m = s.model()
         result.append(m)
@@ -437,23 +442,27 @@ def get_cex(C, num_cex, I):
             # create a constant from declaration
             c = d()
             if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
-                raise Z3Exception("arrays and uninterpreted sorts are not supported")
+                raise Z3Exception(
+                    "arrays and uninterpreted sorts are not supported")
             block.append(c != m[d])
         s.add(Or(block))
     else:
-        if len(result) < num_cex and s.check() != unsat: 
+        if len(result) < num_cex and s.check() != unsat:
             print("Solver can't verify or disprove")
             return result
     return result
-    
-def get_cex_C1(I, number_of_cex):
-    return get_cex(C1(I), number_of_cex, I)
 
-def get_cex_C2(I, number_of_cex):
-    return get_cex(C2(I), number_of_cex, I)
+
+def get_cex_C1(I, number_of_cex):
+    return get_cex(C1(I), number_of_cex)
+
+
+def get_cex_C2(I, I_prime, number_of_cex):
+    return get_cex(C2(I, I_prime), number_of_cex)
+
 
 def get_cex_C3(I, number_of_cex):
-    return get_cex(C3(I), number_of_cex, I)
+    return get_cex(C3(I), number_of_cex)
 
 # I_g_array = guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
 # I_g = DNF_to_z3expr(I_g_array)
@@ -469,6 +478,7 @@ def get_cex_C3(I, number_of_cex):
 
 """ Distance Functions.
 """
+
 
 def dist(x, p):
     return np.linalg.norm(x - p)
@@ -590,6 +600,7 @@ def get_negative_points(sampling_breadth, sampling_depth):
 """ Cost Functions.
 """
 
+
 def J1(I, cex_list, n):
     """
     A cost function.
@@ -598,19 +609,23 @@ def J1(I, cex_list, n):
     :param cex_list: a list of counterexamples
     :param n: number of variables
     :return: the cost
-    """ 
+    """
     error = 0
     for cex in cex_list:
-        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long() for i in range(n)]
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
+              for i in range(n)]
         point = np.array(pt)
         error = max(error, distance_point_DNF(point, I))
     return error + len(cex_list)
 
 # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
+
+
 def J2(cex_list):
     return len(cex_list)
 
-def J3(Q:np.ndarray, cex_list, n):
+
+def J3(Q: np.ndarray, cex_list, n):
     """
     A cost function.
 
@@ -618,10 +633,11 @@ def J3(Q:np.ndarray, cex_list, n):
     :param cex_list: a list of counterexamples
     :param n: number of variables
     :return: the cost
-    """ 
+    """
     error = 0
     for cex in cex_list:
-        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long() for i in range(n)]
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
+              for i in range(n)]
         point = np.array(pt)
         error = max(error, distance_point_DNF(point, Q))
     return error + len(cex_list)
@@ -654,6 +670,7 @@ guess_strategy code:
 def guess_invariant(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
     cost = float('inf')
     count = 0
+    I_g = None
     while (cost != 0 and count < guesses):
         count += 1
         if (guess_strategy[0] == 1):
@@ -669,19 +686,13 @@ def guess_invariant(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
         elif (guess_strategy[0] == 3):
             I_g_array = guess_near_prog_const(
                 programConstants, guess_strategy[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
-        I_g_array = np.array([[[1, 0, 0, 0, 0]]])
-        print(I_g_array)
+
         I_g = DNF_to_z3expr(I_g_array)
-        print(count, '   ', end='')
-        print_DNF(I_g_array)
-        print("\t", end='')
+        I_g_prime = DNF_to_z3expr_prime(I_g_array)
 
         C1_cex_list = get_cex_C1(I_g, s)
-        # print(C1_cex_list)
-        C2_cex_list = get_cex_C2(I_g, s)
-        # print(C2_cex_list)
+        C2_cex_list = get_cex_C2(I_g, I_g_prime, s)
         C3_cex_list = get_cex_C3(I_g, s)
-        # print(C3_cex_list)
 
         # Get costFunction
         cost1 = J1(I_g_array, C1_cex_list, N)
@@ -689,9 +700,8 @@ def guess_invariant(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
         cost3 = J3(Q_array, C3_cex_list, N)
         cost = K1*cost1 + K2*cost2 + K3*cost3
 
-        # print(cost1, cost2, cost3)    
-        print('   ', cost, '\n')
-        return
+        print('%s   ' % count, cost, '\n')
+    print(I_g)
     return
 
 
