@@ -1,6 +1,13 @@
+""" Imports.
+"""
 from z3 import *
 import numpy as np
 from scipy.optimize import minimize, LinearConstraint
+import operator
+
+
+""" Hyper Parameters.
+"""
 
 s = 10
 
@@ -21,228 +28,253 @@ ON = 1
 OFF = 0
 DISPLAY_WARNINGS = ON
 
-# Number of variables
-n = 3
 
-# Only for 3 variable case
-x, y, z, xp, yp, zp = Ints('x y z xp yp zp')
+""" 
+"""
 
 
 class partial_transition_function:
-    def __init__(self, DNF , transition_matrix):
+    def __init__(self, DNF, transition_matrix):
         self.b = DNF
         self.t = transition_matrix
 
-def total_transition_function (A):
-    return [ partial_transition_function(np.array([0,0,0,0,0], ndmin = 3), A ) ]
+
+def total_transition_function(A):
+    return [partial_transition_function(np.array([0, 0, 0, 0, 0], ndmin=3), A)]
 
 
 # Code Input
-P_array = np.array( [ [[1,0,0,0,0] ] ])
-B_array = np.array( [ [ [1,0,0,-2,6]  ] ] )
-Q_array = np.array( [ [[1,0,0,0,6] ] ] )
-# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )), 
-    # partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )] 
-T_function = total_transition_function(np.array( [[1,0,0,1], [0,1,0,0], [0,0,1,0], [0,0,0,1]] , ndmin = 2 ))
+P_array = np.array([[[1, 0, 0, 0, 0]]])
+B_array = np.array([[[1, 0, 0, -2, 6]]])
+Q_array = np.array([[[1, 0, 0, 0, 6]]])
+# T_function = [partial_transition_function(np.array([1,1,1,2,0] , ndmin = 3), np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )),
+# partial_transition_function(np.array([1,1,1,-1,0], ndmin = 3), np.array( [[2,2,3,2], [2,3,2,4] , [2,3,3,4], [0,0,0,1]] , ndmin = 2 ) )]
+T_function = total_transition_function(
+    np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], ndmin=2))
+
+""" Convert matrix to z3 expressions.
+"""
 
 
-
-''' ********************************************************************************************************************'''
-# for 3D case only
-def convert_predicate_to_lambda ( P  ):
-    if (P[n] == 0):
-        return lambda x,y,z : int(P[0]) * x + int(P[1]) * y + int(P[2]) * z == int(P[n+1])
-    elif (P[n] == -1):
-        return lambda x,y,z : int(P[0]) * x + int(P[1]) * y + int(P[2]) * z <= int(P[n+1])
-    elif (P[n] == -2):
-        return lambda x,y,z : int(P[0]) * x + int(P[1]) * y + int(P[2]) * z < int(P[n+1])
-    elif (P[n] == 1):
-        return lambda x,y,z : int(P[0]) * x + int(P[1]) * y + int(P[2]) * z >= int(P[n+1])
-    elif (P[n] == 2):
-        return lambda x,y,z : int(P[0]) * x + int(P[1]) * y + int(P[2]) * z > int(P[n+1])
-    else:
-        print("Incorrect value to predicate array operator")
-        return lambda x,y,z : False
-
-# Testing the function:
-# S = convert_predicate_to_lambda(np.array([1,2,3,0,0], ndmin = 1) )
-# print(S(-1,2,3), S(-2,1,3) , S(0,0,0) , S(1,1,1) , S(2,1,3))
-
-def convert_conjunctiveClause_to_lambda (C):
-    if np.size(C) == 0:
-        return lambda x,y,z: True
-    return lambda x,y,z: And(convert_predicate_to_lambda( C[0])(x,y,z), convert_conjunctiveClause_to_lambda( C[1:])(x,y,z) )
-
-# Testing the function:
-# S = convert_conjunctiveClause_to_lambda( np.array( [[1,2,3,0,0] , [1,1,-1,0,-1] ], ndmin = 2) )
-# print(S(-1,2,3), S(-2,1,3) , S(0,0,0) , S(1,1,1) , S(2,1,3))
-
-def convert_DNF_to_lambda (D):
+def DNF_to_z3expr(D, p=''):
     if np.size(D) == 0:
-        return lambda x,y,z: False
-    return lambda x,y,z: Or(convert_conjunctiveClause_to_lambda( D[0])(x,y,z), convert_DNF_to_lambda( D[1:])(x,y,z) )
+        return True
+    OP = {
+        0: operator.eq,  # "=="
+        -1: operator.le,  # "<="
+        -2: operator.lt,  # "<"
+        1: operator.ge,  # ">="
+        2: operator.gt,  # ">"
+    }
+    d0 = len(D)
+    d1 = len(D[0])
+    d2 = len(D[0][0])
+    return Or([
+        And([
+            OP[int(D[i][j][-2])](
+                Sum([
+                    D[i][j][k] * Int(('x%s'+p) % k)
+                    for k in range(d2-2)
+                ]),
+                int(D[i][j][-1])
+            )
+            for j in range(d1)
+        ])
+        for i in range(d0)
+    ])
+
+
+def DNF_to_z3expr_prime(D):
+    return DNF_to_z3expr(D, 'p')
+
 
 # Testing the function:
-# P1 = np.array( [ [[1,2,3,0,0] , [1,2,3,0,-1]] , [[1,3,3,2,1] , [0,0,0,0,0] ] ] ) 
-# S3 = convert_DNF_to_lambda( P1 )
-# print(S3(-2,1,3)) #To simplify expression, use simplify( .) function.
+P1 = np.array([[[1, 2, 3, 0, 0], [1, 2, 3, 0, -1]],
+              [[1, 3, 3, 2, 1], [0, 0, 0, 0, 0]]])
+S3 = DNF_to_z3expr(P1)
+print(S3)  # To simplify expression, use simplify( .) function.
 
 
 # A is a (n+1) * (n+1) matrix.
-def convert_transition_matrix_to_lambda (A):
-    return lambda x, y, z, xp, yp, zp: And(xp == int(A[0,0])*x + int(A[0,1])*y + int(A[0,2])*z + int(A[0,3]) , yp == int(A[1,0])*x + int(A[1,1])*y + int(A[1,2])*z + int(A[1,3])
-                                                            , zp == int(A[2,0])*x + int(A[2,1])*y + int(A[2,2])*z + int(A[2,3])   )
+def trans_matrix_to_z3expr(A):
+    d = len(A)
+    return And([
+        Int("x%sp" % i) ==
+        Sum([
+            int(A[i][j]) * Int("x%s" % j)
+            for j in range(d-1)
+        ]) +
+        int(A[i][d-1])
+        for i in range(d-1)
+    ])
 
-def convert_transition_function_to_lambda (f):
-    if len(f) == 0:
-        return lambda x, y, z, xp, yp, zp: True
-    else: 
-        return lambda x, y, z, xp, yp, zp: xp == If( convert_DNF_to_lambda(f[0].b)(x,y,z), convert_transition_matrix_to_lambda(f[0].t)(x,y,z,xp,yp,zp), 
-                                                                            convert_transition_function_to_lambda(f[1:])(x,y,z,xp,yp,zp) )
 
-
-
+def trans_func_to_z3expr(f):
+    ret = True
+    for i in range(len(f)-1, -1, -1):
+        ret = If(DNF_to_z3expr(f[i].b),
+                 trans_matrix_to_z3expr(f[i].t),
+                 ret)
+    return ret
 
 # Testing the functions.
-# A = np.array( [[1,2,3,1], [2,3,1,4] , [1,3,1,4], [0,0,0,1]] , ndmin = 2 )
-# X = convert_transition_matrix_to_lambda(A)
-# print(X(2,1,2,3,2,1), X(3,2,1,3,3,1))
+# A = np.array([[1, 2, 3, 1], [2, 3, 1, 4], [1, 3, 1, 4], [0, 0, 0, 1]], ndmin=2)
+# X = trans_matrix_to_z3expr(A)
+# print(X, X)
 # S = total_transition_function(A)
 # print(S[0].b, S[0].t)
-''' ********************************************************************************************************************'''
 
-''' ********************************************************************************************************************'''
-# 'COC' is short for coefficients, operators, constants
+
+""" COC Extraction.
+COC is short for coefficients, operators, constants
+"""
+
+
 def extract_COC_from_predicate(P):
-    return (  np.concatenate((P[0:n], P[n+1:] )) , P[n:n+1]   )
+    return (np.concatenate((P[0:N], P[N+1:])), P[N:N+1])
 
-def extract_COC_from_conjunctiveClause_internal(C):
+
+def extract_COC_from_conj_clause_internal(C):
     if np.size(C) == 0:
-        return [ np.empty(0), np.empty(0) ]
+        return [np.empty(0), np.empty(0)]
     COC1 = extract_COC_from_predicate(C[0])
-    COC2 = extract_COC_from_conjunctiveClause_internal(C[1:])
-    return  [ np.concatenate(( COC1[0] , COC2[0] ))  , np.concatenate((COC1[1], COC2[1]))  ]
+    COC2 = extract_COC_from_conj_clause_internal(C[1:])
+    return [np.concatenate((COC1[0], COC2[0])), np.concatenate((COC1[1], COC2[1]))]
 
-def extract_COC_from_conjunctiveClause(C):
-    A = extract_COC_from_conjunctiveClause_internal(C)
-    A[0] = (A[0].reshape(-1, n+1)).astype(int)
+
+def extract_COC_from_conj_clause(C):
+    A = extract_COC_from_conj_clause_internal(C)
+    A[0] = (A[0].reshape(-1, N+1)).astype(int)
     A[1] = A[1].astype(int)
     return A
 
-def get_predicate_from_COC ( cc , o):
-    return np.concatenate((np.concatenate((cc[0:n] , np.array([o]) )) , cc[n:n+1] ))
+
+def get_predicate_from_COC(cc, o):
+    return np.concatenate((np.concatenate((cc[0:N], np.array([o]))), cc[N:N+1]))
 
 
-def get_DNF_from_COC_internal ( CC, O):
+def get_DNF_from_COC_internal(CC, O):
     if np.size(O) == 0:
         return np.empty(0)
-    A1 = get_predicate_from_COC( CC[0], O[0]  )
-    A2 = get_DNF_from_COC_internal (CC[1: ] , O[1: ])
-    return np.concatenate (( A1, A2 ))
+    A1 = get_predicate_from_COC(CC[0], O[0])
+    A2 = get_DNF_from_COC_internal(CC[1:], O[1:])
+    return np.concatenate((A1, A2))
 
-def get_DNF_from_COC (COC):
+
+def get_DNF_from_COC(COC):
     CC = COC[0]
     O = COC[1]
     A = get_DNF_from_COC_internal(CC, O)
-    A = (A.reshape(-1, n+2)).astype(int)
+    A = (A.reshape(-1, N+2)).astype(int)
     return A
 
 # print(extract_COC_from_predicate(np.array([6,2,3,1,6]) ) )
-# print(extract_COC_from_conjunctiveClause( np.array([[1,2,3,1,3], [4,2,3,-1,6] , [7,3,3,-2,9]] ) ) )
+# print(extract_COC_from_conj_clause( np.array([[1,2,3,1,3], [4,2,3,-1,6] , [7,3,3,-2,9]] ) ) )
 # print(get_predicate_from_COC( np.array([1,2,3,3]) , 2) )
 # print(get_DNF_from_COC( [np.array( [[1,2,3,3], [4,2,3,6], [7,2,3,9]] ), np.array([2,1,-1]) ] ) )
-# print (get_DNF_from_COC(extract_COC_from_conjunctiveClause( np.array([[1,1,1,-1,3], [4,5,3,-2,6] , [7,8,3,-1,9]] ))) )
+# print (get_DNF_from_COC(extract_COC_from_conj_clause( np.array([[1,1,1,-1,3], [4,5,3,-2,6] , [7,8,3,-1,9]] ))) )
 
 
 # This assumes that T_function is a bijective function i.e. each partial transition matrix is non-singular, and that their respective domains are bijective (clearly too strong!)
 # Also inverse matrix will not always have integer values!!!
 
-def inverse_transition_function (f):
+def inverse_transition_function(f):
     if len(f) == 0:
         return []
     transition_matrix = f[0].t
-    if (np.linalg.det(f[0].t) ):
-        inverse_partial_transition_matrix = np.linalg.inv(f[0].t).astype(int) #Non-Singular Matrix
+    if (np.linalg.det(f[0].t)):
+        inverse_partial_transition_matrix = np.linalg.inv(
+            f[0].t).astype(int)  # Non-Singular Matrix
     else:
         if (DISPLAY_WARNINGS):
-            print("Transition function has a singular partial transition matrix, inverse isn't defined")
-        inverse_partial_transition_matrix = np.eye(n+1) #Singular Matrix, inverse doesn't exist!
+            print(
+                "Transition function has a singular partial transition matrix, inverse isn't defined")
+        # Singular Matrix, inverse doesn't exist!
+        inverse_partial_transition_matrix = np.eye(N+1)
     DNF = f[0].b
 
     new_DNF = np.empty(0)
     for C in DNF:
-        temp = extract_COC_from_conjunctiveClause(C)
-        temp[0] = np.dot(temp[0], inverse_partial_transition_matrix.transpose() )
-        new_CC = get_DNF_from_COC( temp )
+        temp = extract_COC_from_conj_clause(C)
+        temp[0] = np.dot(
+            temp[0], inverse_partial_transition_matrix.transpose())
+        new_CC = get_DNF_from_COC(temp)
         if (np.size(new_DNF) == 0):
-            new_DNF = new_CC.reshape(1,-1,n+2)
+            new_DNF = new_CC.reshape(1, -1, N+2)
         else:
-            new_DNF = np.append(new_DNF, new_CC.reshape(1,-1,n+2), axis = 0)
-    return [partial_transition_function( new_DNF , inverse_partial_transition_matrix )] + inverse_transition_function(f[1:]) 
+            new_DNF = np.append(new_DNF, new_CC.reshape(1, -1, N+2), axis=0)
+    return [partial_transition_function(new_DNF, inverse_partial_transition_matrix)] + inverse_transition_function(f[1:])
 
 
-''' ********************************************************************************************************************'''
+""" Constant Extraction
+"""
 
-P = convert_DNF_to_lambda(P_array)
-B = convert_DNF_to_lambda(B_array)
-Q = convert_DNF_to_lambda(Q_array)
-T_inv = inverse_transition_function(T_function)
-T = convert_transition_function_to_lambda( T_function)
 
-''' ********************************************************************************************************************'''
-def get_all_constants_in_2D_array( A ):
+def get_all_constants_in_2D_array(A):
     temp = A.tolist()
     rv = []
     for a in temp:
-        rv = rv + a 
+        rv = rv + a
     return list(set(rv))
 
-def get_all_constants_in_3D_array( A ):
+
+def get_all_constants_in_3D_array(A):
     if len(A) == 0:
         return []
     return list(set(get_all_constants_in_2D_array(A[0]) + get_all_constants_in_3D_array(A[1:])))
 
+
 def get_all_program_constants():
-    rv = list(set(get_all_constants_in_3D_array(P_array) + get_all_constants_in_3D_array(B_array) + get_all_constants_in_3D_array(Q_array)))
+    rv = list(set(get_all_constants_in_3D_array(P_array) +
+              get_all_constants_in_3D_array(B_array) + get_all_constants_in_3D_array(Q_array)))
     for partial in T_function:
-        rv = list(set(rv + get_all_constants_in_3D_array(partial.b) + get_all_constants_in_2D_array(partial.t)))
+        rv = list(set(rv + get_all_constants_in_3D_array(partial.b) +
+                  get_all_constants_in_2D_array(partial.t)))
     return rv
 
+
 programConstants = get_all_program_constants()
-''' ********************************************************************************************************************'''
 
-''' ********************************************************************************************************************'''
-# Let operator_normalized versions only have <= or < operators.
-def operator_normalize_predicate (P):
-    if (P[n] > 0):
-        return np.array( np.multiply(P, -1), ndmin = 2)
-    elif (P[n] == 0):
-        temp1, temp2 = np.multiply(P, -1) , P
-        temp1[n] = -1
-        temp2[n] = -1
-        return np.array([temp1, temp2], ndmin = 2 )
-    return np.array(P, ndmin = 2)
 
-def operator_normalize_conjunctiveClause (C):
+""" Normalization.
+"""
+
+# Let normalized versions only have <= or < operators.
+
+
+def normalize_predicate(P):
+    if (P[N] > 0):
+        return np.array(np.multiply(P, -1), ndmin=2)
+    elif (P[N] == 0):
+        temp1, temp2 = np.multiply(P, -1), P
+        temp1[N] = -1
+        temp2[N] = -1
+        return np.array([temp1, temp2], ndmin=2)
+    return np.array(P, ndmin=2)
+
+
+def normalize_conj_clause(C):
     if (len(C) == 0):
-        return np.empty(shape = (0,n+2), dtype = int)
-    return np.concatenate(( operator_normalize_predicate(C[0]) , operator_normalize_conjunctiveClause(C[1:]) ))
+        return np.empty(shape=(0, N+2), dtype=int)
+    return np.concatenate((normalize_predicate(C[0]), normalize_conj_clause(C[1:])))
 
-def operator_normalize_DNF_internal (D, conjunct_size): 
+
+def normalize_DNF_internal(D, conjunct_size):
     if (len(D) == 0):
-        return np.empty(shape = (0,conjunct_size,n+2), dtype = int)
-    C = operator_normalize_conjunctiveClause(D[0])
-    padding_predicate = np.array([0,0,0,-1,0], ndmin = 1)
+        return np.empty(shape=(0, conjunct_size, N+2), dtype=int)
+    C = normalize_conj_clause(D[0])
+    padding_predicate = np.array([0, 0, 0, -1, 0], ndmin=1)
     while (len(C) < conjunct_size):
-        C = np.concatenate((C, np.array( padding_predicate, ndmin = 2) ))
-    return np.concatenate(( np.array(C, ndmin = 3) , operator_normalize_DNF_internal(D[1:], conjunct_size) ))
+        C = np.concatenate((C, np.array(padding_predicate, ndmin=2)))
+    return np.concatenate((np.array(C, ndmin=3), normalize_DNF_internal(D[1:], conjunct_size)))
 
-def operator_normalize_DNF (D):
+
+def normalize_DNF(D):
     max_size = 0
     for C in D:
         curr_size = 0
         for P in C:
-            curr_size = curr_size + ( 2 if (P[n] == 0) else 1)
+            curr_size = curr_size + (2 if (P[N] == 0) else 1)
         max_size = max(max_size, curr_size)
     return operator_normalize_DNF_internal(D, max_size)
 
@@ -529,122 +561,103 @@ def print_predicate (P):
         print("Incorrect value to predicate array operator")
     return
 
-def print_conjunctiveClause (C):
-    if (len(C) == 0):
-        return
-    elif (len(C) == 1):
-        print_predicate(C[0])
-    else:
-        print("And(", end = '')
-        for i in range(len(C)):
-            print_predicate(C[i])
-            if (i != len(C) - 1):
-                print(",", end = '')
-        print(")", end = '')
-    return
+""" 
+Printing Utility.
+"""
 
-# s = 0 indicates no new line after printing DNF.
-def print_DNF (D, s):
-    if (len(D) == 0):
-        return
-    elif (len(D) == 1):
-        print_conjunctiveClause(D[0])
-    else:    
-        print("Or( ", end = '')
-        for i in range(len(D)):
-            print_conjunctiveClause(D[i])
-            if (i != len(D) - 1):
-                print(", ", end = '')
-        if (s == 0):
-            print(" )", end = '')
-        else:
-            print(" )")
-    return    
+
+def print_DNF(D):
+    print(DNF_to_z3expr(D))
 
 # Testing
 # print_predicate(np.array([1,2,3,0,0], ndmin = 1))
 # print_conjunctiveClause(np.array( [[1,2,3,0,0], [1,3,4,1,2] , [1,1,3,-2,3]] , ndmin = 2))
 # print_DNF(np.array( [[[1,2,3,0,0], [1,1,3,1,2] , [1,2,3,-2,3]] , [[1,1,2,0,43], [1,1,1,-1,2] , [1,1,2,2,3]]] , ndmin = 3), 0)
-''' ********************************************************************************************************************'''
 
-''' ********************************************************************************************************************'''
+
+""" Counter Example Generation.
+"""
+
+P = DNF_to_z3expr(P_array)
+B = DNF_to_z3expr(B_array)
+Q = DNF_to_z3expr(Q_array)
+T_inv = inverse_transition_function(T_function)
+T = trans_func_to_z3expr(T_function)
+
+
 def C1(I):
-    return Implies(P(x,y,z), I(x,y,z))
+    return Implies(P, I)
 
-def C2(I):
-    return Implies(And(B(x,y,z), And(I(x,y,z), T(x,y,z, xp,yp,zp))) , I(xp, yp, zp))
+
+def C2(I, I_prime):
+    return Implies(And(B, I, T), I_prime)
+
 
 def C3(I):
-    return Implies(And(I(x,y,z), Not(B(x,y,z))), Q(x,y,z))
+    return Implies(And(I, Not(B)), Q)
+
 
 def System(I):
     return And(C1(I), C2(I), C3(I))
 
-# Returns true or a counterexample
-def Check(C, I):
+
+""" Get a list of counterexamples.
+"""
+
+
+def get_cex(C, num_cex):
+    result = []
     s = Solver()
-    # Add the negation of the conjunction of constraints
-    s.add(simplify(Not(C)))
-    r = s.check()
-    output = r.__repr__()
-    if output == "sat":
-        return s.model()
-    elif output == "unsat":
-        return None
+    s.add(Not(C))
+    while len(result) < num_cex and s.check() == sat:
+        m = s.model()
+        result.append(m)
+        # Create a new constraint the blocks the current model
+        block = []
+        for d in m:
+            # d is a declaration
+            if d.arity() > 0:
+                raise Z3Exception("uninterpreted functions are not supported")
+            # create a constant from declaration
+            c = d()
+            if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
+                raise Z3Exception(
+                    "arrays and uninterpreted sorts are not supported")
+            block.append(c != m[d])
+        s.add(Or(block))
     else:
-        print("Solver can't verify or disprove, it says: %s for invariant %s" %(r, I))
-        return None
-
-def GenerateCexList_C1 (I , number_of_cex):
-    if (number_of_cex == 0):
-        return []
-    cex = Check(C1(I), I)
-    if cex is None:
-        return []
-    else:
-        return [cex] + GenerateCexList_C1( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x, model_completion=True), 
-                                                            v == cex.evaluate(y, model_completion=True), w == cex.evaluate(z, model_completion=True) ) ) ,  number_of_cex - 1  )
-
-# There is another way to generate cex for this case which is not been coded and that is by excluding both x and xp points.
-def GenerateCexList_C2 (I , number_of_cex):
-    if (number_of_cex == 0):
-        return []
-    cex = Check(C2(I), I)
-    if cex is None:
-        return []
-    else:
-        return [cex] + GenerateCexList_C2( lambda u,v,w: Or( I(u,v,w), And(u == cex.evaluate(x, model_completion=True), v == cex.evaluate(y, model_completion=True), 
-                                                                        w == cex.evaluate(z, model_completion=True) ), 
-                                                            And(u == cex.evaluate(xp, model_completion=True), v == cex.evaluate(yp, model_completion=True), 
-                                                                        w == cex.evaluate(zp, model_completion=True) )) ,  number_of_cex - 1  )
-
-def GenerateCexList_C3 (I , number_of_cex):
-    if (number_of_cex == 0):
-        return []
-    cex = Check(C3(I), I)
-    if cex is None:
-        return []
-    else:
-        return [cex] + GenerateCexList_C3( lambda u,v,w: And( I(u,v,w), Not(And(u == cex.evaluate(x, model_completion=True), 
-                                                            v == cex.evaluate(y, model_completion=True), w == cex.evaluate(z, model_completion=True) ) ) )  ,  number_of_cex - 1   )
+        if len(result) < num_cex and s.check() != unsat:
+            print("Solver can't verify or disprove")
+            return result
+    return result
 
 
-# I_g_array = guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
-# I_g = convert_DNF_to_lambda(I_g_array)
-# print(GenerateCexList_C1(I_g, 10) ,'\n')
-# print(GenerateCexList_C2(I_g, 10), '\n')
-# print(GenerateCexList_C3(I_g, 10), '\n')
+def get_cex_C1(I, number_of_cex):
+    return get_cex(C1(I), number_of_cex)
 
 
-''' ********************************************************************************************************************'''
+def get_cex_C2(I, I_prime, number_of_cex):
+    return get_cex(C2(I, I_prime), number_of_cex)
 
-''' ********************************************************************************************************************'''
-'''Operator code:
-g = 2
-ge = 1
-eq = 0
-le = -1
-l = -2 '''
+
+def get_cex_C3(I, number_of_cex):
+    return get_cex(C3(I), number_of_cex)
+
+# I_g_array = guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+# I_g = DNF_to_z3expr(I_g_array)
+# print("--------------------------------")
+# print(I_g)
+# print("--------------------------------")
+# print(get_cex_C1(I_g, 10) ,'\n')
+# print("--------------------------------")
+# print(get_cex_C2(I_g, 10), '\n')
+# print("--------------------------------")
+# print(get_cex_C3(I_g, 10), '\n')
+
+
+""" Distance Functions.
+"""
+
 
 def dist(x, p):
     return np.linalg.norm(x - p)
@@ -653,7 +666,7 @@ def distance_point_conjunctiveClause(p, C):
     C = operator_normalize_conjunctiveClause(C)
     A = extract_COC_from_conjunctiveClause(C)[0]
     return float(minimize(
-        dist, 
+        dist,
         np.zeros(3),
         args=(p,),
         constraints=[LinearConstraint(A[:, :-1], -np.inf, -A[:, -1])],
@@ -663,53 +676,57 @@ def distance_point_conjunctiveClause(p, C):
 def distance_point_DNF(p, D):
     d = float('inf')
     for C in D:
-        d = min(d, distance_point_conjunctiveClause(p, C))
+        d = min(d, distance_point_conj_clauses(p, C))
     return d
 
-#Testing:
-# print(distance_point_conjunctiveClause( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) ) 
+# Testing:
+# print(distance_point_conj_clauses( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) )
 # print(distance_point_DNF( np.array( [-3,3,1], ndmin = 1), np.array( [ [ [-7,1,3,-2,3], [1,2,1,0,2], [3,1,3, 1, 4] ], [ [1,3,1,1,10], [1,3,1,0,0], [0,0,0,0,0] ] ]    )) )
 
 
-''' ********************************************************************************************************************'''
+""" Sampling Functions.
+"""
 
-''' ********************************************************************************************************************'''
 # This is specific for this clause system.
 
-def sample_points_from_DNF ( D , number_of_points, sample_list):
+
+def sample_points_from_DNF(D, number_of_points, sample_list):
     if (number_of_points == 0):
         return sample_list
 
     s = Solver()
-    s.add(Implies(True, D(x,y,z)))
+    s.add(Implies(True, D(x, y, z)))
     r = s.check()
     output = r.__repr__()
     if output == "sat":
         sample_point = s.model()
-        sample_list.append(sample_point) 
-        return sample_points_from_DNF( lambda u,v,w: And( D(u,v,w), Or(u != sample_point.evaluate(x), v != sample_point.evaluate(y), w != sample_point.evaluate(z) ) ) 
-                                                    , number_of_points - 1, sample_list)
+        sample_list.append(sample_point)
+        return sample_points_from_DNF(lambda u, v, w: And(D(u, v, w), Or(u != sample_point.evaluate(x), v != sample_point.evaluate(y), w != sample_point.evaluate(z))), number_of_points - 1, sample_list)
     elif output == "unsat":
         return sample_list
     else:
-        print("Sampler can't sample, it says: %s" %(r))
+        print("Sampler can't sample, it says: %s" % (r))
         return sample_list
 
 # Assumes transition function is a total function.
-def unroll_chain_from_starting_point ( pt_matrix, transition_function, conditional_predicate, number_of_points, sample_list):
+
+
+def unroll_chain_from_starting_point(pt_matrix, transition_function, conditional_predicate, number_of_points, sample_list):
     if (number_of_points == 0):
         return sample_list
-    if (simplify(conditional_predicate(int(pt_matrix[0]), int(pt_matrix[1]), int(pt_matrix[2]) ) )):
-        sample_list.append(pt_matrix[0:n]) 
-        new_pt_matrix = np.empty( n + 1 , int)
+    if (simplify(conditional_predicate(int(pt_matrix[0]), int(pt_matrix[1]), int(pt_matrix[2])))):
+        sample_list.append(pt_matrix[0:n])
+        new_pt_matrix = np.empty(n + 1, int)
         for partial_tf in transition_function:
-            if ( simplify(convert_DNF_to_lambda(partial_tf.b)(int(pt_matrix[0]), int(pt_matrix[1]), int(pt_matrix[2]) )) ):
-                new_pt_matrix[:] = np.dot(  pt_matrix, np.transpose(partial_tf.t) )
-        return unroll_chain_from_starting_point(  new_pt_matrix, transition_function, conditional_predicate, number_of_points - 1 , sample_list)
+            if (simplify(DNF_to_z3expr(partial_tf.b)(int(pt_matrix[0]), int(pt_matrix[1]), int(pt_matrix[2])))):
+                new_pt_matrix[:] = np.dot(
+                    pt_matrix, np.transpose(partial_tf.t))
+        return unroll_chain_from_starting_point(new_pt_matrix, transition_function, conditional_predicate, number_of_points - 1, sample_list)
     else:
         return sample_list
 
-def get_positive_points( sampling_breadth, sampling_depth):
+
+def get_positive_points(sampling_breadth, sampling_depth):
     temp_list = []
     sample_points_from_DNF(P, sampling_breadth, temp_list)
     breadth_list_of_positive_points = []
@@ -721,18 +738,20 @@ def get_positive_points( sampling_breadth, sampling_depth):
     list_of_positive_points = []
     for pt in breadth_list_of_positive_points:
         pt_matrix = np.concatenate((pt, np.array([1])))
-        unroll_chain_from_starting_point(pt_matrix, T_function, B, SD + 1, list_of_positive_points)
+        unroll_chain_from_starting_point(
+            pt_matrix, T_function, B, SD + 1, list_of_positive_points)
 
-    uniques = [] #remove duplicates
+    uniques = []  # remove duplicates
     for arr in list_of_positive_points:
         if not any(np.array_equal(arr, unique_arr) for unique_arr in uniques):
             uniques.append(arr)
     return uniques
 
 
-def get_negative_points( sampling_breadth, sampling_depth):
+def get_negative_points(sampling_breadth, sampling_depth):
     temp_list = []
-    sample_points_from_DNF( lambda x,y,z: And( Not(Q(x,y,z)), Not(B(x,y,z)) ) , sampling_breadth, temp_list)
+    sample_points_from_DNF(lambda x, y, z: And(
+        Not(Q(x, y, z)), Not(B(x, y, z))), sampling_breadth, temp_list)
     breadth_list_of_negative_points = []
     for sample in temp_list:
         pt_x = sample.evaluate(x).as_long()
@@ -742,9 +761,10 @@ def get_negative_points( sampling_breadth, sampling_depth):
     list_of_negative_points = []
     for pt in breadth_list_of_negative_points:
         pt_matrix = np.concatenate((pt, np.array([1])))
-        unroll_chain_from_starting_point(pt_matrix, T_inv , lambda x,y,z: Or( Not(Q(x,y,z)), B(x,y,z) ), SD + 1, list_of_negative_points )
-    
-    uniques = [] #remove duplicates
+        unroll_chain_from_starting_point(pt_matrix, T_inv, lambda x, y, z: Or(
+            Not(Q(x, y, z)), B(x, y, z)), SD + 1, list_of_negative_points)
+
+    uniques = []  # remove duplicates
     for arr in list_of_negative_points:
         if not any(np.array_equal(arr, unique_arr) for unique_arr in uniques):
             uniques.append(arr)
@@ -754,48 +774,65 @@ def get_negative_points( sampling_breadth, sampling_depth):
 # print(get_positive_points(SB, SD))
 # print(get_negative_points(SB, SD))
 
-''' ********************************************************************************************************************'''
 
-''' ********************************************************************************************************************'''
+""" Cost Functions.
+"""
 
-def J1(I, cexList):
-    num = len(cexList)
+
+def J1(I, cex_list, n):
+    """
+    A cost function.
+
+    :param I: I as a numpy array
+    :param cex_list: a list of counterexamples
+    :param n: number of variables
+    :return: the cost
+    """
     error = 0
-    for cex in cexList: 
-        pt_x = cex.evaluate(x, model_completion=True).as_long()
-        pt_y = cex.evaluate(y, model_completion=True).as_long()
-        pt_z = cex.evaluate(z, model_completion=True).as_long() 
-        point = np.array( [pt_x, pt_y, pt_z ], ndmin = 1) 
+    for cex in cex_list:
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
+              for i in range(n)]
+        point = np.array(pt)
         error = max(error, distance_point_DNF(point, I))
-    return error + num
+    return error + len(cex_list)
 
 # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
-def J2(cexList):
-    num = len(cexList)
-    return num
 
-def J3(Q, cexList):
-    num = len(cexList)
+
+def J2(cex_list):
+    return len(cex_list)
+
+
+def J3(Q: np.ndarray, cex_list, n):
+    """
+    A cost function.
+
+    :param Q: Q as a numpy array
+    :param cex_list: a list of counterexamples
+    :param n: number of variables
+    :return: the cost
+    """
     error = 0
-    for cex in cexList:
-        pt_x = cex.evaluate(x).as_long()
-        pt_y = cex.evaluate(y).as_long()
-        pt_z = cex.evaluate(z).as_long()
-        point = np.array( [pt_x, pt_y, pt_z ], ndmin = 1) 
+    for cex in cex_list:
+        pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
+              for i in range(n)]
+        point = np.array(pt)
         error = max(error, distance_point_DNF(point, Q))
-    return error + num
+    return error + len(cex_list)
 
 # Testing these functions
-# I_g_array = guess_invariant_smallConstants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+# I_g_array = guess_small_constants(10, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
 # I_g = convert_DNF_to_lambda(I_g_array)
-# cexList1 = GenerateCexList_C1(I_g, 10)
-# cexList2 = GenerateCexList_C2(I_g, 10)
-# cexList3 = GenerateCexList_C3(I_g, 10)
-# print(J1(I_g_array, cexList1))
-# print(J2(cexList2))
-# print(J3(Q_array, cexList3))
+# cex_list1 = get_cex_C1(I_g, 10)
+# cex_list2 = get_cex_C2(I_g, 10)
+# cex_list3 = get_cex_C3(I_g, 10)
+# print(J1(I_g_array, cex_list1))
+# print(J2(cex_list2))
+# print(J3(Q_array, cex_list3))
 
-''' ********************************************************************************************************************'''
+
+""" Main function.
+"""
 
 # Here in all our guess strategies, we assume that conjunctive clause size is same.
 
@@ -807,37 +844,38 @@ guess_strategy code:
 (3,k) -> nearProgramConstants(k)
 '''
 
-def random_invariant_guess (guesses, guess_strategy, no_of_conjuncts , no_of_disjuncts):
+
+def guess_invariant(guesses, guess_strategy, no_of_conjuncts, no_of_disjuncts):
     cost = float('inf')
     count = 0
     I_g = np.empty( shape = (0, no_of_conjuncts, n+2))
     while (cost != 0 and count < guesses):
-        count = count + 1
+        count += 1
         if (guess_strategy[0] == 1):
-            I_g_array = guess_invariant_smallConstants(guess_strategy[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
+            I_g_array = guess_small_constants(
+                guess_strategy[1], no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         elif (guess_strategy[0] == 2):
             if (guess_strategy[1] == 0):
-                I_g_array = guess_invariant_octagonaldomain(programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+                I_g_array = guess_octagonaldomain(
+                    programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
             else:
-                I_g_array = guess_invariant_octagonaldomain_extended(programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
+                I_g_array = guess_octagonaldomain_extended(
+                    programConstants, no_of_conjuncts, no_of_disjuncts, np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
         elif (guess_strategy[0] == 3):
-            I_g_array = guess_invariant_nearProgramConstants(programConstants, guess_strategy[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
-        I_g = convert_DNF_to_lambda(I_g_array)
-        print(count,'   ', end = '')
-        print_DNF(I_g_array, 0)
-        print("\t", end = '')
+            I_g_array = guess_near_prog_const(
+                programConstants, guess_strategy[1], no_of_conjuncts, no_of_disjuncts,  np.array([0.2, 0.2, 0.2, 0.2, 0.2]))
 
-        C1_cexList = GenerateCexList_C1 (I_g, s)
-        # print(C1_cexList)
-        C2_cexList = GenerateCexList_C2 ( I_g, s)
-        # print(C2_cexList)
-        C3_cexList = GenerateCexList_C3 ( I_g, s)
-        # print(C3_cexList)
+        I_g = DNF_to_z3expr(I_g_array)
+        I_g_prime = DNF_to_z3expr_prime(I_g_array)
+
+        C1_cex_list = get_cex_C1(I_g, s)
+        C2_cex_list = get_cex_C2(I_g, I_g_prime, s)
+        C3_cex_list = get_cex_C3(I_g, s)
 
         # Get costFunction
-        cost1 = J1(I_g_array, C1_cexList)
-        cost2 = J2(C2_cexList)
-        cost3 = J3(Q_array, C3_cexList)
+        cost1 = J1(I_g_array, C1_cex_list, N)
+        cost2 = J2(C2_cex_list)
+        cost3 = J3(Q_array, C3_cex_list, N)
         cost = K1*cost1 + K2*cost2 + K3*cost3
 
         # print(cost1, cost2, cost3, end = '')
