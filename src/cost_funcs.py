@@ -131,7 +131,7 @@ class Cost:
             A = np.concatenate([C[:, :self.num_var], C[:, self.num_var+1:]], axis=1)
             return float(minimize(
                 lambda x, p: np.linalg.norm(x - p),
-                np.zeros(3),
+                np.zeros(self.num_var),
                 args=(p,),
                 constraints=[LinearConstraint(A[:, :-1], -np.inf, -A[:, -1])],
             ).fun)

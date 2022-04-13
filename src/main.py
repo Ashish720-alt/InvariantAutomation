@@ -79,11 +79,21 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
     return
 
 
+# guess_inv(
+#     get_input(P=np.array([[[1, 0, 0, 0, 0]]]),
+#               B=np.array([[[1, 0, 0, -2, 6]]]),
+#               Q=np.array([[[1, 0, 0, 0, 6]]]),
+#               T=np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])),
+#     conf.max_guesses,
+#     GuessStrategy.OCTAGONAL_DOMAIN
+# )
+
+
 guess_inv(
-    get_input(P=np.array([[[1, 0, 0, 0, 0]]]),
-              B=np.array([[[1, 0, 0, -2, 6]]]),
-              Q=np.array([[[1, 0, 0, 0, 6]]]),
-              T=np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])),
+    get_input(P=np.array([[[1, 0, 0, 0]]]),
+              B=np.array([[[1, 0, -2, 6]]]),
+              Q=np.array([[[1, 0, 0, 6]]]),
+              T=np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]])),
     conf.max_guesses,
     GuessStrategy.OCTAGONAL_DOMAIN
 )
