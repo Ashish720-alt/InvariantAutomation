@@ -60,7 +60,7 @@ class Guess:
         self.max_num_disj = max_num_disj
         self.op_dist = op_dist
         assert(len(self.op_dist) == len(conf.OP_DOMAIN))
-
+    
         self.NUM_OCT_NONZERO_POS = 2
 
         self.__guess = None
@@ -166,7 +166,6 @@ class Guess:
     @staticmethod
     def get_geo_prob_list(domainList, centre, r):
         # This function assumes that domainList is sorted, and elements cannot be repeated
-
         def norm_neg_error_in_list(approx_list, neg_err):
             # Assumes negative_error is a negative value
             l = approx_list.copy()
@@ -203,9 +202,9 @@ class Guess:
         elif (s2 == 0):
             a = ((float)(1 - r)) / (1 - r**s1)
             sublist1 = get_GP_list(a, r, s1)[::-1]
-            sublist2 = get_GP_list(a, r, s2)
+            sublist2 = []
         else:
-            a = ((float)(1 - r)**2) / (1 - r**s1) * (1 - r**s2)
+            a = ((float)(1 - r)) / ((1 - r**s1) + (1 - r**s2))
             sublist1 = get_GP_list(a, r, s1)[::-1]
             sublist2 = get_GP_list(a, r, s2)
 
@@ -275,7 +274,6 @@ class Guess:
                     domain = const_dom
                 prob_list = Guess.get_geo_prob_list(
                     domain, prev_P[index_to_change], change_value_prob_ratio)
-                print(domain, prob_list)
                 newval = np.random.choice(domain, p=prob_list)
                 new_P[index_to_change] = newval
             else:
@@ -357,3 +355,7 @@ class Guess:
     # I_4 = guess_invariant_nearProgramConstants(programConstants, 5, 3, 3, np.array([0.2, 0.2, 0.2, 0.2, 0.2]) )
     # print(I_4)
     # print(mc_guess_invariant_nearProgramConstants(I_4, programConstants, 5, 3, 0.1, 0.5, np.array([0.2, 0.2, 0.2, 0.2, 0.2])))
+
+# a = Guess(1, 1, 1, [],1)
+# x = a.get_geo_prob_list([i for i in range(5)], 4, 0.5)
+# print(x, 1 - sum(x))
