@@ -18,8 +18,8 @@ class Configure:
 
     max_guesses = 1000
 
-    max_disjuncts = 2
-    max_conjuncts = 1
+    max_disjuncts = 10
+    max_conjuncts = 10
 
     # Print warnings or not?
     ON = 1
