@@ -61,42 +61,63 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
         I = guesser.guess()  # I
         cost = Cost(repr, I).get_cost()
 
-        if (cost > prev_cost):
-            cost = prev_cost
-            I = prev_I
-            continue
-
-        # 0.05 is added so that prob_of_change is not zero if curr_cost = prev_cost
-        change_prob = min(1.0 - (cost/prev_cost) + 0.05, 1.0)
-        # Don't change
-        if(np.random.rand() > change_prob):
-            cost = prev_cost
-            I = prev_I
+        if (cost >= prev_cost):
+            # 0.05 is subtracted so that prob_of_staying is not zero if curr_cost = prev_cost
+            change_prob = max((prev_cost/cost) - 0.05, 0.0)
+            # Don't change case
+            if(np.random.rand() > change_prob):
+                cost = prev_cost
+                I = prev_I
+            else:
+                print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+                print('   ', round(cost, 2))
         else:
             print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
-            print('   ', round(cost, 2))
-
+            print('   ', round(cost, 2))            
     return
 
 
+
+guess_inv(
+    get_input(P=np.array([[[1, 0, 0]]]),
+              B=np.array([[[1, -2, 6]]]),
+              Q=np.array([[[1, 0, 6]]]),
+              T=np.array([[1, 1], [0, 1]])),
+    conf.max_guesses,
+    GuessStrategy.SMALL_CONSTANT,
+     max_const=10
+)
+
+
+
+
 # guess_inv(
-#     get_input(P=np.array([[[1, 0, 0, 0, 0]]]),
-#               B=np.array([[[1, 0, 0, -2, 6]]]),
-#               Q=np.array([[[1, 0, 0, 0, 6]]]),
-#               T=np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])),
+#     get_input(P=np.array([[[1, 0, 0]]]),
+#               B=np.array([[[1, -2, 6]]]),
+#               Q=np.array([[[1, 0, 6]]]),
+#               T=np.array([[1, 1], [0, 1]])),
 #     conf.max_guesses,
 #     GuessStrategy.OCTAGONAL_DOMAIN
 # )
 
+# guess_inv(
+#     get_input(P=np.array([[[1, 0, 0]]]),
+#               B=np.array([[[1, -2, 6]]]),
+#               Q=np.array([[[1, 0, 6]]]),
+#               T=np.array([[1, 1], [0, 1]])),
+#     conf.max_guesses,
+#     GuessStrategy.OCTAGONAL_DOMAIN_EXTENDED
+# )
 
-guess_inv(
-    get_input(P=np.array([[[1, 0, 0, 0]]]),
-              B=np.array([[[1, 0, -2, 6]]]),
-              Q=np.array([[[1, 0, 0, 6]]]),
-              T=np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]])),
-    conf.max_guesses,
-    GuessStrategy.OCTAGONAL_DOMAIN
-)
+# guess_inv(
+#     get_input(P=np.array([[[1, 0, 0]]]),
+#               B=np.array([[[1, -2, 6]]]),
+#               Q=np.array([[[1, 0, 6]]]),
+#               T=np.array([[1, 1], [0, 1]])),
+#     conf.max_guesses,
+#     GuessStrategy.NEAR_CONSTANT,
+#     guess_range=1
+# )
 
 # mc_guess_inv(
 #     get_input(P=np.array([[[1, 0, 0, 0, 0]]]),
