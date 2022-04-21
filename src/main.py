@@ -29,7 +29,7 @@ def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=
                         consts=repr.get_consts())
         I = guesser.guess()
         cost = Cost(repr, I).get_cost()
-        print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+        print(count_guess, '   ', simplify(DNF_to_z3expr(I)), "\t", end='')
         print('   ', round(cost, 2))
     return (I, cost)
 
@@ -69,10 +69,10 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
                 cost = prev_cost
                 I = prev_I
             else:
-                print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+                print(count_guess, '   ', simplify(DNF_to_z3expr(I)), "\t", end='')
                 print('   ', round(cost, 2))
         else:
-            print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+            print(count_guess, '   ', simplify(DNF_to_z3expr(I)), "\t", end='')
             print('   ', round(cost, 2))            
     return
 
