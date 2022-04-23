@@ -61,7 +61,7 @@ class Guess:
         self.op_dist = op_dist
         assert(len(self.op_dist) == len(conf.OP_DOMAIN))
     
-        self.NUM_OCT_NONZERO_POS = 2
+        self.NUM_OCT_NONZERO_POS = min(self.num_var, 2)
 
         self.__guess = None
         if (strategy == GuessStrategy.SMALL_CONSTANT):
@@ -121,12 +121,11 @@ class Guess:
         # It doesn't matter if all coefficients of P are zero, then the predicate represents either True or False depending on the constant and operator value.
         return np.fromfunction(np.vectorize(init), (self.len_pred,), dtype=int)
 
-    def guess_conj(self, coeff_dom, const_dom, num_conj, is_oct_pred):
+    def guess_conj(self, coeff_dom, const_dom, num_conj, max_num_conj, is_oct_pred):
         assert(num_conj > 0)
-        if (is_oct_pred):
-            return np.concatenate([self.guess_pred_oct(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)])
-        else:
-            return np.concatenate([self.guess_pred(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)])
+        result = np.concatenate([self.guess_pred_oct(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)]) if (is_oct_pred) else \
+                 np.concatenate([self.guess_pred(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)])
+        return np.concatenate((result, np.zeros((max_num_conj-num_conj, self.num_var+2), dtype=int)))
 
     # TODO: assume we dont need the same conj numbers for now
     # def size_norm_conj(self, conjunctive_clause, max_num_conj):
@@ -143,8 +142,8 @@ class Guess:
         num_disj = np.random.randint(1, max_num_disj + 1)
         if (num_disj == 0):
             return np.empty(shape=(0, max_num_conj, self.num_var+2), dtype=int)
-        num_conj = np.random.randint(1, max_num_conj + 1)
-        return np.concatenate([self.guess_conj(coeff_dom, const_dom, num_conj, is_oct_pred)[np.newaxis] for _ in range(num_disj)])
+        return np.concatenate([self.guess_conj(coeff_dom, const_dom, np.random.randint(1, max_num_conj + 1), max_num_conj, is_oct_pred)[np.newaxis] for _ in range(num_disj)])
+
 
     def guess_inv_small_const(self, max_const):
         const_dom = range(-max_const, max_const + 1)
@@ -228,7 +227,6 @@ class Guess:
                 norm_neg_error_in_list((probList[index + 1:])[::-1], 0.5 * computation_error))[::-1]
         return probList
 
-    # Implement the is_oct_pred version too!
     # Assumes prev_I has correct numpy dimensions.
 
     def mc_guess_inv(self, coeff_dom, const_dom, is_oct_pred,
