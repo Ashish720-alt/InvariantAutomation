@@ -61,7 +61,7 @@ class Guess:
         self.op_dist = op_dist
         assert(len(self.op_dist) == len(conf.OP_DOMAIN))
     
-        self.NUM_OCT_NONZERO_POS = min(2, self.num_var)
+        self.NUM_OCT_NONZERO_POS = min(self.num_var, 2)
 
         self.__guess = None
         if (strategy == GuessStrategy.SMALL_CONSTANT):
@@ -225,7 +225,6 @@ class Guess:
                 norm_neg_error_in_list((probList[index + 1:])[::-1], 0.5 * computation_error))[::-1]
         return probList
 
-    # Implement the is_oct_pred version too!
     # Assumes prev_I has correct numpy dimensions.
 
     def mc_guess_inv(self, coeff_dom, const_dom, is_oct_pred,

@@ -10,7 +10,7 @@ class PartialTransitionFunc:
 
 
 def TotalTransitionFunc(A):
-    return [PartialTransitionFunc(np.array([0, 0, 0, 0, 0], ndmin=3), A)]
+    return [PartialTransitionFunc(np.zeros((1,1,len(A[0]) + 1) ), A)] #len(A[0]) is n+1, reqd is n+2
 
 class Repr:
     def __init__(self, P, B, Q, T):
