@@ -16,15 +16,18 @@ class Configure:
     SB = 5
     SD = 3
 
-    max_guesses = 1000
+    max_guesses = 3
 
-    max_disjuncts = 10
-    max_conjuncts = 10
+    max_disjuncts = 3
+    max_conjuncts = 3
 
-    # Print warnings or not?
+
     ON = 1
     OFF = 0
+    # Print warnings or not?
     DISPLAY_WARNINGS = ON
+    # Print iterations or not?
+    PRINT_ITERATIONS = OFF
 
     # Operators
     OP = {
