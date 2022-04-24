@@ -7,7 +7,6 @@ import numpy as np
 from configure import Configure as conf
 from z3 import *
 
-
 def DNF_to_z3expr(m, p=''):
     if np.size(m) == 0:
         return True
@@ -15,7 +14,7 @@ def DNF_to_z3expr(m, p=''):
     d0 = len(m)
     d1 = len(m[0])
     d2 = len(m[0][0])
-    return Or([
+    return simplify(  Or([
         And([
             conf.OP[int(m[i][j][-2])](
                 Sum([
@@ -27,7 +26,7 @@ def DNF_to_z3expr(m, p=''):
             for j in range(d1)
         ])
         for i in range(d0)
-    ])
+    ]))
 
 
 def DNF_to_z3expr_p(m):
@@ -41,7 +40,7 @@ def trans_matrix_to_z3expr(A):
     A is a (n+1) * (n+1) matrix.
     """
     d = len(A)
-    return And([
+    return simplify(And([
         Int("x%sp" % i) ==
         Sum([
             int(A[i][j]) * Int("x%s" % j)
@@ -49,7 +48,7 @@ def trans_matrix_to_z3expr(A):
         ]) +
         int(A[i][d-1])
         for i in range(d-1)
-    ])
+    ]))
 
 
 def trans_func_to_z3expr(f):

@@ -47,8 +47,9 @@ class Cost:
         result = []
         s = Solver()
         s.add(Not(C))
-        while len(result) < self.num_cex and s.check() == sat:
+        while len(result) < self.num_cex and s.check() == sat: 
             m = s.model()
+            # print(m)
             result.append(m)
             # Create a new constraint the blocks the current model
             block = []
@@ -65,13 +66,12 @@ class Cost:
                 block.append(c != m[d])
             s.add(Or(block))
         else:
-            if len(result) < self.num_cex and s.check() != unsat: #This seems wrong!
+            if len(result) < self.num_cex and s.check() != unsat: 
                 print("Solver can't verify or disprove")
                 return result
         return result
 
 
-# Dont you need to universally quantify over all variables in each clause here?
 
     def __get_cex_C1(self):
         """ p => I 
