@@ -11,6 +11,7 @@ from z3 import *
 import numpy as np
 from math import floor
 
+parameters = conf()
 
 """ Main function. """
 
@@ -22,7 +23,7 @@ def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=
     I = None
     while (cost != 0 and count_guess < max_guesses):
         count_guess += 1
-        guesser = Guess(num_var, conf.max_conjuncts, conf.max_disjuncts,
+        guesser = Guess(num_var, parameters.max_conjuncts, parameters.max_disjuncts,
                         np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
                         guess_strat,
                         max_const=max_const,
@@ -30,10 +31,10 @@ def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=
                         consts=repr.get_consts())
         I = guesser.guess()
         cost = Cost(repr, I).get_cost()
-        if (conf.PRINT_ITERATIONS == conf.ON):
+        if (parameters.PRINT_ITERATIONS == parameters.ON):
             print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
             print('   ', round(cost, 2))
-    if (conf.PRINT_ITERATIONS != conf.ON):
+    if (parameters.PRINT_ITERATIONS != parameters.ON):
         print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
         print('   ', round(cost, 2))
     return (I, cost, count_guess)
@@ -54,7 +55,7 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
 
         prev_cost = cost
         prev_I = I
-        guesser = Guess(num_var, conf.max_conjuncts, conf.max_disjuncts,
+        guesser = Guess(num_var, parameters.max_conjuncts, parameters.max_disjuncts,
                         np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
                         guess_strat,
                         prev_I=prev_I,
@@ -74,21 +75,20 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
                 cost = prev_cost
                 I = prev_I
             else:
-                if (conf.PRINT_ITERATIONS == conf.ON):
+                if (parameters.PRINT_ITERATIONS == parameters.ON):
                     print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
                     print('   ', round(cost, 2))
         else:
-            if (conf.PRINT_ITERATIONS == conf.ON):
+            if (parameters.PRINT_ITERATIONS == parameters.ON):
                 print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
                 print('   ', round(cost, 2))
-    if (conf.PRINT_ITERATIONS != conf.ON):
+    if (parameters.PRINT_ITERATIONS != parameters.ON):
         print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
         print('   ', round(cost, 2))
     return (I, cost, count_guess)
 
 
 def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_strategies, max_const, small_guess_range, large_guess_range, change_size_prob, change_value_prob_ratio):
-
     if (run_random_strategies):
         random_iterations = {}
         random_strategies = {"R_Small_Constant": GuessStrategy.SMALL_CONSTANT, "R_Octagonal_Domain": GuessStrategy.OCTAGONAL_DOMAIN,
@@ -98,7 +98,7 @@ def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_stra
             sum = 0.0
             timeouts = 0
             for _ in range(iterations):
-                (_, cost, val) = guess_inv(program, conf.max_guesses, random_strategies[strategy], max_const=max_const,
+                (_, cost, val) = guess_inv(program, parameters.max_guesses, random_strategies[strategy], max_const=max_const,
                                            guess_range=(small_guess_range if strategy == "R_NearConstant_small" else
                                                         (large_guess_range if strategy == "R_NearConstant_Large" else None)))
                 sum = sum + (1.0 * val)
@@ -119,7 +119,7 @@ def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_stra
             sum = 0.0
             timeouts = 0
             for _ in range(iterations):
-                (_, cost, val) = mc_guess_inv(program, conf.max_guesses, MCMC_strategies[strategy], max_const=max_const,
+                (_, cost, val) = mc_guess_inv(program, parameters.max_guesses, MCMC_strategies[strategy], max_const=max_const,
                                               guess_range=(small_guess_range if strategy == "MCMC_NearConstant_small" else
                                                            (large_guess_range if strategy == "MCMC_NearConstant_Large" else None)),
                                               change_size_prob=change_size_prob, change_value_prob_ratio=change_value_prob_ratio)
@@ -137,9 +137,10 @@ program = get_input(P=np.array([[[1, 0, 0, 0, 1], [0, 0, 1, 0, 0], [0, 1, 0, 1, 
                     # now we directly call it from repr, ideally we should do it in get_input(C_source_code)
                     T=repr.SimpleTotalTransitionFunc(np.array([[1, 0, 0, 1], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1]])))
 
-# Gives ERROR with MCMC strategy:
 
-run_all_strategies(program, iterations=1, run_random_strategies=0, run_MCMC_strategies=1, max_const=10,
-                   small_guess_range=1, large_guess_range=5, change_size_prob=0.1, change_value_prob_ratio=0.5)
+guess_inv(repr = program, max_guesses = 1, guess_strat = GuessStrategy.SMALL_CONSTANT, max_const=5, guess_range=None)
 
-# T=SimplmTTF(np.array([[1, 0, 0, 1], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1] ])
+# run_all_strategies(program, iterations=1, run_random_strategies=0, run_MCMC_strategies=1, max_const=10,
+#                    small_guess_range=1, large_guess_range=5, change_size_prob=0.1, change_value_prob_ratio=0.5)
+
+

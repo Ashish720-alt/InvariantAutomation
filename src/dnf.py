@@ -68,7 +68,7 @@ def trans_func_to_z3expr(f):
 # print(S[0].b, S[0].t)
 
 
-def norm_pred(P):
+def op_norm_pred(P):
     n = len(P) - 2
     if (P[n] > 0):
         return np.array(np.multiply(P, -1), ndmin=2)
@@ -80,18 +80,20 @@ def norm_pred(P):
     return np.array(P, ndmin=2)
 
 
-def norm_conj(C):
+def op_norm_conj(C):
     assert(len(C) > 0)  # assuming C not empty
-    return np.concatenate([norm_pred(C[i]) for i in range(len(C))])
+    return np.concatenate([op_norm_pred(C[i]) for i in range(len(C))])
 
 
 def norm_disj(D, conjunct_size):
     n = len(D) - 2
     if (n == 0):
         return np.empty(shape=(0, conjunct_size, n+2), dtype=int)
-    C = norm_conj(D[0])
-    padding_pred = np.array([0, 0, 0, -1, 0], ndmin=1)
-    while (len(C) < conjunct_size):
+    C = op_norm_conj(D[0])
+    
+    padding_pred = np.zeros(n + 2)
+    padding_pred[n] = -1
+    while (len(C) <= conjunct_size):
         C = np.concatenate((C, np.array(padding_pred, ndmin=2)))
     return np.concatenate((np.array(C, ndmin=3), norm_disj(D[1:], conjunct_size)))
 
