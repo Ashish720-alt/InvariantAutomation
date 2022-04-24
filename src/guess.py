@@ -149,9 +149,11 @@ class Guess:
         return self.guess_inv(const_dom, const_dom, False)
 
     def guess_inv_oct(self, consts: List[int]):
+        consts.sort()
         return self.guess_inv([-1, 0, 1], consts, True)
 
     def guess_inv_oct_ext(self, consts: List[int]):
+        consts.sort()
         return self.guess_inv([-1, 0, 1], consts, False)
 
     def guess_inv_near_const(self, values_in_program, k):
@@ -159,6 +161,7 @@ class Guess:
         for value in values_in_program:
             val_set |= set(range(value - k, value + k + 1))
         val_list = list(val_set)
+        val_list.sort()
         return self.guess_inv(val_list, val_list, False)
 
     @staticmethod
@@ -302,14 +305,17 @@ class Guess:
 
     def mc_guess_inv_small_const(self, max_const, prev_I, change_size_prob, change_value_prob_ratio):
         const_dom = list(range(-max_const, max_const + 1))
+        const_dom.sort()
         return self.mc_guess_inv(const_dom, const_dom, False,
                                  prev_I, change_size_prob, change_value_prob_ratio)
 
     def mc_guess_inv_oct(self, consts: List[int], prev_I, change_size_prob, change_value_prob_ratio):
+        consts.sort()
         return self.mc_guess_inv([-1, 0, 1], consts, True,
                                  prev_I, change_size_prob, change_value_prob_ratio)
 
     def mc_guess_inv_oct_ext(self, consts: List[int], prev_I, change_size_prob, change_value_prob_ratio):
+        consts.sort()
         return self.mc_guess_inv([-1, 0, 1], consts, True,
                                  prev_I, change_size_prob, change_value_prob_ratio)
 
@@ -318,6 +324,7 @@ class Guess:
         for value in values_in_program:
             val_set |= set(range(value - k, value + k + 1))
         val_list = list(val_set)
+        val_list.sort()
         return self.mc_guess_inv(val_list, val_list, False,
                                  prev_I, change_size_prob, change_value_prob_ratio)
 
