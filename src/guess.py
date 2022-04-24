@@ -60,7 +60,7 @@ class Guess:
         self.max_num_disj = max_num_disj
         self.op_dist = op_dist
         assert(len(self.op_dist) == len(conf.OP_DOMAIN))
-    
+
         self.NUM_OCT_NONZERO_POS = min(self.num_var, 2)
 
         self.__guess = None
@@ -124,7 +124,8 @@ class Guess:
     def guess_conj(self, coeff_dom, const_dom, num_conj, max_num_conj, is_oct_pred):
         assert(num_conj > 0)
         result = np.concatenate([self.guess_pred_oct(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)]) if (is_oct_pred) else \
-                 np.concatenate([self.guess_pred(coeff_dom, const_dom)[np.newaxis] for _ in range(num_conj)])
+            np.concatenate([self.guess_pred(coeff_dom, const_dom)[
+                           np.newaxis] for _ in range(num_conj)])
         return np.concatenate((result, np.zeros((max_num_conj-num_conj, self.num_var+2), dtype=int)))
     # TODO: assume we dont need the same conj numbers for now
     # def size_norm_conj(self, conjunctive_clause, max_num_conj):

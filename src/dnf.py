@@ -79,9 +79,11 @@ def norm_pred(P):
         return np.array([temp1, temp2], ndmin=2)
     return np.array(P, ndmin=2)
 
+
 def norm_conj(C):
-    assert(len(C) > 0) # assuming C not empty
+    assert(len(C) > 0)  # assuming C not empty
     return np.concatenate([norm_pred(C[i]) for i in range(len(C))])
+
 
 def norm_disj(D, conjunct_size):
     n = len(D) - 2
@@ -92,6 +94,7 @@ def norm_disj(D, conjunct_size):
     while (len(C) < conjunct_size):
         C = np.concatenate((C, np.array(padding_pred, ndmin=2)))
     return np.concatenate((np.array(C, ndmin=3), norm_disj(D[1:], conjunct_size)))
+
 
 def norm_DNF(D, n):
     """

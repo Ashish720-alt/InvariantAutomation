@@ -10,6 +10,7 @@ from dnf import DNF_to_z3expr, DNF_to_z3expr_p, norm_conj
 from configure import Configure as conf
 from scipy.optimize import minimize, LinearConstraint
 
+
 class Cost:
     def __init__(self, repr: Repr, I_arr: np.ndarray):
         self.num_var = repr.get_num_var()
@@ -36,7 +37,7 @@ class Cost:
         cost3 = self.__J3(C3_cex_list)
         self.cost = conf.K1*cost1 + conf.K2*cost2 + conf.K3*cost3
 
-    def get_cost(self): 
+    def get_cost(self):
         return self.cost
 
     """ Get counterexamples.
@@ -54,7 +55,8 @@ class Cost:
             for d in m:
                 # d is a declaration
                 if d.arity() > 0:
-                    raise Z3Exception("uninterpreted functions are not supported")
+                    raise Z3Exception(
+                        "uninterpreted functions are not supported")
                 # create a constant from declaration
                 c = d()
                 if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
@@ -68,7 +70,7 @@ class Cost:
                 return result
         return result
 
-    def __get_cex_C1(self): 
+    def __get_cex_C1(self):
         """ p => I 
         """
         return self.__get_cex(Implies(self.P_z3, self.I_z3))
@@ -85,33 +87,30 @@ class Cost:
 
     """ Cost functions.
     """
-    
+
     def __J1(self, cex_list):
         error = 0
         for cex in cex_list:
             # TODO: x%i is assumed across modules, should make it globally configured.
-            pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long() 
-                for i in range(self.num_var)]
+            pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
+                  for i in range(self.num_var)]
             point = np.array(pt)
             error = max(error, self.__distance_point_DNF(point, self.I))
         return error + len(cex_list)
 
     # Traditionally try to 'guess' which cex are supposed to be negative, and which are supposed to be positive, and then there is a relative ratio; but we skip that here.
 
-
     def __J2(self, cex_list):
         return len(cex_list)
-
 
     def __J3(self, cex_list):
         error = 0
         for cex in cex_list:
             pt = [cex.evaluate(Int("x%i"), model_completion=True).as_long()
-                for i in range(self.num_var)]
+                  for i in range(self.num_var)]
             point = np.array(pt)
             error = max(error, self.__distance_point_DNF(point, self.Q))
         return error + len(cex_list)
-
 
     """ Distance Functions.
     """
@@ -128,7 +127,8 @@ class Cost:
             :C: a 2d array, (conj, pred).
             """
             C = norm_conj(C)
-            A = np.concatenate([C[:, :self.num_var], C[:, self.num_var+1:]], axis=1)
+            A = np.concatenate(
+                [C[:, :self.num_var], C[:, self.num_var+1:]], axis=1)
             return float(minimize(
                 lambda x, p: np.linalg.norm(x - p),
                 np.zeros(self.num_var),
@@ -144,6 +144,3 @@ class Cost:
     # Testing:
     # print(distance_point_conj_clauses( np.array( [-3,1,3], ndmin = 1), np.array( [ [1,2,3,1,10], [1,3,1,0,0] ] , ndmin = 2)) )
     # print(distance_point_DNF( np.array( [-3,3,1], ndmin = 1), np.array( [ [ [-7,1,3,-2,3], [1,2,1,0,2], [3,1,3, 1, 4] ], [ [1,3,1,1,10], [1,3,1,0,0], [0,0,0,0,0] ] ]    )) )
-
-
-
