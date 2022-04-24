@@ -1,16 +1,17 @@
+import pprint
+import main
+from guess import Guess, GuessStrategy
+from configure import Configure as conf
+from input import get_input
 import numpy as np
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-poster')
-from input import get_input
-from configure import Configure as conf
-from guess import Guess, GuessStrategy
-import main
-import pprint
 
-def getSurfaceGraph( program, conj_min, disj_min, mesh_range, mesh_step_size, runs, PRINT_DICTIONARY ,random_strategy , max_const=None, guess_range=None):
-    
-    def compute_values( program, conj_min, disj_min, mesh_range, mesh_step_size, runs, PRINT_DICTIONARY ,random_strategy , max_const=None, guess_range=None):
+
+def get_surface_graph(program, conj_min, disj_min, mesh_range, mesh_step_size, runs, PRINT_DICTIONARY, random_strategy, max_const=None, guess_range=None):
+
+    def compute_values():
         predicted_values = {}
         conf.max_disjuncts = disj_min
         conf.max_conjuncts = conj_min
@@ -19,13 +20,15 @@ def getSurfaceGraph( program, conj_min, disj_min, mesh_range, mesh_step_size, ru
         while(conf.max_disjuncts <= disj_min + mesh_range - 1):
             no_of_timeouts = 0
             count_sum = 0.0
-            print("(", conf.max_disjuncts,",", conf.max_conjuncts, "):")
+            print("(", conf.max_disjuncts, ",", conf.max_conjuncts, "):")
             for k in range(runs):
-                (_, cost, count_guess) = main.guess_inv( program, conf.max_guesses, random_strategy, max_const, guess_range)
+                (_, cost, count_guess) = main.guess_inv(
+                    program, conf.max_guesses, random_strategy, max_const, guess_range)
                 if (cost != 0):
                     no_of_timeouts = no_of_timeouts + 1
                 count_sum = count_sum + (1.0 * count_guess)
-            predicted_values[(conf.max_disjuncts, conf.max_conjuncts)] = (count_sum/ (1.0 * runs), no_of_timeouts)
+            predicted_values[(conf.max_disjuncts, conf.max_conjuncts)] = (
+                count_sum / (1.0 * runs), no_of_timeouts)
             conf.max_conjuncts = conf.max_conjuncts + mesh_step_size
             if (conf.max_conjuncts > conj_min + mesh_range - 1):
                 conf.max_conjuncts = conj_min
@@ -35,8 +38,8 @@ def getSurfaceGraph( program, conj_min, disj_min, mesh_range, mesh_step_size, ru
             pprint.pprint(predicted_values)
         return predicted_values
 
-    def surfacegraphplotter (dict_of_values, conj_min, disj_min, mesh_range, mesh_step_size):
-        fig = plt.figure(figsize = (15,15))
+    def surfacegraphplotter(dict_of_values, conj_min, disj_min, mesh_range, mesh_step_size):
+        fig = plt.figure(figsize=(15, 15))
         ax = plt.axes(projection='3d')
         T = []
         for v in dict_of_values.values():
@@ -45,7 +48,7 @@ def getSurfaceGraph( program, conj_min, disj_min, mesh_range, mesh_step_size, ru
         x = np.arange(disj_min, disj_min + mesh_range, mesh_step_size)
         y = np.arange(conj_min, conj_min + mesh_range, mesh_step_size)
         X, Y = np.meshgrid(x, y)
-        surf = ax.plot_surface(X, Y, Z, cmap = plt.cm.cividis)
+        surf = ax.plot_surface(X, Y, Z, cmap=plt.cm.cividis)
 
         # Set axes label
         ax.set_xlabel('Conjuncts', labelpad=20)
@@ -54,17 +57,18 @@ def getSurfaceGraph( program, conj_min, disj_min, mesh_range, mesh_step_size, ru
         fig.colorbar(surf, shrink=0.5, aspect=8)
         plt.show()
 
-    values = compute_values( program, conj_min, disj_min, mesh_range, mesh_step_size, runs, PRINT_DICTIONARY ,random_strategy , max_const, guess_range)
-    surfacegraphplotter (values, conj_min, disj_min, mesh_range, mesh_step_size)
+    values = compute_values()
+    surfacegraphplotter(values, conj_min, disj_min, mesh_range, mesh_step_size)
+
 
 program = get_input(P=np.array([[[1, 0, 0]]]),
-                        B=np.array([[[1, -2, 6]]]),
-                        Q=np.array([[[1, 0, 6]]]),
-                        T=np.array([[1, 1], [0, 1]]))
+                    B=np.array([[[1, -2, 6]]]),
+                    Q=np.array([[[1, 0, 6]]]),
+                    T=np.array([[1, 1], [0, 1]]))
 
-getSurfaceGraph(program, 1, 1, 2, 1, 1, 1, GuessStrategy.SMALL_CONSTANT, max_const = 10)
+get_surface_graph(program, 1, 1, 2, 1, 1, 1,
+                GuessStrategy.SMALL_CONSTANT, max_const=10)
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.OCTAGONAL_DOMAIN )
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.OCTAGONAL_DOMAIN_EXTENDED)
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.NEAR_CONSTANT, guess_range = 1)
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.NEAR_CONSTANT, guess_range = 5)
-

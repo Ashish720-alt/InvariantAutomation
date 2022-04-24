@@ -16,7 +16,7 @@ class Configure:
     SB = 5
     SD = 3
 
-    max_guesses = 1000
+    max_guesses = 1
 
     max_disjuncts = 3
     max_conjuncts = 3
