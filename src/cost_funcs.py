@@ -6,7 +6,7 @@ This module includes cost functions.
 from z3 import *
 import numpy as np
 from repr import Repr
-from dnf import DNF_to_z3expr, DNF_to_z3expr_p, norm_conj
+from dnf import DNF_to_z3expr, DNF_to_z3expr_p, op_norm_conj
 from configure import Configure as conf
 from scipy.optimize import minimize, LinearConstraint
 
@@ -65,10 +65,13 @@ class Cost:
                 block.append(c != m[d])
             s.add(Or(block))
         else:
-            if len(result) < self.num_cex and s.check() != unsat:
+            if len(result) < self.num_cex and s.check() != unsat: #This seems wrong!
                 print("Solver can't verify or disprove")
                 return result
         return result
+
+
+# Dont you need to universally quantify over all variables in each clause here?
 
     def __get_cex_C1(self):
         """ p => I 
@@ -126,7 +129,7 @@ class Cost:
             """
             :C: a 2d array, (conj, pred).
             """
-            C = norm_conj(C)
+            C = op_norm_conj(C)
             A = np.concatenate(
                 [C[:, :self.num_var], C[:, self.num_var+1:]], axis=1)
             return float(minimize(

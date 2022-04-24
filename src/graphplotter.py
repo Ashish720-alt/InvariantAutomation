@@ -4,6 +4,7 @@ from guess import Guess, GuessStrategy
 from configure import Configure as conf
 from input import get_input
 import numpy as np
+import repr
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-poster')
@@ -13,26 +14,27 @@ def get_surface_graph(program, conj_min, disj_min, mesh_range, mesh_step_size, r
 
     def compute_values():
         predicted_values = {}
-        conf.max_disjuncts = disj_min
-        conf.max_conjuncts = conj_min
+        parameters = conf()
+        parameters.max_disjuncts = disj_min
+        parameters.max_conjuncts = conj_min
         cost = 0.0
         count_guess = 0
-        while(conf.max_disjuncts <= disj_min + mesh_range - 1):
+        while(parameters.max_disjuncts <= disj_min + mesh_range - 1):
             no_of_timeouts = 0
             count_sum = 0.0
-            print("(", conf.max_disjuncts, ",", conf.max_conjuncts, "):")
+            print("(", parameters.max_disjuncts, ",", parameters.max_conjuncts, "):")
             for k in range(runs):
                 (_, cost, count_guess) = main.guess_inv(
-                    program, conf.max_guesses, random_strategy, max_const, guess_range)
+                    program, parameters.max_guesses, random_strategy, max_const, guess_range)
                 if (cost != 0):
                     no_of_timeouts = no_of_timeouts + 1
                 count_sum = count_sum + (1.0 * count_guess)
-            predicted_values[(conf.max_disjuncts, conf.max_conjuncts)] = (
+            predicted_values[(parameters.max_disjuncts, parameters.max_conjuncts)] = (
                 count_sum / (1.0 * runs), no_of_timeouts)
-            conf.max_conjuncts = conf.max_conjuncts + mesh_step_size
-            if (conf.max_conjuncts > conj_min + mesh_range - 1):
-                conf.max_conjuncts = conj_min
-                conf.max_disjuncts = conf.max_disjuncts + mesh_step_size
+            parameters.max_conjuncts = parameters.max_conjuncts + mesh_step_size
+            if (parameters.max_conjuncts > conj_min + mesh_range - 1):
+                parameters.max_conjuncts = conj_min
+                parameters.max_disjuncts = parameters.max_disjuncts + mesh_step_size
         if (PRINT_DICTIONARY):
             print("\n\n\n")
             pprint.pprint(predicted_values)
@@ -64,10 +66,10 @@ def get_surface_graph(program, conj_min, disj_min, mesh_range, mesh_step_size, r
 program = get_input(P=np.array([[[1, 0, 0]]]),
                     B=np.array([[[1, -2, 6]]]),
                     Q=np.array([[[1, 0, 6]]]),
-                    T=np.array([[1, 1], [0, 1]]))
+                    T=repr.SimpleTotalTransitionFunc(np.array([[1, 1], [0, 1]])))
 
-get_surface_graph(program, 1, 1, 2, 1, 1, 1,
-                GuessStrategy.SMALL_CONSTANT, max_const=10)
+get_surface_graph(program =program,conj_min= 1, disj_min = 1, mesh_range= 2, mesh_step_size= 1, runs= 1, PRINT_DICTIONARY= 1,
+                random_strategy=GuessStrategy.SMALL_CONSTANT, max_const=10, guess_range=None)
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.OCTAGONAL_DOMAIN )
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.OCTAGONAL_DOMAIN_EXTENDED)
 # getSurfaceGraph(program, 1, 1, 1, 1, 1, 1, GuessStrategy.NEAR_CONSTANT, guess_range = 1)

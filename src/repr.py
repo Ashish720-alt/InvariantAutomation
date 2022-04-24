@@ -16,7 +16,7 @@ def TotalTransitionFunc(*args):
 
 def SimpleTotalTransitionFunc(A):
     # len(A[0]) is n+1, reqd is n+2
-    return [PartialTransitionFunc(np.zeros((1, 1, len(A[0]) + 1)), A)]
+    return [ PartialTransitionFunc(np.zeros((1, 1, len(A[0]) + 1)), A) ]
 
 
 class Repr:
@@ -39,7 +39,7 @@ class Repr:
             ret = f(self.P) | f(self.B) | f(self.Q)
             for partial in self.T:
                 ret |= f(partial.b) | f(partial.t)
-            return list(ret)
+            return list(ret) #We do not sort here, but we need our domains to be sorted, so we must sort there!
         self.consts = _extract_consts()
 
     def get_num_var(self):
