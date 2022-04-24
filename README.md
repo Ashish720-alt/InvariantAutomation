@@ -3,4 +3,11 @@ Invariant Automation Code
 
 #Run invariantfuzzer.py with python:
 
-python3 invariantfuzzer.py
+cd src/
+
+#To run all strategies:
+python3 main.py
+
+
+#To plot surface graph:
+python3 graphplotter.py
