@@ -39,7 +39,7 @@ class Repr:
             ret = f(self.P) | f(self.B) | f(self.Q)
             for partial in self.T:
                 ret |= f(partial.b) | f(partial.t)
-            return list(ret) #We do not sort here, but we need our domains to be sorted, so we must sort there!
+            return list(ret) 
         self.consts = _extract_consts()
 
     def get_num_var(self):
