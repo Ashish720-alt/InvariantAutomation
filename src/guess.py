@@ -254,8 +254,7 @@ class Guess:
             else:
                 additional_disjuncts = new_num_disj - prev_num_disj
                 max_num_conj = prev_I.shape[1]
-                return np.append(prev_I, self.guess_inv(coeff_dom, const_dom, is_oct_pred, max_num_conj,
-                                                        additional_disjuncts), axis=0)
+                return np.concatenate((prev_I, self.guess_inv(coeff_dom, const_dom, is_oct_pred, additional_disjuncts, max_num_conj)))
         else:  # size is constant:
             prev_CC_position = np.random.choice(
                 range(0, prev_num_disj))
