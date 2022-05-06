@@ -27,7 +27,7 @@ class Configure:
     # Print warnings or not?
     DISPLAY_WARNINGS = ON
     # Print iterations or not?
-    PRINT_ITERATIONS = OFF
+    PRINT_ITERATIONS = ON
 
     # Operators
     OP = {
@@ -36,5 +36,8 @@ class Configure:
         -2: operator.lt,  # "<"
         1: operator.ge,  # ">="
         2: operator.gt,  # ">"
+        10: operator.ne, # "!="
+        -10: operator.ne, # "!="
     }
+    # Don't add special operators to operator domain
     OP_DOMAIN = [-2, -1, 0, 1, 2]

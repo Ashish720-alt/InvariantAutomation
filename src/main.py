@@ -131,12 +131,12 @@ def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_stra
               '\n', MCMC_iterations.values())
 
 
-program = input.mock.mock1
+program = input.mock.mock3
 
 
 # guess_inv(repr = program, max_guesses = 1, guess_strat = GuessStrategy.SMALL_CONSTANT, max_const=5, guess_range=None)
 
-run_all_strategies(program, iterations=1, run_random_strategies=0, run_MCMC_strategies=1, max_const=10,
+run_all_strategies(program, iterations=1, run_random_strategies=1, run_MCMC_strategies=0, max_const=10,
                    small_guess_range=1, large_guess_range=5, change_size_prob=0.1, change_value_prob_ratio=0.5)
 
 
