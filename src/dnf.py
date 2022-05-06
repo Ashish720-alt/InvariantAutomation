@@ -71,10 +71,14 @@ def op_norm_pred(P):
     n = len(P) - 2
     if (P[n] > 0):
         return np.array(np.multiply(P, -1), ndmin=2)
-    elif (P[n] == 0):
+    elif (P[n] in [0, 10, -10] ):
         temp1, temp2 = np.multiply(P, -1), P
-        temp1[n] = -1
-        temp2[n] = -1
+        if (P[n] == 0):
+            temp1[n] = -1
+            temp2[n] = -1
+        else:
+            temp1[n] = -2
+            temp2[n] = -2            
         return np.array([temp1, temp2], ndmin=2)
     return np.array(P, ndmin=2)
 

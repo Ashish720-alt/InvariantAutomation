@@ -3,6 +3,13 @@
 import numpy as np
 from dnf import DNF_to_z3expr, trans_func_to_z3expr
 
+def I(n):
+    return np.identity(n + 1, dtype=int)
+
+def E(n, pos ): #Indices run from 1 to n+1
+    T = np.zeros(shape=(n+1, n+1), dtype=int)
+    T[pos[0]-1][pos[1]-1] = 1
+    return T
 
 class PartialTransitionFunc:
     def __init__(self, DNF, transition_matrix):
@@ -17,6 +24,7 @@ def TotalTransitionFunc(*args):
 def SimpleTotalTransitionFunc(A):
     # len(A[0]) is n+1, reqd is n+2
     return [ PartialTransitionFunc(np.zeros((1, 1, len(A[0]) + 1)), A) ]
+
 
 
 class Repr:
