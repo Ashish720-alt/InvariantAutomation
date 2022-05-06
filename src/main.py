@@ -1,6 +1,6 @@
 """ Imports.
 """
-from input import get_input
+import input
 from configure import Configure as conf
 from cost_funcs import Cost
 from dnf import DNF_to_z3expr, DNF_to_z3expr_p
@@ -131,11 +131,7 @@ def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_stra
               '\n', MCMC_iterations.values())
 
 
-program = get_input(P=np.array([[[1, 0, 0, 0, 1], [0, 0, 1, 0, 0], [0, 1, 0, 1, 1], [0, 1, 0, -1, 1000]]]),
-                    B=np.array([[[1, -1, 0, -2, 0]]]),
-                    Q=np.array([[[0, -1, 1, 1, 0]]]),
-                    # now we directly call it from repr, ideally we should do it in get_input(C_source_code)
-                    T=repr.SimpleTotalTransitionFunc(np.array([[1, 0, 0, 1], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1]])))
+program = input.mock.mock1
 
 
 # guess_inv(repr = program, max_guesses = 1, guess_strat = GuessStrategy.SMALL_CONSTANT, max_const=5, guess_range=None)

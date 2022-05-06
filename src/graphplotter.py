@@ -2,7 +2,7 @@ import pprint
 import main
 from guess import Guess, GuessStrategy
 from configure import Configure as conf
-from input import get_input
+import input 
 import numpy as np
 import repr
 from mpl_toolkits import mplot3d
@@ -63,10 +63,7 @@ def get_surface_graph(program, conj_min, disj_min, mesh_range, mesh_step_size, r
     surfacegraphplotter(values, conj_min, disj_min, mesh_range, mesh_step_size)
 
 
-program = get_input(P=np.array([[[1, 0, 0]]]),
-                    B=np.array([[[1, -2, 6]]]),
-                    Q=np.array([[[1, 0, 6]]]),
-                    T=repr.SimpleTotalTransitionFunc(np.array([[1, 1], [0, 1]])))
+program = input.mock.mock2
 
 get_surface_graph(program =program,conj_min= 1, disj_min = 1, mesh_range= 2, mesh_step_size= 1, runs= 1, PRINT_DICTIONARY= 1,
                 random_strategy=GuessStrategy.SMALL_CONSTANT, max_const=10, guess_range=None)
