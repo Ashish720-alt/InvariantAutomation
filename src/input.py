@@ -45,7 +45,7 @@ class mock:
                 Q=np.array([[[1, 0, 6]]]),
                 T=repr.SimpleTotalTransitionFunc( repr.I(1) + repr.E(1,(1,2)) ))
 
-    mock4 = get_input_new([["P", "->", "I"], ["I", ""] ], 
+    mock4 = get_input_new([["P", "->", "I"], ["I", "B", "T", "->", "I"], ["I1", "~B" , "->", "Q" ] ], 
             DNF = {"P" : np.array([[[1, 10, 0]]]),
              "B" : np.array([[[1, -2, 6]]]),
              "Q" : np.array([[[1, 0, 6]]])
