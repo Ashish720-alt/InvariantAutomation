@@ -19,7 +19,7 @@ And : sum_new = sum_old + i_old + 1 (as this is i_new)
 def get_input(P, B, Q, T):
     return repr.Repr(P, B, Q, T)
 
-def get_input_new(C, DNF, trans):
+def get_input_new(CHC, DNF, trans, inv):
     return repr.Repr(DNF["P"], DNF["B"], DNF["Q"], trans["T"])
 
 # Still need to do symbolic execution on your own
@@ -45,13 +45,15 @@ class mock:
                 Q=np.array([[[1, 0, 6]]]),
                 T=repr.SimpleTotalTransitionFunc( repr.I(1) + repr.E(1,(1,2)) ))
 
-    mock4 = get_input_new([["P", "->", "I"], ["I", "B", "T", "->", "I"], ["I1", "~B" , "->", "Q" ] ], 
+    mock4 = get_input_new( CHC = [[ ["P"] , ["I"]] , [ ["I", "B", "T"] , ["I"] ], [ ["I", "~B" ] , ["Q"] ] ], 
             DNF = {"P" : np.array([[[1, 10, 0]]]),
              "B" : np.array([[[1, -2, 6]]]),
              "Q" : np.array([[[1, 0, 6]]])
             }, 
             trans = {"T" : repr.SimpleTotalTransitionFunc( repr.I(1) + repr.E(1,(1,2)) )
-            } 
+            } , 
+            inv = ["I"]
             )
+
 
 

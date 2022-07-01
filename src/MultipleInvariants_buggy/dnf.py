@@ -1,0 +1,171 @@
+
+""" Functions that convert formulas in matrix representation to z3 expression.
+DNF is represented as matrices.
+"""
+
+import numpy as np
+from configure import Configure as conf
+from z3 import *
+
+def DNF_to_z3expr(m, p=''):
+    
+    
+    if np.size(m) == 0:
+        return True
+
+    d0 = len(m)
+    d1 = len(m[0])
+    d2 = len(m[0][0])
+    A = simplify(  Or([
+        And([
+            conf.OP[int(m[i][j][-2])](
+                Sum([
+                    m[i][j][k] * Int(('x%s'+p) % k)
+                    for k in range(d2-2)
+                ]),
+                int(m[i][j][-1])
+            )
+            for j in range(d1)
+        ])
+        for i in range(d0)
+    ]))
+    #print(m, p ,A) #Works!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    return A
+
+
+def DNF_to_z3expr_p(m):
+    """ Get a prime version of the DNF.
+    """
+    return DNF_to_z3expr(m, 'p')
+
+
+def trans_matrix_to_z3expr(A):
+    """ 
+    A is a (n+1) * (n+1) matrix.
+    """
+    d = len(A)
+    return simplify(And([
+        Int("x%sp" % i) ==
+        Sum([
+            int(A[i][j]) * Int("x%s" % j)
+            for j in range(d-1)
+        ]) +
+        int(A[i][d-1])
+        for i in range(d-1)
+    ]))
+
+
+def trans_func_to_z3expr(f):
+    ret = True
+    for i in range(len(f)-1, -1, -1):
+        ret = simplify(If(DNF_to_z3expr(f[i].b),
+                 trans_matrix_to_z3expr(f[i].t),
+                 ret))
+    return ret
+
+# Testing the functions.
+# A = np.array([[1, 2, 3, 1], [2, 3, 1, 4], [1, 3, 1, 4], [0, 0, 0, 1]], ndmin=2)
+# X = trans_matrix_to_z3expr(A)
+# print(X, X)
+# S = total_transition_function(A)
+# print(S[0].b, S[0].t)
+
+
+def op_norm_pred(P):
+    n = len(P) - 2
+    if (P[n] > 0):
+        return np.array(np.multiply(P, -1), ndmin=2)
+    elif (P[n] in [0, 10, -10] ):
+        temp1, temp2 = np.multiply(P, -1), P
+        if (P[n] == 0):
+            temp1[n] = -1
+            temp2[n] = -1
+        else:
+            temp1[n] = -2
+            temp2[n] = -2            
+        return np.array([temp1, temp2], ndmin=2)
+    return np.array(P, ndmin=2)
+
+
+def op_norm_conj(C):
+    assert(len(C) > 0)  # assuming C not empty
+    return np.concatenate([op_norm_pred(C[i]) for i in range(len(C))])
+
+
+def norm_disj(D, conjunct_size):
+    n = len(D) - 2
+    if (n == 0):
+        return np.empty(shape=(0, conjunct_size, n+2), dtype=int)
+    C = op_norm_conj(D[0])
+    
+    padding_pred = np.zeros(n + 2)
+    padding_pred[n] = -1
+    while (len(C) <= conjunct_size):
+        C = np.concatenate((C, np.array(padding_pred, ndmin=2)))
+    return np.concatenate((np.array(C, ndmin=3), norm_disj(D[1:], conjunct_size)))
+
+
+def norm_DNF(D, n):
+    """
+    :n: The number of variables.
+    """
+    # Let operator_normalized versions only have <= or < operators.
+
+    max_size = 0
+    for C in D:
+        curr_size = 0
+        for P in C:
+            curr_size = curr_size + (2 if (P[n] == 0) else 1)
+        max_size = max(max_size, curr_size)
+    return norm_disj(D, max_size)
+
+# This is incomplete!!!!!!!!!!!!!!!!!!!        
+def not_DNF(D):
+    n = len(D[0][0]) - 2
+    op_norm_D = norm_DNF(D, n)        
+    conjunct_size = len(op_norm_D[0])
+    disjunct_size = len(D)
+
+    #Assumes normalized predicates
+    def not_predicate(p, n):
+        ret = p * (-1)
+        ret[n] = ret[n] - 3 #If operators is -2 (<), it becomes -1 (<=); and if it is -1, it becomes -2 (<=)
+        return ret
+
+    all_negated_pred = [] #Is a double list
+    for conj in D:
+        temp_negated_pred = []
+        for pred in conj:
+            temp_negated_pred.append(not_predicate( pred, n))
+        all_negated_pred.append(temp_negated_pred)
+    
+    index_arr = np.zeros(shape=disjunct_size)
+
+    def increment_index_by_one(index_arr, conjunct_size, disjunct_size):
+        max_index_arr_entry_value = conjunct_size - 1
+        min_index_value = -1 * (disjunct_size)
+        
+        ret = index_arr
+        index = -1
+        while(index >= min_index_value):
+            if (ret[index] < max_index_arr_entry_value):
+                ret[index] = ret[index] + 1
+                return (ret,0)
+            index = index - 1
+        
+        return (ret, 1) #Indicates max_value has been reached.
+    
+    while(1):
+        return #Complete this!!
+
+
+    return op_norm_D
+
+
+def or_DNFs(D1, D2):
+    max_conjunct_size = max( len(D1[0]), len(D2[0]))
+    return np.append( norm_disj(D1, max_conjunct_size) , norm_disj(D2, max_conjunct_size), axis = 0 )
+
+def and_DNFs(D1, D2):
+    return not_DNF(or_DNFs( not_DNF(D1) , not_DNF(D2) ))

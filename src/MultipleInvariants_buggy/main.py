@@ -32,17 +32,24 @@ def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=
         count_guess += 1
         guesser = Guess(num_var, parameters.max_conjuncts, parameters.max_disjuncts,
                         np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
-                        guess_strat,
+                        guess_strat, 
+                        repr.invs,
                         max_const=max_const,
                         range=guess_range,
                         consts=repr.get_consts())
         I = guesser.guess()
         cost = Cost(repr, I).get_cost()
         if (parameters.PRINT_ITERATIONS == parameters.ON):
-            print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+            print(count_guess, '   ', end='')
+            for i in I:
+                print(DNF_to_z3expr(i), end='')
+            print("\t", end='')
             print('   ', round(cost, 2))
     if (parameters.PRINT_ITERATIONS != parameters.ON):
-        print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+        print(count_guess, '   ', end='')
+        for i in I:
+            print(DNF_to_z3expr(i), end='')
+        print("\t", end='')
         print('   ', round(cost, 2))
     return (I, cost, count_guess)
 
@@ -64,7 +71,8 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
         prev_I = I
         guesser = Guess(num_var, parameters.max_conjuncts, parameters.max_disjuncts,
                         np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
-                        guess_strat,
+                        guess_strat, 
+                        repr.invs,
                         prev_I=prev_I,
                         max_const=max_const,
                         range=guess_range,
@@ -83,14 +91,23 @@ def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_ran
                 I = prev_I
             else:
                 if (parameters.PRINT_ITERATIONS == parameters.ON):
-                    print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+                    print(count_guess, '   ', end='')
+                    for i in I:
+                        print(DNF_to_z3expr(i), end='')
+                    print("\t", end='')
                     print('   ', round(cost, 2))
         else:
             if (parameters.PRINT_ITERATIONS == parameters.ON):
-                print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+                print(count_guess, '   ', end='')
+                for i in I:
+                    print(DNF_to_z3expr(i), end='')
+                print("\t", end='')
                 print('   ', round(cost, 2))
     if (parameters.PRINT_ITERATIONS != parameters.ON):
-        print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
+        print(count_guess, '   ', end='')
+        for i in I:
+            print(DNF_to_z3expr(i), end='')
+        print("\t", end='')
         print('   ', round(cost, 2))
     return (I, cost, count_guess)
 
@@ -139,11 +156,18 @@ def run_all_strategies(program, iterations, run_random_strategies, run_MCMC_stra
 
 
 program = input.mock.mock4
+program2 = input.mock.afnp2014
+
+(_ , _, A) = guess_inv(repr = program2, max_guesses = conf.max_guesses, guess_strat = GuessStrategy.OCTAGONAL_DOMAIN, max_const=6, guess_range=None)
 
 
-# guess_inv(repr = program, max_guesses = 1, guess_strat = GuessStrategy.SMALL_CONSTANT, max_const=5, guess_range=None)
+(_ , _, B) = mc_guess_inv(repr = program2, max_guesses= conf.max_guesses, guess_strat = GuessStrategy.MC_OCTAGONAL_DOMAIN, max_const=6, guess_range=2, 
+                change_size_prob=0.5, change_value_prob_ratio=0.5)
 
-run_all_strategies(program, iterations=1, run_random_strategies=1, run_MCMC_strategies=0, max_const=10,
-                   small_guess_range=1, large_guess_range=5, change_size_prob=0.1, change_value_prob_ratio=0.5)
+print(A,B)
+
+#iterations means how many times to run each strategy, so you can take average.
+# run_all_strategies(program, iterations=1, run_random_strategies=1, run_MCMC_strategies=0, max_const=10,
+#                    small_guess_range=1, large_guess_range=5, change_size_prob=0.1, change_value_prob_ratio=0.5)
 
 
