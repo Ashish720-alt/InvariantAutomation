@@ -7,6 +7,34 @@ import numpy as np
 from configure import Configure as conf
 from z3 import *
 
+
+# dnf's are lists of 2D numpy arrays, rather than 3D numpy arrays.
+
+def dnfTrue (n):
+    P = np.zeros(shape = (n+2))
+    P[n+1] = -1
+    return [ np.array([P]) ] 
+
+def dnfFalse (n):
+    P = np.zeros(shape = (n+2))
+    P[n+1] = -1
+    P[n+2] = -1
+    return [ np.array([P]) ] 
+
+
+def dnfconjunction (dnf1, dnf2):    
+    ret = []
+    for cc1 in dnf1:
+        for cc2 in dnf2:
+            cc = np.append(cc1, cc2, axis = 0)
+            ret.append(cc)
+    
+    return ret
+
+#Testing
+#print( DNFconjunction( [np.array([[1,2,3,-1,1], [1,2,3,-1,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] )  )
+
+
 def DNF_to_z3expr(m, p=''):
     if np.size(m) == 0:
         return True
