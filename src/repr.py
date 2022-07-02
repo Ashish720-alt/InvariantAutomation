@@ -3,21 +3,19 @@
 import numpy as np
 from dnf import DNF_to_z3expr, trans_func_to_z3expr, dnfconjunction
 
-##################################################
-def I(n):
-    return np.identity(n + 1, dtype=int)
+'''
+The general clause system is:
+P -> I
+I /\ B /\ T -> I'
+I -> Q
 
-def E(n, pos ): #Indices run from 1 to n+1
-    T = np.zeros(shape=(n+1, n+1), dtype=int)
-    T[pos[0]-1][pos[1]-1] = 1
-    return T
-##################################################
+'''
 
 # A partialTransitionFuncPair is a pair(t_i, B_i /\ B) where T is a partial LI transition function, and B_i, B are dnfs
 class partialTransitionFuncPair:
     def __init__(self, transition_matrix, DNF, B):
         self.t = transition_matrix
-        self.b = dnfconjunction(DNF, B)
+        self.b = dnfconjunction(DNF, B, 1)
 
 def detTransitionFunc(*args, B):
     return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
@@ -90,6 +88,16 @@ class Repr:
 
 
 
+
+
+
+def I(n):
+    return np.identity(n + 1, dtype=int)
+
+def E(n, pos ): #Indices run from 1 to n+1
+    T = np.zeros(shape=(n+1, n+1), dtype=int)
+    T[pos[0]-1][pos[1]-1] = 1
+    return T
 
 
 

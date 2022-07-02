@@ -7,6 +7,7 @@ import numpy as np
 from configure import Configure as conf
 from z3 import *
 
+#IMP: Note that there is a function in cdd python library to remove rendundancies within a cc.
 
 # dnf's are lists of 2D numpy arrays, rather than 3D numpy arrays.
 
@@ -22,14 +23,87 @@ def dnfFalse (n):
     return [ np.array([P]) ] 
 
 
-def dnfconjunction (dnf1, dnf2):    
+#Here!!
+def dnfnegation (dnf):
+    dnf_LII = genLII_to_LII(dnf) #We have to do this here, as negation of an equality LI predicate is a disjunction of two LI predicates.
+
+    def dnfnegation_LIp_to_LIp (p):
+        n = len(p) - 2
+        p_neg = p
+        p_neg[n] = 2
+        p_neg = p_neg * -1
+        p_neg[n+1] = p_neg[n+1] - 1
+        return p_neg
+    
+    d = len(dnf_LII)
+    dnf_c_list = []
+    for cc in dnf_LII:
+        dnf_c_list.append(len(cc))
+    negdnf_d = np.prod(dnf_c_list)
+    
+    def get_lexicographic_cc_index(n , c_list, d):
+        n_copy = n
+        ret = np.zeros((d,), dtype = int)
+        return ret
+    
+    #for i in range(1, negdnf_d + 1):
+
+    return 1 
+
+
+def dnfconjunction (dnf1, dnf2, gLII):    
     ret = []
     for cc1 in dnf1:
         for cc2 in dnf2:
             cc = np.append(cc1, cc2, axis = 0)
-            ret.append(cc)
-    
+            ret.append(cc)   
+    if (gLII == 0):
+        ret = genLII_to_LII(ret)
     return ret
+
+def dnfdisjunction (dnf1, dnf2, gLII):
+    ret = dnf1 + dnf2
+    if (gLII == 0):
+        ret = genLII_to_LII(ret)
+    return ret
+
+#Converts generalized LI invariant to LI invariant
+def genLII_to_LII (genLII):
+    n = len(genLII[0][0]) - 2 
+    LII = []
+    for gencc in genLII:
+        cc = np.empty(shape=(0, n + 2 ), , dtype = int)
+        for genp in gencc:
+            p = genp
+            if (p[n] == -2):
+                p[n] = -1
+                p[n+1] = p[n+1] - 1
+                cc = np.concatenate((cc, np.array([p], ndmin=2))) 
+            elif (p[n] == -1):
+                cc = np.concatenate((cc, np.array([p], ndmin=2))) 
+            elif (p[n] == 1):
+                p = p * -1
+                cc = np.concatenate((cc, np.array([p], ndmin=2))) 
+            elif (p[n] == 2):
+                p = p * -1
+                p[n+1] = p[n+1] - 1
+                cc = np.concatenate((cc, np.array([p], ndmin=2))) 
+            elif (p[n] == 0):
+                p2 = p * -1
+                p[n] = -1
+                p2[n] = -1
+                cc = np.concatenate((cc, np.array([p, p2], ndmin=2)))
+        LII.append(cc)               
+    return ret
+
+# x is a python list, ptf is a np array of dimension 2, and return type is python list
+def transition ( x , ptf):
+    xmatrix = np.concatenate((np.array(x), np.array([1])))
+    ymatrix_nparray = np.dot(pt_matrix, np.transpose(ptf))
+    ymatrix_list = ymatrix_nparray.tolist()
+    y = ymatrix_list[:-1]
+    return y
+
 
 #Testing
 #print( DNFconjunction( [np.array([[1,2,3,-1,1], [1,2,3,-1,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] )  )
