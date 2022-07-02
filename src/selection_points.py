@@ -2,7 +2,7 @@ import repr
 import numpy as np
 import cdd
 from configure import Configure as conf
-from dnf import dnfconjunction, dnfnegation, dnfdisjunction, dnfTrue, dnfFalse, genLII_to_LII, transition
+from dnfs_and_transitions import dnfconjunction, dnfnegation, dnfdisjunction, dnfTrue, dnfFalse, genLII_to_LII, transition
 
 
 def Dstate(n):

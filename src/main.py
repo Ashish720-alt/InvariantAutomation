@@ -4,7 +4,7 @@
 import input
 from configure import Configure as conf
 from cost_funcs import Cost
-from dnf import DNF_to_z3expr, DNF_to_z3expr_p
+from dnfs_and_transitions import DNF_to_z3expr, DNF_to_z3expr_p
 from guess import Guess, GuessStrategy
 from repr import Repr
 import repr
