@@ -1,7 +1,7 @@
 """ Representation of the logical system to be solved.
 """
 import numpy as np
-from dnf import DNF_to_z3expr, trans_func_to_z3expr, dnfconjunction
+from dnfs_and_transitions import DNF_to_z3expr, trans_func_to_z3expr, dnfconjunction
 
 '''
 The general clause system is:
