@@ -1,4 +1,3 @@
-
 """ Functions that convert formulas in matrix representation to z3 expression.
 DNF is represented as matrices.
 """
