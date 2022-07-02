@@ -47,4 +47,4 @@ class Configure:
     # Don't add special operators to operator domain
     OP_DOMAIN = [-2, -1, 0, 1, 2]
 
-    conf.X_ICE = []
+    X_ICE = []

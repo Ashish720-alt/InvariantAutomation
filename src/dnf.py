@@ -6,6 +6,7 @@ DNF is represented as matrices.
 import numpy as np
 from configure import Configure as conf
 from z3 import *
+from itertools import product
 
 #IMP: Note that there is a function in cdd python library to remove rendundancies within a cc.
 
@@ -23,12 +24,12 @@ def dnfFalse (n):
     return [ np.array([P]) ] 
 
 
-#Here!!
+# It always returns LII
 def dnfnegation (dnf):
     dnf_LII = genLII_to_LII(dnf) #We have to do this here, as negation of an equality LI predicate is a disjunction of two LI predicates.
+    n = len(dnf_LII[0][0]) - 2
 
-    def dnfnegation_LIp_to_LIp (p):
-        n = len(p) - 2
+    def dnfnegation_LIp_to_LIp (p, n):
         p_neg = p
         p_neg[n] = 2
         p_neg = p_neg * -1
@@ -37,18 +38,21 @@ def dnfnegation (dnf):
     
     d = len(dnf_LII)
     dnf_c_list = []
+    negdnf_dspace = []
     for cc in dnf_LII:
-        dnf_c_list.append(len(cc))
-    negdnf_d = np.prod(dnf_c_list)
+        cc_length = len(cc)
+        dnf_c_list.append(cc_length)
+        negdnf_dspace = list(product(negdnf_dspace, range(cc_length) ))
     
-    def get_lexicographic_cc_index(n , c_list, d):
-        n_copy = n
-        ret = np.zeros((d,), dtype = int)
-        return ret
-    
-    #for i in range(1, negdnf_d + 1):
+    negdnf = []
+    for it in negdnf_dspace:
+        cc = np.empty( shape=(0, n + 2), dtype = int )
+        for j in range(d):
+            p = dnfnegation_LIp_to_LIp(dnf_LII[j][it[j]], n)
+            cc = np.concatenate((cc, np.array([p], ndmin=2)))
+        negdnf.append(cc)
 
-    return 1 
+    return negdnf
 
 
 def dnfconjunction (dnf1, dnf2, gLII):    
