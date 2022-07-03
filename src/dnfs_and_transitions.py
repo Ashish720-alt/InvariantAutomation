@@ -12,70 +12,23 @@ from itertools import product
 # dnf's are lists of 2D numpy arrays, rather than 3D numpy arrays.
 
 def dnfTrue (n):
-    P = np.zeros(shape = (n+2))
-    P[n+1] = -1
-    return [ np.array([P]) ] 
+    p = np.zeros(shape = (n+2), dtype = int)
+    p[n] = -1
+    return [ np.array([p]) ] 
+
 
 def dnfFalse (n):
-    P = np.zeros(shape = (n+2))
-    P[n+1] = -1
-    P[n+2] = -1
-    return [ np.array([P]) ] 
-
-
-# It always returns LII
-def dnfnegation (dnf):
-    dnf_LII = genLII_to_LII(dnf) #We have to do this here, as negation of an equality LI predicate is a disjunction of two LI predicates.
-    n = len(dnf_LII[0][0]) - 2
-
-    def dnfnegation_LIp_to_LIp (p, n):
-        p_neg = p
-        p_neg[n] = 2
-        p_neg = p_neg * -1
-        p_neg[n+1] = p_neg[n+1] - 1
-        return p_neg
-    
-    d = len(dnf_LII)
-    dnf_c_list = []
-    negdnf_dspace = []
-    for cc in dnf_LII:
-        cc_length = len(cc)
-        dnf_c_list.append(cc_length)
-        negdnf_dspace = list(product(negdnf_dspace, range(cc_length) ))
-    
-    negdnf = []
-    for it in negdnf_dspace:
-        cc = np.empty( shape=(0, n + 2), dtype = int )
-        for j in range(d):
-            p = dnfnegation_LIp_to_LIp(dnf_LII[j][it[j]], n)
-            cc = np.concatenate((cc, np.array([p], ndmin=2)))
-        negdnf.append(cc)
-
-    return negdnf
-
-
-def dnfconjunction (dnf1, dnf2, gLII):    
-    ret = []
-    for cc1 in dnf1:
-        for cc2 in dnf2:
-            cc = np.append(cc1, cc2, axis = 0)
-            ret.append(cc)   
-    if (gLII == 0):
-        ret = genLII_to_LII(ret)
-    return ret
-
-def dnfdisjunction (dnf1, dnf2, gLII):
-    ret = dnf1 + dnf2
-    if (gLII == 0):
-        ret = genLII_to_LII(ret)
-    return ret
+    p = np.zeros(shape = (n+2), dtype = int)
+    p[n] = -1
+    p[n+1] = -1
+    return [ np.array([p]) ] 
 
 #Converts generalized LI invariant to LI invariant
 def genLII_to_LII (genLII):
     n = len(genLII[0][0]) - 2 
     LII = []
     for gencc in genLII:
-        cc = np.empty(shape=(0, n + 2 ), , dtype = int)
+        cc = np.empty(shape=(0, n + 2 ), dtype = int)
         for genp in gencc:
             p = genp
             if (p[n] == -2):
@@ -97,19 +50,75 @@ def genLII_to_LII (genLII):
                 p2[n] = -1
                 cc = np.concatenate((cc, np.array([p, p2], ndmin=2)))
         LII.append(cc)               
+    return LII
+
+
+# It always returns LII
+def dnfnegation (dnf):
+    dnf_LII = genLII_to_LII(dnf) #We have to do this here, as negation of an equality LI predicate is a disjunction of two LI predicates.
+    n = len(dnf_LII[0][0]) - 2
+
+    def dnfnegation_LIp_to_LIp (p, n):
+        p_neg = p
+        p_neg[n] = 2
+        p_neg = p_neg * -1
+        p_neg[n+1] = p_neg[n+1] - 1
+        p_neg[n] = -1
+        return p_neg
+    
+    d = len(dnf_LII)
+    dnf_c_list_of_lists = [] 
+    for cc in dnf_LII:
+        dnf_c_list_of_lists.append(range(len(cc)))
+
+    negdnf = []
+    for it in product(*dnf_c_list_of_lists):
+        cc = np.empty( shape=(0, n + 2), dtype = int )
+        for j in range(d):
+            p = dnfnegation_LIp_to_LIp(dnf_LII[j][it[j]], n)
+            cc = np.concatenate((cc, np.array([p], ndmin=2)))
+        negdnf.append(cc)
+    return negdnf
+
+def dnfconjunction (dnf1, dnf2, gLII):    
+    ret = []
+    for cc1 in dnf1:
+        for cc2 in dnf2:
+            cc = np.append(cc1, cc2, axis = 0)
+            ret.append(cc)   
+    if (gLII == 0):
+        ret = genLII_to_LII(ret)
     return ret
 
-# x is a python list, ptf is a np array of dimension 2, and return type is python list
+def dnfdisjunction (dnf1, dnf2, gLII):
+    ret = dnf1 + dnf2
+    if (gLII == 0):
+        ret = genLII_to_LII(ret)
+    return ret
+
+
+# x is a python list, ptf is a np array of dimension 2, and return type is a python list
 def transition ( x , ptf):
     xmatrix = np.concatenate((np.array(x), np.array([1])))
-    ymatrix_nparray = np.dot(pt_matrix, np.transpose(ptf))
+    ymatrix_nparray = np.dot(xmatrix, np.transpose(ptf))
     ymatrix_list = ymatrix_nparray.tolist()
     y = ymatrix_list[:-1]
     return y
 
-
 #Testing
-#print( DNFconjunction( [np.array([[1,2,3,-1,1], [1,2,3,-1,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] )  )
+# print(dnfTrue(2))
+# print(dnfFalse(2))
+# dnfTest = [np.array([[1,2,1,0,3], [1,1,3,1,2]], ndmin = 2), np.array([[1,2,1,0,3], [1,1,3,0,2]], ndmin = 2)]
+# print(genLII_to_LII( dnfTest ))
+# dnfTest1 = [np.array([[1,2,1,-1,2] , [3, 1, 2, 1,1]], ndmin = 2) , np.array([[1,2,1,2,2] , [3, 1, 2, 1,1]], ndmin = 2) ]
+# print(dnfnegation(dnfTest1))
+# print( dnfconjunction( [np.array([[1,2,3,-1,1], [1,2,3,0,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] , 0 )  )
+# print( dnfdisjunction( [np.array([[1,2,3,-1,1], [1,2,3,0,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] , 1 )  )
+# print(transition([1,5,3] , np.array([[1, 0, 0, 1], [0, 2, 0, 0], [1, 1, 0, 0] , [0, 0, 0, 1]  ]) ))
+
+
+
+
 
 
 def DNF_to_z3expr(m, p=''):

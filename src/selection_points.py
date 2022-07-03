@@ -11,16 +11,16 @@ def Dstate(n):
         p1 = np.zeros(n+2)
         p1[n] = -1
         p1[i] = -1
-        p1[n+1] = -1 * conf.intmin
+        p1[n+1] = -1 * conf.dspace_intmin
 
         p2 = np.zeros(n+2)
         p2[n] = -1
         p2[i] = 1
-        p2[n+1] = conf.intmax
+        p2[n+1] = conf.dspace_intmax
         
         cc = np.concatenate((cc, np.array([p1, p2], ndmin=2)))
     
-    return cc
+    return [cc]
         
 
 # Assumes cc has LI predicates only, and not genLI predicates
@@ -47,7 +47,8 @@ def v_representation (cc):
     return list_of_list_generators
 
 
-def get_plus0 (P, n): 
+def get_plus0 (P): 
+    n = len(P[0][0]) - 2
     P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)
 
     plus0 = []
@@ -57,7 +58,8 @@ def get_plus0 (P, n):
     return plus0
 
 
-def get_minus0 (Q, n):
+def get_minus0 (Q):
+    n = len(Q[0][0]) - 2
     negQ_LII_in_Dstate = dnfconjunction( dnfnegation(Q) , Dstate(n), 0) 
 
     minus0 = []
@@ -67,19 +69,21 @@ def get_minus0 (Q, n):
     return minus0
 
 # An ICE pair is a list of 2 states, where a state is a list of n numbers
-def get_ICE0 (T, B, n):
+def get_ICE0 (T):
+    n = len( (T[0][0].b)[0][0] ) - 2
     alltransfuncpairs = T[0] + T[1]
 
     ICE0 = conf.X_ICE
     for transfuncpair in alltransfuncpairs:
-        B = dnfconjunction( transfuncpair.b, Dstate(n) , 0)
-        T = transfuncpair.t
+        b = dnfconjunction( transfuncpair.b, Dstate(n) , 0)
+        tf = transfuncpair.t
         heads_of_ICEpairs = []
-        for cc in B: 
+        for cc in b: 
             heads_of_ICEpairs = heads_of_ICEpairs + v_representation(cc)
+
         for head in heads_of_ICEpairs:
-            tail = transition(head, T)
-        ICE0.append([head, tail])
+            tail = transition(head, tf)
+            ICE0.append([head, tail])
     
     return ICE0
 
@@ -89,3 +93,8 @@ def get_ICE0 (T, B, n):
 # This cc represents y >= 0, x <= 1, y <= x.
 # print(v_representation( np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ]) ))
 # print(Dstate(2))
+# print(get_plus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
+# print(get_minus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
+# b = [np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]
+# a = [ np.array([ [1, 0, 4], [0, 2, 1] , [0, 0, 1]   ]) , dnfTrue(2)  ]
+# print(get_ICE0(  [ repr.detTransitionFunc( a , B = b) , []]    )) 

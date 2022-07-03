@@ -5,8 +5,8 @@ import operator
 
 class Configure:
     
-    intmin = -10000
-    intmax = 10000
+    dspace_intmin = -10000
+    dspace_intmax = 10000
     
     
     s = 10
