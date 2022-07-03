@@ -7,9 +7,12 @@ class Configure:
     
     dspace_intmin = -10000
     dspace_intmax = 10000
+  
     
-    
-    s = 10
+    k = 2
+    r = 1
+
+    s = 100
 
     
     # cost function related
@@ -18,13 +21,7 @@ class Configure:
     K2 = 2
     K3 = 1
 
-    SB = 5
-    SD = 3
 
-    max_guesses = 1000
-
-    max_disjuncts = 3
-    max_conjuncts = 3
 
 
     ON = 1
@@ -47,4 +44,3 @@ class Configure:
     # Don't add special operators to operator domain
     OP_DOMAIN = [-2, -1, 0, 1, 2]
 
-    X_ICE = []
