@@ -5,7 +5,7 @@ import input
 from configure import Configure as conf
 from cost_funcs import Cost
 from dnfs_and_transitions import DNF_to_z3expr, DNF_to_z3expr_p
-from guess import Guess, GuessStrategy
+from guess import uniformlysampleLII, Guess, GuessStrategy
 from repr import Repr
 import repr
 from z3 import *
@@ -15,6 +15,10 @@ from math import floor
 parameters = conf()
 
 """ Main function. """
+
+
+
+
 
 
 def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=None):
@@ -39,6 +43,17 @@ def guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=
         print(count_guess, '   ', DNF_to_z3expr(I), "\t", end='')
         print('   ', round(cost, 2))
     return (I, cost, count_guess)
+
+
+# Here!
+def metropolisHastings (repr: Repr, t_max):
+    t = 0
+    tmax = repr.get_tmax()
+    (plus, minus, ICE) = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
+    I = uniformlysampleLII( repr.get_Dp(), repr.get_c(), repr.get_d(), repr.get_n() )
+    while (1):
+        while(t <= tmax):
+
 
 
 def mc_guess_inv(repr: Repr, max_guesses, guess_strat, max_const=None, guess_range=None, change_size_prob=None, change_value_prob_ratio=None):

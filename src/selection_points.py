@@ -69,11 +69,11 @@ def get_minus0 (Q):
     return minus0
 
 # An ICE pair is a list of 2 states, where a state is a list of n numbers
-def get_ICE0 (T):
+def get_ICE0 (T, X_ICE):
     n = len( (T[0][0].b)[0][0] ) - 2
     alltransfuncpairs = T[0] + T[1]
 
-    ICE0 = conf.X_ICE
+    ICE0 = X_ICE
     for transfuncpair in alltransfuncpairs:
         b = dnfconjunction( transfuncpair.b, Dstate(n) , 0)
         tf = transfuncpair.t
