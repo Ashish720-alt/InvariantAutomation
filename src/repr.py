@@ -1,11 +1,13 @@
 """ Representation of the logical system to be solved.
 """
 import numpy as np
-from dnfs_and_transitions import DNF_to_z3expr, trans_func_to_z3expr, dnfconjunction
+from dnfs_and_transitions import dnfconjunction
 import selection_points
 from domain import D_p
+from z3_verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
+
 '''
-The general clause system is:
+The general single loop clause system is:
 P -> I
 I /\ B /\ T -> I'
 I -> Q
@@ -40,7 +42,7 @@ class Repr:
         self.P_z3expr = DNF_to_z3expr(P)
         self.B_z3expr = DNF_to_z3expr(B)
         self.Q_z3expr = DNF_to_z3expr(Q)
-        self.T_z3expr = trans_func_to_z3expr(self.T)
+        self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
         self.c = 3
         self.d = 3
