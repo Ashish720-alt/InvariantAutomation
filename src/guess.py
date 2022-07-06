@@ -2,8 +2,6 @@
 """
 import numpy as np
 from configure import Configure as conf
-from typing import List
-from enum import Enum, auto
 from cost_funcs import cost
 
 # Returns a list of list of (n+1)-element-lists.
@@ -49,10 +47,11 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
             cc = np.concatenate((cc, np.array([uniformlysampleLIp(Dp,n)], ndmin=2)))
         return cc
     I = [uniformlysampleLIcc(Dp, n, c) for i in range(d) ]
-    (costI, mincostI) = cost(I, samplepoints[0], samplepoints[1], samplepoints[2])
-    return (I, deg_list(I, Dp), costI, mincostI)
+    (costI, mincostI, mincosttuple) = cost(I, samplepoints )
+    return (I, deg_list(I, Dp), costI, mincostI, mincosttuple)
 
-def randomwalktransition(I, deglist_I, Dp, samplepoints):
+
+def randomwalktransition(I, deglist_I, Dp, samplepoints, prev_mincosttuple):
     # i is a number from 1 to degree
     def ithneighbor(I, i, deglist, Dp):
         k = i
@@ -63,6 +62,7 @@ def randomwalktransition(I, deglist_I, Dp, samplepoints):
                     k = k - sum(degp_list)
                     continue
                 else:
+                    index = (ccindex, pindex)
                     for vindex, deg in enumerate(degp_list):
                         if (k > deg):
                             k = k - deg
@@ -74,20 +74,22 @@ def randomwalktransition(I, deglist_I, Dp, samplepoints):
                             else: 
                                 j = 0 if (vindex_actual < n+1) else 1
                                 I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + (1 if (I[ccindex][pindex][vindex_actual] == min(Dp[j])) else -1)
-                            return I
+                            return (I, index)
     degree = deg(deglist_I) 
     i = np.random.choice(range(1, degree+1,1))
-    Inew = ithneighbor(I, i, deglist, Dp)
-    (costnew, mincostnew) = cost(Inew, samplepoints[0], samplepoints[1], samplepoints[2])
-    return (Inew, deg_list(Inew, Dp), costnew, mincostnew)
+    (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
+    (costnew, mincostnew, mincosttuplenew) = cost(Inew, samplepoints, prev_mincosttuple, index)
+    return (Inew, deg_list(Inew, Dp), costnew, mincostnew, mincosttuplenew)
 
 
-
-
-# I = uniformlysampleLII( (range(-10, 10, 1), range(-10,10,1) ), 1, 1, 3 )
-# print(I)
+# plus = [ [0] ]
+# minus = [ [7], [10000] ]
+# ICE = [ ( [5] , [6]  )  ]
+# samplepoints = (plus, minus, ICE)
+# (I, deglistI, costI, mincostI, mincosttupleI) = uniformlysampleLII( (range(-10, 10, 1), range(-10,10,1) ), 1, 1, 1, samplepoints )
+# print(I, deglistI, costI, mincostI, mincosttupleI) 
 # Dp = (range(-10, 10, 1), range(-10,10,1) )
-# print(randomwalktransition(I, Dp))
+# print(randomwalktransition(I, deglistI, Dp, samplepoints, mincosttupleI ))
 
 
 

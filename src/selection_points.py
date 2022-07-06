@@ -68,7 +68,7 @@ def get_minus0 (Q):
 
     return minus0
 
-# An ICE pair is a list of 2 states, where a state is a list of n numbers
+# An ICE pair is a pair of 2 states, where a state is a list of n numbers
 def get_ICE0 (T, X_ICE):
     n = len( (T[0][0].b)[0][0] ) - 2
     alltransfuncpairs = T[0] + T[1]
@@ -83,7 +83,7 @@ def get_ICE0 (T, X_ICE):
 
         for head in heads_of_ICEpairs:
             tail = transition(head, tf)
-            ICE0.append([head, tail])
+            ICE0.append((head, tail))
     
     return ICE0
 

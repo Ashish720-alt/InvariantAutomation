@@ -16,7 +16,7 @@ class Configure:
     p = 0.05
     
     alpha = 1e40
-    gamma = 0.5
+    gamma = 2.0 #Need floating point constant here
 
 
     # Operators
@@ -27,12 +27,9 @@ class Configure:
         1: operator.ge,  # ">="
         2: operator.gt,  # ">"
         10: operator.ne, # "!="
-        -10: operator.ne, # "!="
     }
 
     ON = 1
     OFF = 0
-    # Print warnings or not?
-    DISPLAY_WARNINGS = ON
     # Print iterations or not?
     PRINT_ITERATIONS = ON
