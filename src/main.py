@@ -1,11 +1,9 @@
 
 """ Imports.
 """
-import input
 from configure import Configure as conf
-from cost_funcs import Cost
-from dnfs_and_transitions import DNF_to_z3expr, DNF_to_z3expr_p
-from guess import uniformlysampleLII, Guess, GuessStrategy, deg
+from dnfs_and_transitions import dnfTrue
+from guess import uniformlysampleLII, randomwalktransition
 from repr import Repr
 import repr
 from z3 import *
@@ -25,12 +23,9 @@ def metropolisHastings (repr: Repr):
     while (1):
         while(t <= tmax):
             (I_new, deglist_new, cost_new, mincost_new) = randomwalktransition(I, deg, repr.get_Dp(), samplepoints)          
-            a = min((1 - p) * ( deg(deglist) / deg(deglist_new) ) * (cost_new / cost) , 1)
-            if (np.random.rand() <= a)          
-                I = I_new
-                cost = cost_new
-                mincost = mincost_new
-                deglist = deglist_new             
+            a = min( ((deg(deglist) * cost_new) / deg(deglist_new)) / cost , 1) #Make sure we don't underapproximate to 0
+            if (np.random.rand() <= (1 - p) *a):          
+                (I, cost, mincost, deglist) = (I_new, cost_new, mincost_new, deglist_new )          
             else:
                 continue
             if (mincost == 0):
@@ -38,12 +33,14 @@ def metropolisHastings (repr: Repr):
         (correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), DNF_to_z3expr(I, primed = 0) )           
         if (correct):
             break
-        samplepoints[0] = samplepoints[0] + cex[0]
-        samplepoints[1] = samplepoints[1] + cex[1]
-        samplepoints[2] = samplepoints[2] + cex[2]
-    
+        samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
     return (I, cost, t)
 
 
-
+P = [np.array([[1, 0, 0]])]
+B = [np.array([[1, -1, 6]])]
+Q = [np.array([[1, 0, 6]])]
+T = repr.genTransitionRel( repr.detTransitionFunc( [ ( np.array([[1, 1], [0, 1]]) , dnfTrue(1) )  ] , B=B) , repr.nondetTransitionRel([], B=B))
+A = Repr(P, B, T, Q)
+metropolisHastings(A)
 

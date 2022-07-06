@@ -5,71 +5,90 @@ This module includes cost functions.
 
 from z3 import *
 import numpy as np
-from repr import Repr
-from dnfs_and_transitions import dnfnegation, DNF_to_z3expr, DNF_to_z3expr_p, op_norm_conj
+from dnfs_and_transitions import dnfnegation
+from z3verifier import  DNF_to_z3expr
 from configure import Configure as conf
 from scipy.optimize import minimize, LinearConstraint
 
+class setType:
+    plus = "plus"
+    minus = "minus"
+    ICE = "ICE"
 
-def predicatespacedistance(p, pt):
-    return 1.0
+def LIPptdistance(p, pt):
+    return max(sum(p[:-2]* pt) - p[-1] , 0)
 
-def negationpredicate(p):
+def negationLIpredicate(p):
     return (dnfnegation( [np.array( [p], ndmin = 2 )] ))[0][0]
 
+def d(p, pt, pt_type):
+    if (pt_type == setType.plus):
+        return LIPptdistance(p, np.array(pt))
+    elif (pt_type == setType.minus):
+        return LIPptdistance(negationLIpredicate(p), np.array(pt))
+    else:
+        return min( LIPptdistance(negationLIpredicate(p), np.array(pt[0])) , LIPptdistance(p, np.array(pt[1]))  )
 
-def cost(I, plus, minus, ICE):
-    # It is possible to optimize these computations significantly if we have the mincost_list of the previous invariant
-    def mincostplus(I, plus):
-        def Uplus(r):
-            return 1.0
-        
-        def dplus(p, pluspoint):
-            pluspt_array = np.array(pluspoint)
-            if ( sum(p[:-2]* pluspt_array) <= p[-1] ):
-                return 0
-            else:
-                return predicatespacedistance(p, pluspoint)
+def U(r, U_type):
+    if (U_type == setType.plus):
+        return 1
+    elif (U_type == setType.minus):
+        return 1
+    else:
+        return 1   
 
-        ret = sum([ min([ sum([dplus(p, pluspoint) for p in cc  ]) for cc in I ] )  for pluspoint in plus])
-        return ( ret, Uplus( ret))
+def mincost(mincostlist):
+    return sum ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in mincostlist ])
 
-    def mincostminus(I, minus):
-        def Uminus(r):
-            return 1.0
+def mincosttuple(I, S, set_type ):
+    mincostlist = [ [ [d(p, pt, set_type) for p in cc  ] for cc in I ]  for pt in S]
+    r = mincost(mincostlist)
+    return (r, U(r, set_type), mincostlist)
 
-        def dminus(p, minuspoint):
-            minuspt_array = np.array(minuspoint)
-            negp = negationpredicate(p)
-            if ( sum(negp[:-2]* minuspt_array) <= negp[-1] ):
-                return 0
-            else:
-                return predicatespacedistance(negp, minuspoint)
-        
-        ret = sum([ min([ sum([dminus(p, minuspoint) for p in cc  ]) for cc in I ] )  for minuspoint in minus])
-        return ( ret, Uminus(ret))
 
-    def mincostICE(I, ICE):
-        def UICE( r):
-            return 1.0
-
-        def dICE(p, ICEpoint):
-            (hd, tl) = ICEpoint
-            hd_array = np.array(hd)
-            tl_array = np.array(tl)
-            negp = negationpredicate(p)
-            if ( ( sum(negp[:-2] * hd_array) <= negp[-1] ) or ( sum(p[:-2] * tl_array) <= p[-1] ) ):
-                return 0
-            else:
-                return min( predicatespacedistance(negp, hd) , predicatespacedistance(p, tl)  )
-        
-        ret = sum([ min([ sum([dICE(p, ICEpoint) for p in cc  ]) for cc in I ] )  for ICEpoint in ICE])
-        return ( ret, UICE(ret))   
+def optimized_mincosttuple(I, S, set_type, prev_mincostlist, inv_i):
+    mincostlist = prev_mincostlist
     
-    ( (mincostplus, Uplus) , (mincostminus, Uminus) , (mincostICE, UICE) ) = (mincostplus(I, plus) ,  mincostminus(I, minus) , mincostICE(I, ICE))
-    mincost = mincostplus + mincostminus + mincostICE
-    alpha = conf.alpha/3.0
+    for j,pt in enumerate(S):
+        mincostlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
+    r =  mincost(mincostlist)
+    return (r, U(r, set_type), mincostlist)   
+
+# i is the invariant index to change as a tuple: (cc_index, pred_index) , where cc_index and pred_index start from 0
+def cost(I, tupleofpoints, prev_mincosttuple = ([], [], []), i = () ):
+    K = conf.alpha/3.0
     gamma = conf.gamma
-    cost = ((alpha *  gamma**(-mincostplus) )/ Uplus) + ((alpha *  gamma**(-mincostminus) )/ Uminus) + ((alpha *  gamma**(-mincostICE) )/ UICE)
-    return (cost, mincost)
+    
+    if (i == () ):
+        (mincostplus, Uplus, mincostplus_list) = mincosttuple(I, tupleofpoints[0], setType.plus)
+        (mincostminus, Uminus, mincostminus_list) = mincosttuple(I, tupleofpoints[1], setType.minus)
+        (mincostICE, UICE, mincostICE_list) = mincosttuple(I, tupleofpoints[2], setType.ICE)
+    else:
+        (mincostplus, Uplus, mincostplus_list) = optimized_mincosttuple(I, tupleofpoints[0], setType.plus, prev_mincosttuple[0], i)
+        (mincostminus, Uminus, mincostminus_list) = optimized_mincosttuple(I, tupleofpoints[1], setType.minus, prev_mincosttuple[1], i)
+        (mincostICE, UICE, mincostICE_list) = optimized_mincosttuple(I, tupleofpoints[2], setType.ICE, prev_mincosttuple[2], i)        
+    
+    cost = ((K *  gamma**(-mincostplus) )/ Uplus) + ((K *  gamma**(-mincostminus) )/ Uminus) + ((K *  gamma**(-mincostICE) )/ UICE)
+    return (cost, mincostplus + mincostminus + mincostICE, (mincostplus_list , mincostminus_list, mincostICE_list))
+
+
+
+
+# Testing
+# p = np.array([1, 2, 3, 4, -1, 3])
+# print(negationLIpredicate(p))
+# pt = [1, 1, 1, 1]
+# print(LIPptdistance(p, pt))
+
+# I = [ np.array([[3, -1, 6] ])  ]
+# plus = [ [0] ]
+# minus = [ [7], [10000] ]
+# ICE = [ ( [5] , [6]  )  ]
+# (prev_cost, prev_mincost, prev_mincosttuple) = cost(I, (plus, minus, ICE))
+# print (prev_cost, prev_mincost, prev_mincosttuple)
+# index = [0, 0]
+# Inew = I
+# Inew[0][0][2] = 6
+# print( cost(Inew, (plus, minus, ICE) , prev_mincosttuple, index) )
+
 

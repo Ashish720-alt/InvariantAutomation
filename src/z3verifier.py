@@ -1,11 +1,7 @@
 from z3 import *
 import numpy as np
-from repr import Repr
-from dnfs_and_transitions import dnfnegation, DNF_to_z3expr, DNF_to_z3expr_p, op_norm_conj
+from dnfs_and_transitions import dnfnegation, dnfconjunction, dnfTrue
 from configure import Configure as conf
-from scipy.optimize import minimize, LinearConstraint
-
-
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
@@ -26,12 +22,12 @@ def genTransitionRel_to_z3expr(T):
             range(d-1) ]) + int(ptf[i][d-1]) for i in range(d-1) ]))
 
     def ptfp_to_z3expr(ptfp):
-        return simplify(If(DNF_to_z3expr(f[i].b, primed = 0), ptf_to_z3expr(f[i].t), False))
+        return simplify(If(DNF_to_z3expr(ptfp.b, primed = 0), ptf_to_z3expr(ptfp.t), False))
 
     def ptfplist_to_z3expr(ptfplist):
         ret = False
         for ptfp in ptfplist:
-            ret = simplify(Or(ret, ptfp_to_z3expr(ptfp) ))
+            ret = simplify(And(ret, ptfp_to_z3expr(ptfp) ))
         return ret    
 
     ptfplist = T[0] + T[1]
@@ -84,10 +80,30 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I_z3):
 
     
 
+P = [np.array([[1, 0, 0]])]
+B = [np.array([[1, -1, 6]])]
+Q = [np.array([[1, 0, 6]])]
+
+class partialTransitionFuncPair:
+    def __init__(self, transition_matrix, DNF, B):
+        self.t = transition_matrix
+        self.b = dnfconjunction(DNF, B, gLII = 1)
+
+def detTransitionFunc(B, *args):
+    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
+
+def nondetTransitionRel(B, *args):
+    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
+
+def genTransitionRel(Dtf, Ntr):
+    return [Dtf, Ntr]
+
+T = genTransitionRel( detTransitionFunc( B,  [ np.array([[1, 1], [0, 1]]) , dnfTrue(1) ] ,  [ np.array([[1, 2], [0, 1]]) , dnfTrue(1) ]  ) , nondetTransitionRel(B ))
+print(T)
 
 
-
-
+T_z3 = genTransitionRel_to_z3expr(T)
+print(T_z3)
 
 
 
