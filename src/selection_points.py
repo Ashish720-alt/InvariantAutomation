@@ -86,7 +86,7 @@ def get_ICE0 (T):
     X_ICE = [] # Need to write a function for this!
     ICE0 = X_ICE 
     for Btr in T:
-        ICE0.append( get_ICEfromBtr(Btr, n) )
+        ICE0 = ICE0 + get_ICEfromBtr(Btr, n) 
     return ICE0
 
 

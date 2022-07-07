@@ -20,11 +20,11 @@ def negationLIpredicate(p):
 
 def d(p, pt, pt_type):
     if (pt_type == setType.plus):
-        return LIPptdistance(p, np.array(pt))
+        return LIPptdistance(p, pt)
     elif (pt_type == setType.minus):
-        return LIPptdistance(negationLIpredicate(p), np.array(pt))
+        return LIPptdistance(negationLIpredicate(p), pt)
     else:
-        return min( LIPptdistance(negationLIpredicate(p), np.array(pt[0])) , LIPptdistance(p, np.array(pt[1]))  )
+        return min( LIPptdistance(negationLIpredicate(p), pt[0]) , LIPptdistance(p, pt[1])  )
 
 def U(r, U_type):
     if (U_type == setType.plus):

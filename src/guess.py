@@ -45,6 +45,7 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
         for i in range(c):
             cc = np.concatenate((cc, np.array([uniformlysampleLIp(Dp,n)], ndmin=2)))
         return cc
+
     I = [uniformlysampleLIcc(Dp, n, c) for i in range(d) ]
     (costI, mincostI, mincosttuple) = cost(I, samplepoints )
     return (I, deg_list(I, Dp), costI, mincostI, mincosttuple)
@@ -81,14 +82,12 @@ def randomwalktransition(I, deglist_I, Dp, samplepoints, mincosttuple_I):
     return (Inew, deg_list(Inew, Dp), costnew, mincostnew, mincosttuplenew)
 
 
+# Testing
 # plus = [ [0] ]
 # minus = [ [7], [10000] ]
 # ICE = [ ( [5] , [6]  )  ]
 # samplepoints = (plus, minus, ICE)
-# (I, deglistI, costI, mincostI, mincosttupleI) = uniformlysampleLII( (range(-10, 10, 1), range(-10,10,1) ), 1, 1, 1, samplepoints )
+# (I, deglistI, costI, mincostI, mincosttupleI) = uniformlysampleLII( (list(range(-10, 10, 1)), list(range(-10,10,1)) ), 1, 1, 1, samplepoints )
 # print(I, deglistI, costI, mincostI, mincosttupleI) 
 # Dp = (range(-10, 10, 1), range(-10,10,1) )
 # print(randomwalktransition(I, deglistI, Dp, samplepoints, mincosttupleI ))
-
-
-

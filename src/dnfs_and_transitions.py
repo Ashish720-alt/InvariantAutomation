@@ -105,6 +105,12 @@ def transition ( x , ptf):
     y = ymatrix_list[:-1]
     return y
 
+def DNF_aslist(I):
+    I_list = []
+    for cc in I:
+        I_list.append(cc.tolist())
+    return I_list
+
 # # Testing
 # print(dnfTrue(2))
 # print(dnfFalse(2))
