@@ -2,7 +2,7 @@
 """
 import numpy as np
 from dnfs_and_transitions import dnfconjunction
-import selection_points
+from selection_points import get_plus0, get_minus0, get_ICE0
 from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 
@@ -14,20 +14,13 @@ I -> Q
 
 '''
 
-# A partialTransitionFuncPair is a pair(t_i, B_i /\ B) where T is a partial LI transition function, and B_i, B are dnfs
-class partialTransitionFuncPair:
-    def __init__(self, transition_matrix, DNF, B):
-        self.t = transition_matrix
+class B_LItransitionrel:
+    def __init__(self, transition_matrix_list, DNF, B):
+        self.tlist = transition_matrix_list
         self.b = dnfconjunction(DNF, B, gLII = 1)
 
-def detTransitionFunc(*args, B):
-    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
-
-def nondetTransitionRel(*args, B):
-    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
-
-def genTransitionRel(Dtf, Ntr):
-    return [Dtf, Ntr]
+def genLItransitionrel(B, *args):
+    return [B_LItransitionrel(x[0], x[1], B) for x in args ]
 
 class Repr:
     def __init__(self, P, B, T, Q):
@@ -39,19 +32,18 @@ class Repr:
         self.Q = Q.copy()
         self.T = T.copy()
         
-        self.P_z3expr = DNF_to_z3expr(P)
-        self.B_z3expr = DNF_to_z3expr(B)
-        self.Q_z3expr = DNF_to_z3expr(Q)
+        self.P_z3expr = DNF_to_z3expr(P, primed = 0)
+        self.B_z3expr = DNF_to_z3expr(B, primed = 0)
+        self.Q_z3expr = DNF_to_z3expr(Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 3
-        self.d = 3
+        self.c = 1
+        self.d = 1
         self.tmax = 10000
-        self.X_ICE = []
 
         self.plus0 = get_plus0(P)
         self.minus0 = get_minus0(Q)
-        self.ICE0 = get_ICE0(T, self.X_ICE)        
+        self.ICE0 = get_ICE0(T)        
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 

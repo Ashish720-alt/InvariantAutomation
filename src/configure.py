@@ -11,7 +11,7 @@ class Configure:
     k = 2
     r = 1
 
-    s = 100
+    s = 20
 
     p = 0.05
     
