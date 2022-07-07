@@ -1,4 +1,4 @@
-import repr
+
 import numpy as np
 import cdd
 from configure import Configure as conf
@@ -69,32 +69,51 @@ def get_minus0 (Q):
     return minus0
 
 # An ICE pair is a pair of 2 states, where a state is a list of n numbers
-def get_ICE0 (T, X_ICE):
-    n = len( (T[0][0].b)[0][0] ) - 2
-    alltransfuncpairs = T[0] + T[1]
-
-    ICE0 = X_ICE
-    for transfuncpair in alltransfuncpairs:
-        b = dnfconjunction( transfuncpair.b, Dstate(n) , 0)
-        tf = transfuncpair.t
+def get_ICE0 (T):
+    def get_ICEfromBtr (Btr, n):
+        B = dnfconjunction( Btr.b, Dstate(n) , 0)
         heads_of_ICEpairs = []
-        for cc in b: 
+        for cc in B: 
             heads_of_ICEpairs = heads_of_ICEpairs + v_representation(cc)
 
+        ret = []
         for head in heads_of_ICEpairs:
-            tail = transition(head, tf)
-            ICE0.append((head, tail))
-    
+            for ptf in Btr.tlist:
+                ret.append( (head, transition(head, ptf)) )
+        return ret
+
+    n = len( (T[0].b)[0][0] ) - 2
+    X_ICE = [] # Need to write a function for this!
+    ICE0 = X_ICE 
+    for Btr in T:
+        ICE0.append( get_ICEfromBtr(Btr, n) )
     return ICE0
 
 
 
-#Testing:
-# This cc represents y >= 0, x <= 1, y <= x.
-# print(v_representation( np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ]) ))
+# Testing:
+
+
 # print(Dstate(2))
+
+# # This cc represents y >= 0, x <= 1, y <= x.
+# print(v_representation( np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ]) ))
+
 # print(get_plus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
 # print(get_minus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
-# b = [np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]
-# a = [ np.array([ [1, 0, 4], [0, 2, 1] , [0, 0, 1]   ]) , dnfTrue(2)  ]
-# print(get_ICE0(  [ repr.detTransitionFunc( a , B = b) , []]    )) 
+
+# import repr
+
+# B = [np.array([[1, -1, 5]])]
+
+# class B_LItransitionrel:
+#     def __init__(self, transition_matrix_list, DNF, B):
+#         self.tlist = transition_matrix_list
+#         self.b = dnfconjunction(DNF, B, gLII = 1)
+
+# def genLItransitionrel(B, *args):
+#     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
+
+# T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
+
+# print(get_ICE0(  T   )) 

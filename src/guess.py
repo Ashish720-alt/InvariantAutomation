@@ -1,7 +1,6 @@
 """ Guessing a new invriant.
 """
 import numpy as np
-from configure import Configure as conf
 from cost_funcs import cost
 
 # Returns a list of list of (n+1)-element-lists.
@@ -51,7 +50,7 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
     return (I, deg_list(I, Dp), costI, mincostI, mincosttuple)
 
 
-def randomwalktransition(I, deglist_I, Dp, samplepoints, prev_mincosttuple):
+def randomwalktransition(I, deglist_I, Dp, samplepoints, mincosttuple_I):
     # i is a number from 1 to degree
     def ithneighbor(I, i, deglist, Dp):
         k = i
@@ -78,7 +77,7 @@ def randomwalktransition(I, deglist_I, Dp, samplepoints, prev_mincosttuple):
     degree = deg(deglist_I) 
     i = np.random.choice(range(1, degree+1,1))
     (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
-    (costnew, mincostnew, mincosttuplenew) = cost(Inew, samplepoints, prev_mincosttuple, index)
+    (costnew, mincostnew, mincosttuplenew) = cost(Inew, samplepoints, mincosttuple_I, index)
     return (Inew, deg_list(Inew, Dp), costnew, mincostnew, mincosttuplenew)
 
 

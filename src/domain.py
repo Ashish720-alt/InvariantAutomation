@@ -1,6 +1,7 @@
 
 import numpy as np
-import repr
+from dnfs_and_transitions import dnfTrue, dnfconjunction
+from configure import Configure as conf
 
 def list_union(X, Y):
     return list(set(X + Y))
@@ -8,31 +9,36 @@ def list_union(X, Y):
 def extract_constants(P,B,T,Q):
     n = len(P[0][0]) - 2
     def extractdnfconsts(dnf):
-        (const, coeff) = (set() , set([0,1]))
+        (const, coeff) = (set([0,1]) , set([0,1]))
         for cc in dnf:
             for p in cc:
-                const |= set([p[self.n+1]])
+                const |= set([p[n+1]])
                 coeff |= set(p[:-2].flatten())
         return (coeff, const)
         
-    def extractptfconsts(ptf):
-        (const, coeff) = (set() , set())
-        for row in ptf:
-                const |= set([row[self.n]])
-                coeff |= set(row[:-1].flatten())  
-        return (coeff, const)                 
+    def extractBtrconstants(Btr):
+        def extractptfconsts(ptf):
+            (const, coeff) = (set() , set())
+            for row in ptf:
+                    const |= set([row[n]])
+                    coeff |= set(row[:-1].flatten())  
+            return (coeff, const)
+        (coeff, const) = extractdnfconsts(Btr.b)
+        for ptf in Btr.tlist:
+            (coeff_ptf, const_ptf) = extractptfconsts(ptf)
+            (coeff, const) = (coeff | coeff_ptf, const | const_ptf)
+        return (coeff, const)         
 
-    coeff = extractdnfconsts(self.P)[0] | extractdnfconsts(self.B)[0] | extractdnfconsts(self.Q)[0]
-    const = extractdnfconsts(self.P)[1] | extractdnfconsts(self.B)[1] | extractdnfconsts(self.Q)[1]
-    ptfp_list = self.T[0] + self.T[1]
-    for ptfp in ptfp_list:
-        coeff |= extractdnfconsts(ptfp.b)[0] | extractptfconsts(ptfp.t)[0]
-        const |= extractdnfconsts(ptfp.b)[1] | extractptfconsts(ptfp.t)[1]
+    coeff = extractdnfconsts(P)[0] | extractdnfconsts(B)[0] | extractdnfconsts(Q)[0]
+    const = extractdnfconsts(P)[1] | extractdnfconsts(B)[1] | extractdnfconsts(Q)[1]
+    for Btr in T:
+        (coeff_btr, const_btr) = extractBtrconstants(Btr)
+        (coeff, const) = (coeff | coeff_btr, const | const_btr)
     return (list(coeff), list(const))
 
 
 def ccl(X):
-    return range(min(X), max(X+1), 1)
+    return list(range(min(X), max(X)+1, 1))
 
 def gd_coeff(X):
     return list_union(X, [(-1)*x for x in X])   
@@ -42,7 +48,7 @@ def gd_const(X):
     return list_union(temp, [t-1 for t in temp])
 
 def scd(k):
-    return range(-k, k+1, 1)
+    return list(range(-k, k+1, 1))
 
 def npcd_const(X, r):
     ret = X
@@ -61,3 +67,25 @@ def D_p(P, B, T , Q):
     (coeff, const) = extract_constants(P,B,T,Q)
     pc = list_union(coeff, const)
     return (D_singlecoeff(coeff) , D_const(pc) )
+
+# Testing: 
+# import repr
+# P = [np.array([[1, 0, 3]])]
+# B = [np.array([[1, -1, 5]])]
+# Q = [np.array([[1, 0, 6]])]
+
+# class B_LItransitionrel:
+#     def __init__(self, transition_matrix_list, DNF, B):
+#         self.tlist = transition_matrix_list
+#         self.b = dnfconjunction(DNF, B, gLII = 1)
+
+# def genLItransitionrel(B, *args):
+#     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
+
+# T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
+
+# S = extract_constants(P, B, T, Q)
+# print(gd_coeff(S[0]), gd_const(S[1]))
+# print(scd(5), npcd_const([1,2,3,1000], 2))
+# print(D_singlecoeff(S[0]), D_const(list_union(S[0], S[1])))
+# print(D_p(P, B, T, Q))

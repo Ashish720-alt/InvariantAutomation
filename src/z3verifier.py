@@ -1,6 +1,5 @@
 from z3 import *
 import numpy as np
-from dnfs_and_transitions import dnfnegation, dnfconjunction, dnfTrue
 from configure import Configure as conf
 
 def DNF_to_z3expr(I, primed):
@@ -17,24 +16,26 @@ def DNF_to_z3expr(I, primed):
 
 def genTransitionRel_to_z3expr(T):
     def ptf_to_z3expr(ptf):
-        d = len(ptf)
+        n = len(ptf) - 1
         return simplify(And([Int("x%sp" % i) == Sum([ int(ptf[i][j]) * Int("x%s" % j) for j in 
-            range(d-1) ]) + int(ptf[i][d-1]) for i in range(d-1) ]))
+            range(n) ]) + int(ptf[i][n]) for i in range(n) ]))
 
-    def ptfp_to_z3expr(ptfp):
-        return simplify(If(DNF_to_z3expr(ptfp.b, primed = 0), ptf_to_z3expr(ptfp.t), False))
-
-    def ptfplist_to_z3expr(ptfplist):
-        ret = False
-        for ptfp in ptfplist:
-            ret = simplify(And(ret, ptfp_to_z3expr(ptfp) ))
-        return ret    
-
-    ptfplist = T[0] + T[1]
-    return ptfplist_to_z3expr(ptfplist)
+    def Btr_to_z3expr(Btr):
+        return Implies( DNF_to_z3expr(Btr.b, primed = 0) , simplify(Or([ptf_to_z3expr(ptf) for ptf in Btr.tlist])) )  
+ 
+    return simplify(And([ Btr_to_z3expr(Btr) for Btr in T  ]))
 
 
-def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I_z3):
+
+def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
+    def convert_cexlist(cexlist, ICEpair, n):
+        def convert_cex(cex, ICEpair, n):
+            if (ICEpair):
+                return ([cex.evaluate(Int("x%s" % i), model_completion=True).as_long() for i in range(n)], [cex.evaluate(Int("x%sp" % i), model_completion=True).as_long() for i in range(n)] )
+            else: 
+                return [cex.evaluate(Int("x%s" % i), model_completion=True).as_long() for i in range(n)]     
+        return [convert_cex(cex, ICEpair, n) for cex in cexlist]
+
     def __get_cex(C):
         result = []
         s = Solver()
@@ -42,7 +43,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I_z3):
         while len(result) < conf.s and s.check() == sat: 
             m = s.model()
             result.append(m)
-            # Create a new constraint the blocks the current model
+            # Create a new constraint that blocks the current model
             block = []
             for d in m:
                 # d is a declaration
@@ -61,49 +62,47 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I_z3):
         return result
 
     #P -> I
-    def __get_cex_plus(P_z3, I_z3):
-        return __get_cex(Implies(P_z3, I_z3))
+    def __get_cex_plus(P_z3, I_z3, n):
+        return convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
 
     #B & I & T => I'
-    def __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3):
-        return __get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3))
+    def __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n):
+        return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) ## converting here is wrong!!
 
     # I -> Q
-    def __get_cex_minus(I_z3, Q_z3):
-        return __get_cex(Implies(And(I_z3, Q_z3)))
-
-    cex_plus = __get_cex_plus(P_z3, I_z3)
-    cex_minus = __get_cex_minus(I_z3, Q_z3)
-    cex_ICE = __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3)
-    correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 1
+    def __get_cex_minus(I_z3, Q_z3, n):
+        return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) ## converting here is wrong!!
+    
+    n = len(I[0][0]) - 2
+    (I_z3, Ip_z3) = (DNF_to_z3expr(I, primed = 0), DNF_to_z3expr(I, primed = 1))
+    (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I_z3, n) ,__get_cex_minus(I_z3, Q_z3, n) ,__get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n))
+    correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , (cex_plus, cex_minus, cex_ICE) )
 
     
+# # Testing:
+# from dnfs_and_transitions import dnfnegation, dnfconjunction, dnfdisjunction, dnfTrue
+# P = [np.array([[1, 0, 3]])]
+# B = [np.array([[1, -1, 5]])]
+# Q = [np.array([[1, 0, 6]])]
 
-P = [np.array([[1, 0, 0]])]
-B = [np.array([[1, -1, 6]])]
-Q = [np.array([[1, 0, 6]])]
+# class B_LItransitionrel:
+#     def __init__(self, transition_matrix_list, DNF, B):
+#         self.tlist = transition_matrix_list
+#         self.b = dnfconjunction(DNF, B, gLII = 1)
 
-class partialTransitionFuncPair:
-    def __init__(self, transition_matrix, DNF, B):
-        self.t = transition_matrix
-        self.b = dnfconjunction(DNF, B, gLII = 1)
+# def genLItransitionrel(B, *args):
+#     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
 
-def detTransitionFunc(B, *args):
-    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
+# T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
 
-def nondetTransitionRel(B, *args):
-    return [partialTransitionFuncPair(x[0], x[1], B) for x in args]
+# P_z3 = DNF_to_z3expr(P, 0)
+# B_z3 = DNF_to_z3expr(B, 0)
+# Q_z3 = DNF_to_z3expr( dnfdisjunction(Q, B, 1), 0)
+# T_z3 = genTransitionRel_to_z3expr(T)
 
-def genTransitionRel(Dtf, Ntr):
-    return [Dtf, Ntr]
+# print(P_z3, B_z3, Q_z3)
+# print( T_z3)
 
-T = genTransitionRel( detTransitionFunc( B,  [ np.array([[1, 1], [0, 1]]) , dnfTrue(1) ] ,  [ np.array([[1, 2], [0, 1]]) , dnfTrue(1) ]  ) , nondetTransitionRel(B ))
-print(T)
-
-
-T_z3 = genTransitionRel_to_z3expr(T)
-print(T_z3)
-
-
-
+# I = [np.array([[1, -1, -4]])]
+# print(z3_verifier(P_z3, B_z3, T_z3, Q_z3, I))

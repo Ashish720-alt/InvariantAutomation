@@ -105,7 +105,7 @@ def transition ( x , ptf):
     y = ymatrix_list[:-1]
     return y
 
-#Testing
+# # Testing
 # print(dnfTrue(2))
 # print(dnfFalse(2))
 # dnfTest = [np.array([[1,2,1,0,3], [1,1,3,1,2]], ndmin = 2), np.array([[1,2,1,0,3], [1,1,3,0,2]], ndmin = 2)]

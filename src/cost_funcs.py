@@ -3,12 +3,9 @@
 This module includes cost functions.
 """
 
-from z3 import *
 import numpy as np
 from dnfs_and_transitions import dnfnegation
-from z3verifier import  DNF_to_z3expr
 from configure import Configure as conf
-from scipy.optimize import minimize, LinearConstraint
 
 class setType:
     plus = "plus"
@@ -74,7 +71,7 @@ def cost(I, tupleofpoints, prev_mincosttuple = ([], [], []), i = () ):
 
 
 
-# Testing
+# # Testing
 # p = np.array([1, 2, 3, 4, -1, 3])
 # print(negationLIpredicate(p))
 # pt = [1, 1, 1, 1]
