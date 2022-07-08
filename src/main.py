@@ -40,15 +40,5 @@ def metropolisHastings (repr: Repr):
     return (I, cost, t)
 
 
-# Testing
-from dnfs_and_transitions import dnfTrue
-import numpy as np
-from repr import genLItransitionrel
 
-P = [np.array([[1, 0, 0]])]
-B = [np.array([[1, -1, 5]])]
-Q = [np.array([[1, -1, 6]])] #Remember Q is Q \/ B
-T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
-A = Repr(P, B, T, Q)
-metropolisHastings(A)
 

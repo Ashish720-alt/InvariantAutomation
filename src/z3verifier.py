@@ -67,7 +67,8 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
 
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n):
-        return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) ## converting here is wrong!!
+        A = __get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3))
+        return convert_cexlist(A, 1, n) ## converting here is wrong!!
 
     # I -> Q
     def __get_cex_minus(I_z3, Q_z3, n):
@@ -80,11 +81,11 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     return ( correct , (cex_plus, cex_minus, cex_ICE) )
 
     
-# # Testing:
+# Testing:
 # from dnfs_and_transitions import dnfnegation, dnfconjunction, dnfdisjunction, dnfTrue
-# P = [np.array([[1, 0, 3]])]
+# P = [np.array([[1, 0, 0]])]
 # B = [np.array([[1, -1, 5]])]
-# Q = [np.array([[1, 0, 6]])]
+# Q = [np.array([[1, -1, 6]])]
 
 # class B_LItransitionrel:
 #     def __init__(self, transition_matrix_list, DNF, B):
@@ -101,8 +102,8 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
 # Q_z3 = DNF_to_z3expr( dnfdisjunction(Q, B, 1), 0)
 # T_z3 = genTransitionRel_to_z3expr(T)
 
-# print(P_z3, B_z3, Q_z3)
-# print( T_z3)
+# # print(P_z3, B_z3, Q_z3)
+# # print( T_z3)
 
-# I = [np.array([[1, -1, -4]])]
-# print(z3_verifier(P_z3, B_z3, T_z3, Q_z3, I))
+# I = [np.array([[-1, -1, 8]])]
+# print(z3_verifier(P_z3, B_z3, T_z3, Q_z3, I)[1])
