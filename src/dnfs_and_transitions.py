@@ -50,7 +50,7 @@ def genLII_to_LII (genLII):
                 p2[n] = -1
                 cc = np.concatenate((cc, np.array([p, p2], ndmin=2)))
         LII.append(cc)               
-    return LII
+    return deepcopy_DNF(LII)
 
 
 # It always returns LII
@@ -78,7 +78,7 @@ def dnfnegation (dnf):
             p = dnfnegation_LIp_to_LIp(dnf_LII[j][it[j]], n)
             cc = np.concatenate((cc, np.array([p], ndmin=2)))
         negdnf.append(cc)
-    return negdnf
+    return deepcopy_DNF(negdnf)
 
 def dnfconjunction (dnf1, dnf2, gLII):    
     ret = []
@@ -88,13 +88,13 @@ def dnfconjunction (dnf1, dnf2, gLII):
             ret.append(cc)   
     if (gLII == 0):
         ret = genLII_to_LII(ret)
-    return ret
+    return deepcopy_DNF(ret)
 
 def dnfdisjunction (dnf1, dnf2, gLII):
     ret = dnf1 + dnf2
     if (gLII == 0):
         ret = genLII_to_LII(ret)
-    return ret
+    return deepcopy_DNF(ret)
 
 
 # x is a python list, ptf is a np array of dimension 2, and return type is a python list
@@ -110,6 +110,18 @@ def DNF_aslist(I):
     for cc in I:
         I_list.append(cc.tolist())
     return I_list
+
+def deepcopy_DNF(I):
+    n = len(I[0][0]) - 2    
+    I_new = []
+    for cc in I:
+        cc_new = np.empty( shape=(0, n + 2), dtype = int )
+        for p in cc:
+            cc_new = np.concatenate((cc_new, np.array([np.copy(p)], ndmin=2)))
+        I_new.append(cc_new)
+    return I_new
+
+    
 
 # # Testing
 # print(dnfTrue(2))

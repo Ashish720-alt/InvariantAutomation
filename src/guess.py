@@ -2,6 +2,8 @@
 """
 import numpy as np
 from cost_funcs import cost
+from dnfs_and_transitions import deepcopy_DNF
+import copy
 
 # Returns a list of list of (n+1)-element-lists.
 def deg_list(I, Dp):
@@ -51,9 +53,10 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
     return (I, deg_list(I, Dp), costI, mincostI, mincosttuple)
 
 
-def randomwalktransition(I, deglist_I, Dp, samplepoints, mincosttuple_I):
+def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, mincosttuple_I):
     # i is a number from 1 to degree
-    def ithneighbor(I, i, deglist, Dp):
+    def ithneighbor(I_old, i, deglist, Dp):
+        I = I_old.copy()
         k = i
         n = len(I[0][0]) - 2
         for ccindex, degcc_list in enumerate(deglist):
@@ -73,13 +76,15 @@ def randomwalktransition(I, deglist_I, Dp, samplepoints, mincosttuple_I):
                                 I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + (1 if (k == 1) else -1)
                             else: 
                                 j = 0 if (vindex_actual < n+1) else 1
-                                I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + (1 if (I[ccindex][pindex][vindex_actual] == min(Dp[j])) else -1)
+                                r = 1 if (min(Dp[j]) == I[ccindex][pindex][vindex_actual]) else -1
+                                I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + r
                             return (I, index)
+    I = deepcopy_DNF(I_prev) #deepcopy here!
     degree = deg(deglist_I) 
     i = np.random.choice(range(1, degree+1,1))
     (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
     (costnew, mincostnew, mincosttuplenew) = cost(Inew, samplepoints, mincosttuple_I, index)
-    return (Inew, deg_list(Inew, Dp), costnew, mincostnew, mincosttuplenew)
+    return (Inew, copy.deepcopy(deg_list(Inew, Dp)), costnew, mincostnew, mincosttuplenew)
 
 
 # Testing
