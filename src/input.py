@@ -15,15 +15,15 @@ class handcrafted:
         T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
 
 class loop_lit:
-    class afnp2014: #For this, why does the coefficient take > |2| values when I put c = 2?
+    class afnp2014:
         P = [np.array([[1, 0, 0, 1], [0, 1, 0, 0] ])]
         B = [np.array([[0, 1, -2, 1000]])]
         Q = [np.array([[1, -1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
 
 
-P = handcrafted.mock.P
-B = handcrafted.mock.B
-T = handcrafted.mock.T
-Q = handcrafted.mock.Q
+P = loop_lit.afnp2014.P
+B = loop_lit.afnp2014.B
+T = loop_lit.afnp2014.T
+Q = loop_lit.afnp2014.Q
 metropolisHastings(Repr(P, B, T, Q))

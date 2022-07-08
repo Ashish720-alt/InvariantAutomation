@@ -39,7 +39,7 @@ class Repr:
 
         self.c = 1
         self.d = 1
-        self.tmax = 100000
+        self.tmax = 1000000
 
         self.plus0 = get_plus0(P)
         self.minus0 = get_minus0(Q)

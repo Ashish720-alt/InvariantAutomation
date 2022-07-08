@@ -22,14 +22,16 @@ def initialized():
     if (conf.PRINT_ITERATIONS == conf.ON):
         print("Initialization Complete...")
 
-def statistics(t, I, cost, mincost):
+def statistics(t, I, cost, mincost, descent):
     I_list = DNF_aslist(I)
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) )
+        descent_string = "(L)" if descent else ""
+        print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", descent_string )
+    
 
-def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount):
+def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout):
     if (conf.PRINT_ITERATIONS == conf.ON):    
-        print("Z3 Call " + str(z3_callcount) + ":\n", "\tz3_correct = ", correct)
+        print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", timeout, '\n', "\tz3_correct = ", correct)
         prettyprint_samplepoints(original_samplepoints, "original-selection-points", "\t")
         prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
 

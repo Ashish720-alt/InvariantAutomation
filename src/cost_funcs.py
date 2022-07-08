@@ -65,7 +65,11 @@ def cost(I, tupleofpoints, prev_mincosttuple = ([], [], []), i = () ):
         (mincostminus, Uminus, mincostminus_list) = optimized_mincosttuple(I, tupleofpoints[1], setType.minus, prev_mincosttuple[1], i)
         (mincostICE, UICE, mincostICE_list) = optimized_mincosttuple(I, tupleofpoints[2], setType.ICE, prev_mincosttuple[2], i)        
     
-    cost = ((K *  gamma**(-mincostplus) )/ Uplus) + ((K *  gamma**(-mincostminus) )/ Uminus) + ((K *  gamma**(-mincostICE) )/ UICE)
+    A = ((K *  gamma**(-mincostplus) )/ Uplus)
+    B = ((K *  gamma**(-mincostminus) )/ Uminus)
+    C = ((K *  gamma**(-mincostICE) )/ UICE)
+    cost = A + B + C # HERE DeBugging
+    # print('\t', (mincostplus, mincostminus, mincostICE), (A, B, C) )
     return (cost, mincostplus + mincostminus + mincostICE, (mincostplus_list , mincostminus_list, mincostICE_list))
 
 
