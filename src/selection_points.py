@@ -34,7 +34,7 @@ def v_representation (cc):
     for p in cc:
         mat.append(pred_to_matrixrow(p))
     
-    mat_cdd = cdd.Matrix( mat, number_type='fraction')
+    mat_cdd = cdd.Matrix( mat, number_type='float')
     mat_cdd.rep_type = cdd.RepType.INEQUALITY
     poly = cdd.Polyhedron(mat_cdd)
     
@@ -91,13 +91,12 @@ def get_ICE0 (T):
 
 
 
+
 # Testing:
-
-
 # print(Dstate(2))
 
-# # This cc represents y >= 0, x <= 1, y <= x.
-# print(v_representation( np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ]) ))
+# This cc represents y >= 0, x <= 1, y <= x.
+# print(v_representation( np.array([[0,-1,-1,0] , [1,0, -1, 1.33], [-1, 1, -1, 0] ]) ))
 
 # print(get_plus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
 # print(get_minus0([np.array([[0,-1,-1,0] , [1,0, -1, 1], [-1, 1, -1, 0] ])]  ))
