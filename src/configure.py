@@ -15,7 +15,7 @@ class Configure:
 
     p = 0.05
     
-    alpha = 1e40
+    alpha = 1e+300
     gamma = 2.0 #Need floating point constant here
 
 
@@ -33,3 +33,4 @@ class Configure:
     OFF = 0
     # Print iterations or not?
     PRINT_ITERATIONS = ON
+    PRINT_REJECT_ITERATIONS = OFF

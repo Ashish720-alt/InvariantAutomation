@@ -2,7 +2,7 @@
 """ Imports.
 """
 from configure import Configure as conf
-from cost_funcs import cost
+from cost_funcs import f
 from guess import uniformlysampleLII, randomwalktransition, deg
 from repr import Repr
 from numpy import random
@@ -16,19 +16,21 @@ def metropolisHastings (repr: Repr):
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
-    (I, deglistI, costI, mincostI, mincosttupleI) = uniformlysampleLII( repr.get_Dp(), repr.get_c(), repr.get_d(), repr.get_n(), samplepoints )
+    (I, deglistI, fI, costI, costtupleI) = uniformlysampleLII( repr.get_Dp(), repr.get_c(), repr.get_d(), repr.get_n(), samplepoints )
+    statistics(0, I, fI, costI, 0, 0)
     z3_callcount = 0
     while (1):
-        for t in range(tmax + 1):
-            (I_new, deglist_new, cost_new, mincost_new, mincosttuple_new) = randomwalktransition(I, deglistI, repr.get_Dp(), samplepoints, mincosttupleI)          
-            descent = 1 if (mincost_new > mincostI) else 0 
-            a = min( ((deg(deglistI) * cost_new) / deg(deglist_new)) / costI , 1) #Make sure we don't underapproximate to 0
+        for t in range(1,tmax + 1):
+            (I_new, deglist_new, f_new, cost_new, costtuple_new) = randomwalktransition(I, deglistI, repr.get_Dp(), samplepoints, costtupleI)          
+            descent = 1 if (cost_new > costI) else 0 
+            a = min( ((deg(deglistI) * f_new) / deg(deglist_new)) / fI , 1) #Make sure we don't underapproximate to 0
             if (random.rand() <= (1 - conf.p) *a):          
-                (I, deglistI, costI, mincostI, mincosttupleI) = (I_new, deglist_new, cost_new, mincost_new, mincosttuple_new)       
+                (I, deglistI, fI, costI, costtupleI) = (I_new, deglist_new, f_new, cost_new, costtuple_new)   
+                statistics(t, I_new, f_new, cost_new, descent, 0)    
             else:
+                statistics(t, I_new, f_new, cost_new, descent, 1)
                 continue
-            statistics(t, I, costI, mincostI, descent)
-            if (mincostI == 0):
+            if (costI == 0):
                 break  
         (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), I )           
         z3_callcount = z3_callcount + 1
@@ -36,9 +38,9 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (costI, mincostI, mincosttupleI) = cost(I, samplepoints)
+        (fI, costI, costtupleI) = f(I, samplepoints)
     invariantfound(I)
-    return (I, cost, t)
+    return (I, f, t)
 
 
 
