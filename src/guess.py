@@ -1,7 +1,7 @@
 """ Guessing a new invriant.
 """
 import numpy as np
-from cost_funcs import cost
+from cost_funcs import f
 from dnfs_and_transitions import deepcopy_DNF
 import copy
 
@@ -49,11 +49,11 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
         return cc
 
     I = [uniformlysampleLIcc(Dp, n, c) for i in range(d) ]
-    (costI, mincostI, mincosttuple) = cost(I, samplepoints )
-    return (I, deg_list(I, Dp), costI, mincostI, mincosttuple)
+    (fI, costI, costtuple) = f(I, samplepoints )
+    return (I, deg_list(I, Dp), fI, costI, costtuple)
 
 
-def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, mincosttuple_I):
+def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, costtuple_I):
     # i is a number from 1 to degree
     def ithneighbor(I_old, i, deglist, Dp):
         I = I_old.copy()
@@ -83,8 +83,8 @@ def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, mincosttuple_I):
     degree = deg(deglist_I) 
     i = np.random.choice(range(1, degree+1,1))
     (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
-    (costnew, mincostnew, mincosttuplenew) = cost(Inew, samplepoints, mincosttuple_I, index)
-    return (Inew, copy.deepcopy(deg_list(Inew, Dp)), costnew, mincostnew, mincosttuplenew)
+    (fnew, costnew, costtuplenew) = f(Inew, samplepoints, costtuple_I, index)
+    return (Inew, copy.deepcopy(deg_list(Inew, Dp)), fnew, costnew, costtuplenew)
 
 
 # Testing
@@ -92,7 +92,7 @@ def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, mincosttuple_I):
 # minus = [ [7], [10000] ]
 # ICE = [ ( [5] , [6]  )  ]
 # samplepoints = (plus, minus, ICE)
-# (I, deglistI, costI, mincostI, mincosttupleI) = uniformlysampleLII( (list(range(-10, 10, 1)), list(range(-10,10,1)) ), 1, 1, 1, samplepoints )
-# print(I, deglistI, costI, mincostI, mincosttupleI) 
+# (I, deglistI, fI, costI, costtupleI) = uniformlysampleLII( (list(range(-10, 10, 1)), list(range(-10,10,1)) ), 1, 1, 1, samplepoints )
+# print(I, deglistI, fI, costI, costtupleI) 
 # Dp = (range(-10, 10, 1), range(-10,10,1) )
-# print(randomwalktransition(I, deglistI, Dp, samplepoints, mincosttupleI ))
+# print(randomwalktransition(I, deglistI, Dp, samplepoints, costtupleI ))

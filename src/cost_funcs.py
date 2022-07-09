@@ -1,6 +1,5 @@
 
 """ Cost Functions.
-This module includes cost functions.
 """
 
 import numpy as np
@@ -34,43 +33,44 @@ def U(r, U_type):
     else:
         return 1   
 
-def mincost(mincostlist):
-    return sum ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in mincostlist ])
+def cost(costlist):
+    return sum ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in costlist ])
 
-def mincosttuple(I, S, set_type ):
-    mincostlist = [ [ [d(p, pt, set_type) for p in cc  ] for cc in I ]  for pt in S]
-    r = mincost(mincostlist)
-    return (r, U(r, set_type), mincostlist)
+def costtuple(I, S, set_type ):
+    costlist = [ [ [d(p, pt, set_type) for p in cc  ] for cc in I ]  for pt in S]
+    return (cost(costlist), costlist)
 
 
-def optimized_mincosttuple(I, S, set_type, prev_mincostlist, inv_i):
-    mincostlist = prev_mincostlist
+def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
+    costlist = prev_costlist
     
     for j,pt in enumerate(S):
-        mincostlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
-    r =  mincost(mincostlist)
-    return (r, U(r, set_type), mincostlist)   
+        costlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
+    return (cost(costlist), costlist)   
 
-# i is the invariant index to change as a tuple: (cc_index, pred_index) , where cc_index and pred_index start from 0
-def cost(I, tupleofpoints, prev_mincosttuple = ([], [], []), i = () ):
+def cost_to_f(costplus, costminus, costICE):
     K = conf.alpha/3.0
     gamma = conf.gamma
-    
+
+    # Uplus = U(costplus, setType.plus)
+    # Uminus = U(costminus, setType.minus)
+    # UICE = U(costICE, setType.ICE)
+    # return   ((K *  gamma**(-costplus) )/ Uplus) + ((K *  gamma**(-costminus) )/ Uminus) + ((K *  gamma**(-costICE) )/ UICE)
+
+    return K * (gamma**(-costplus-costminus-costICE) / 1.0)
+
+# i is the invariant index to change as a tuple: (cc_index, pred_index) , where cc_index and pred_index start from 0
+def f(I, tupleofpoints, prev_costtuple = ([], [], []), i = () ):
     if (i == () ):
-        (mincostplus, Uplus, mincostplus_list) = mincosttuple(I, tupleofpoints[0], setType.plus)
-        (mincostminus, Uminus, mincostminus_list) = mincosttuple(I, tupleofpoints[1], setType.minus)
-        (mincostICE, UICE, mincostICE_list) = mincosttuple(I, tupleofpoints[2], setType.ICE)
+        (costplus, costplus_list) = costtuple(I, tupleofpoints[0], setType.plus)
+        (costminus, costminus_list) = costtuple(I, tupleofpoints[1], setType.minus)
+        (costICE, costICE_list) = costtuple(I, tupleofpoints[2], setType.ICE)
     else:
-        (mincostplus, Uplus, mincostplus_list) = optimized_mincosttuple(I, tupleofpoints[0], setType.plus, prev_mincosttuple[0], i)
-        (mincostminus, Uminus, mincostminus_list) = optimized_mincosttuple(I, tupleofpoints[1], setType.minus, prev_mincosttuple[1], i)
-        (mincostICE, UICE, mincostICE_list) = optimized_mincosttuple(I, tupleofpoints[2], setType.ICE, prev_mincosttuple[2], i)        
+        (costplus, costplus_list) = optimized_costtuple(I, tupleofpoints[0], setType.plus, prev_costtuple[0], i)
+        (costminus, costminus_list) = optimized_costtuple(I, tupleofpoints[1], setType.minus, prev_costtuple[1], i)
+        (costICE, costICE_list) = optimized_costtuple(I, tupleofpoints[2], setType.ICE, prev_costtuple[2], i)        
     
-    A = ((K *  gamma**(-mincostplus) )/ Uplus)
-    B = ((K *  gamma**(-mincostminus) )/ Uminus)
-    C = ((K *  gamma**(-mincostICE) )/ UICE)
-    cost = A + B + C # HERE DeBugging
-    # print('\t', (mincostplus, mincostminus, mincostICE), (A, B, C) )
-    return (cost, mincostplus + mincostminus + mincostICE, (mincostplus_list , mincostminus_list, mincostICE_list))
+    return (cost_to_f(costplus, costminus, costICE), costplus + costminus + costICE, (costplus_list , costminus_list, costICE_list))
 
 
 
@@ -85,11 +85,11 @@ def cost(I, tupleofpoints, prev_mincosttuple = ([], [], []), i = () ):
 # plus = [ [0] ]
 # minus = [ [7], [10000] ]
 # ICE = [ ( [5] , [6]  )  ]
-# (prev_cost, prev_mincost, prev_mincosttuple) = cost(I, (plus, minus, ICE))
-# print (prev_cost, prev_mincost, prev_mincosttuple)
+# (prev_f, prev_cost, prev_costtuple) = f(I, (plus, minus, ICE))
+# print (prev_f, prev_cost, prev_costtuple)
 # index = [0, 0]
 # Inew = I
 # Inew[0][0][2] = 6
-# print( cost(Inew, (plus, minus, ICE) , prev_mincosttuple, index) )
+# print( f(Inew, (plus, minus, ICE) , prev_costtuple, index) )
 
 
