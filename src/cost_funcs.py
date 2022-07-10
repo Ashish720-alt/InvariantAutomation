@@ -48,19 +48,27 @@ def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
         costlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
     return (cost(costlist), costlist)   
 
-def cost_to_f(costplus, costminus, costICE):
+def f1(costplus, costminus, costICE):
     K = conf.alpha/3.0
     gamma = conf.gamma
+    Uplus = U(costplus, setType.plus)
+    Uminus = U(costminus, setType.minus)
+    UICE = U(costICE, setType.ICE)
+    return   ((K *  gamma**(-costplus) )/ Uplus) + ((K *  gamma**(-costminus) )/ Uminus) + ((K *  gamma**(-costICE) )/ UICE)
 
-    # Uplus = U(costplus, setType.plus)
-    # Uminus = U(costminus, setType.minus)
-    # UICE = U(costICE, setType.ICE)
-    # return   ((K *  gamma**(-costplus) )/ Uplus) + ((K *  gamma**(-costminus) )/ Uminus) + ((K *  gamma**(-costICE) )/ UICE)
+def f2(costplus, costminus, costICE, beta  ):
+    K = conf.alpha/3.0
+    gamma = conf.gamma
+    beta = 100.0/40000.0
+    exp = -beta * (costplus + costminus + costICE)
+    
+    return K * (gamma**exp / 1.0)    
 
-    return K * (gamma**(-costplus-costminus-costICE) / 1.0)
+def cost_to_f(costplus, costminus, costICE, beta):
+    return f2(costplus, costminus, costICE, beta)
 
 # i is the invariant index to change as a tuple: (cc_index, pred_index) , where cc_index and pred_index start from 0
-def f(I, tupleofpoints, prev_costtuple = ([], [], []), i = () ):
+def f(I, tupleofpoints, beta , prev_costtuple = ([], [], []), i = () ):
     if (i == () ):
         (costplus, costplus_list) = costtuple(I, tupleofpoints[0], setType.plus)
         (costminus, costminus_list) = costtuple(I, tupleofpoints[1], setType.minus)
@@ -70,7 +78,7 @@ def f(I, tupleofpoints, prev_costtuple = ([], [], []), i = () ):
         (costminus, costminus_list) = optimized_costtuple(I, tupleofpoints[1], setType.minus, prev_costtuple[1], i)
         (costICE, costICE_list) = optimized_costtuple(I, tupleofpoints[2], setType.ICE, prev_costtuple[2], i)        
     
-    return (cost_to_f(costplus, costminus, costICE), costplus + costminus + costICE, (costplus_list , costminus_list, costICE_list))
+    return (cost_to_f(costplus, costminus, costICE, beta), costplus + costminus + costICE, (costplus_list , costminus_list, costICE_list))
 
 
 

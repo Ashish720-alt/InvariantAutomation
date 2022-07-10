@@ -5,6 +5,7 @@ from dnfs_and_transitions import dnfconjunction
 from selection_points import get_plus0, get_minus0, get_ICE0
 from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
+from configure import Configure as conf
 
 '''
 The general single loop clause system is:
@@ -47,6 +48,11 @@ class Repr:
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
+        self.k0 = max(self.Dp[0])
+        self.k1 = max(self.Dp[1])
+        self.theta0 = 1 + self.k1 + (self.k0* self.n * max( conf.dspace_intmax, -conf.dspace_intmin))
+        self.beta = conf.beta_0/(self.c * ( len(self.plus0) + len(self.minus0) + len(self.ICE0)) * self.theta0 )
+
     def get_n(self):
         return self.n
 
@@ -79,6 +85,9 @@ class Repr:
 
     def get_d(self):
         return self.d
+
+    def get_beta(self):
+        return self.beta
 
     def get_tmax(self):
         return self.tmax

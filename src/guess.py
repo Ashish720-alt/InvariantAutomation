@@ -31,7 +31,7 @@ def deg_list(I, Dp):
 def deg(deglist):
     return sum([ sum([ sum(p) for p in cc  ]) for cc in deglist])
 
-def uniformlysampleLII(Dp, c, d, n, samplepoints):
+def uniformlysampleLII(Dp, c, d, n, samplepoints, beta):
     def uniformlysampleLIcc(Dp, n, c):
         def uniformlysampleLIp(Dp, n):
             def uniformlysamplenumber(i):
@@ -49,11 +49,11 @@ def uniformlysampleLII(Dp, c, d, n, samplepoints):
         return cc
 
     I = [uniformlysampleLIcc(Dp, n, c) for i in range(d) ]
-    (fI, costI, costtuple) = f(I, samplepoints )
+    (fI, costI, costtuple) = f(I, samplepoints, beta )
     return (I, deg_list(I, Dp), fI, costI, costtuple)
 
 
-def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, costtuple_I):
+def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, costtuple_I, beta):
     # i is a number from 1 to degree
     def ithneighbor(I_old, i, deglist, Dp):
         I = I_old.copy()
@@ -83,7 +83,7 @@ def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, costtuple_I):
     degree = deg(deglist_I) 
     i = np.random.choice(range(1, degree+1,1))
     (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
-    (fnew, costnew, costtuplenew) = f(Inew, samplepoints, costtuple_I, index)
+    (fnew, costnew, costtuplenew) = f(Inew, samplepoints, beta, costtuple_I, index)
     return (Inew, copy.deepcopy(deg_list(Inew, Dp)), fnew, costnew, costtuplenew)
 
 

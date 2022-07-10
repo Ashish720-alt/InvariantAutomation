@@ -16,12 +16,12 @@ def metropolisHastings (repr: Repr):
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
-    (I, deglistI, fI, costI, costtupleI) = uniformlysampleLII( repr.get_Dp(), repr.get_c(), repr.get_d(), repr.get_n(), samplepoints )
+    (I, deglistI, fI, costI, costtupleI) = uniformlysampleLII( repr.get_Dp(), repr.get_c(), repr.get_d(), repr.get_n(), samplepoints, repr.get_beta() )
     statistics(0, I, fI, costI, 0, 0)
     z3_callcount = 0
     while (1):
         for t in range(1,tmax + 1):
-            (I_new, deglist_new, f_new, cost_new, costtuple_new) = randomwalktransition(I, deglistI, repr.get_Dp(), samplepoints, costtupleI)          
+            (I_new, deglist_new, f_new, cost_new, costtuple_new) = randomwalktransition(I, deglistI, repr.get_Dp(), samplepoints, costtupleI, repr.get_beta())          
             descent = 1 if (cost_new > costI) else 0 
             a = min( ((deg(deglistI) * f_new) / deg(deglist_new)) / fI , 1) #Make sure we don't underapproximate to 0
             if (random.rand() <= (1 - conf.p) *a):          
