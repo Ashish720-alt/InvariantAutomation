@@ -25,11 +25,17 @@ def initialized():
 def statistics(t, I, cost, mincost, descent, reject):
     I_list = DNF_aslist(I)
     if (conf.PRINT_ITERATIONS == conf.ON):
-        if reject:
-            end_string = "[X]" if (conf.PRINT_REJECT_ITERATIONS == conf.ON) else ""
+        if (reject):
+            if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
+                end_string = "[X]" 
+                print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", end_string )
+                return
+            else:
+                return
         else:
             end_string = "(L)" if descent else ""
-        print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", end_string )
+            print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", end_string )
+            return
     
 
 def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout):

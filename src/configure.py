@@ -33,4 +33,4 @@ class Configure:
     OFF = 0
     # Print iterations or not?
     PRINT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = ON
+    PRINT_REJECT_ITERATIONS = OFF
