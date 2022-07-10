@@ -51,7 +51,6 @@ class Repr:
         self.k0 = max(self.Dp[0])
         self.k1 = max(self.Dp[1])
         self.theta0 = 1 + self.k1 + (self.k0* self.n * max( conf.dspace_intmax, -conf.dspace_intmin))
-        self.beta = conf.beta_0/(self.c * ( len(self.plus0) + len(self.minus0) + len(self.ICE0)) * self.theta0 )
 
     def get_n(self):
         return self.n
@@ -84,10 +83,10 @@ class Repr:
         return self.c
 
     def get_d(self):
-        return self.d
+        return self.d   
 
-    def get_beta(self):
-        return self.beta
+    def get_theta0(self):
+        return self.theta0
 
     def get_tmax(self):
         return self.tmax
