@@ -17,7 +17,7 @@ class Configure:
     
     alpha = 1e+40
     gamma = 2.0 #Need floating point constant here
-    beta_0 = 100
+    beta0 = 100
 
     # Operators
     OP = {
@@ -33,4 +33,4 @@ class Configure:
     OFF = 0
     # Print iterations or not?
     PRINT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = OFF
+    PRINT_REJECT_ITERATIONS = ON
