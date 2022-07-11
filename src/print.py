@@ -28,13 +28,13 @@ def statistics(t, I, cost, mincost, descent, reject):
         if (reject):
             if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                 end_string = "[X]" 
-                print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", end_string )
+                print("t = ", t, ":\t", I_list , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string )
                 return
             else:
                 return
         else:
             end_string = "(L)" if descent else ""
-            print("t = ", t, ":\t", I_list , "\t", "(cost, mincost) = ", (cost, mincost) , "\t", end_string )
+            print("t = ", t, ":\t", I_list , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string )
             return
     
 
