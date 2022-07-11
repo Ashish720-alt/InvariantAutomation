@@ -5,7 +5,7 @@ from repr import genLItransitionrel, Repr
 from main import metropolisHastings
 
 
-#IMP: Remember Q is Q \/ B
+#IMP: Remember Q is Q \/ B for standard CHC
 
 class handcrafted:
     class mock:

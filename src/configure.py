@@ -13,11 +13,11 @@ class Configure:
 
     s = 20
 
-    p = 0.05
+    p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
     
-    alpha = 1e+40
+    alpha = 1e+10
     gamma = 2.0 #Need floating point constant here
-    beta0 = 100
+    beta0 = 100 #10 doesnt work for gamma = 2.0 or 10.0 as it takes too many bad transitions.
 
     # Operators
     OP = {

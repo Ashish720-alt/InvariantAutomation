@@ -61,9 +61,8 @@ def f1(costplus, costminus, costICE):
     return   ((K *  gamma**(-costplus) )/ Uplus) + ((K *  gamma**(-costminus) )/ Uminus) + ((K *  gamma**(-costICE) )/ UICE)
 
 def f2(costplus, costminus, costICE, beta  ):
-    K = conf.alpha/3.0
+    K = conf.alpha
     gamma = conf.gamma
-    beta = 100.0/40000.0
     exp = -beta * (costplus + costminus + costICE)
     
     return K * (gamma**exp / 1.0)    
