@@ -6,13 +6,17 @@ import numpy as np
 from dnfs_and_transitions import dnfnegation
 from configure import Configure as conf
 
+
 class setType:
     plus = "plus"
     minus = "minus"
     ICE = "ICE"
 
+
+
+
 def LIPptdistance(p, pt):
-    return max(sum(p[:-2]* pt) - p[-1] , 0)
+    return max( sum(p[:-2]* pt) - p[-1] , 0)
 
 def negationLIpredicate(p):
     return (dnfnegation( [np.array( [p], ndmin = 2 )] ))[0][0]

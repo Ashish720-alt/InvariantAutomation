@@ -39,7 +39,7 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (fI, costI, costtupleI) = f(I, samplepoints)
+        (fI, costI, costtupleI) = f(I, samplepoints, beta)
         beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )
     invariantfound(I)
     return (I, f, z3_callcount)
