@@ -47,3 +47,13 @@ def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcoun
 def invariantfound(I):
     print("Invariant Found:\t", end = '')
     prettyprint_invariant(I)
+
+def timestatistics(neighbor_time , rest_time, total_iterations, z3_time, initialize_time, z3_callcount ):
+    if (conf.PRINT_TIME_STATISTICS == conf.ON): 
+        print("\nTime Statistics:")
+        print("\tTotal Initialization and Re-initialization Time: ", initialize_time)
+        print("\tTotal Neighbor Time: ", neighbor_time)
+        print("\tTotal remaining MCMC loop Time: ", rest_time)
+        print("\tTotal Z3 Time: ", z3_time)
+        print("\tTotal MCMC iterations: ", total_iterations)
+        print("\tTotal Z3 calls: ", z3_callcount)
