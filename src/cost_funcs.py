@@ -5,7 +5,7 @@
 import numpy as np
 from dnfs_and_transitions import dnfnegation
 from configure import Configure as conf
-
+from copy import deepcopy
 
 class setType:
     plus = "plus"
@@ -31,26 +31,39 @@ def d(p, pt, pt_type):
 
 def U(r, U_type):
     if (U_type == setType.plus):
-        return 1
+        return 1.0
     elif (U_type == setType.minus):
-        return 1
+        return 1.0
     else:
-        return 1   
+        return 1.0 
 
 def cost(costlist):
     return sum ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in costlist ])
 
 def costtuple(I, S, set_type ):
-    costlist = [ [ [d(p, pt, set_type) for p in cc  ] for cc in I ]  for pt in S]
-    return (cost(costlist), costlist)
+    if (set_type == setType.plus):
+        costlist = [ [ [LIPptdistance(p, pt) for p in cc  ] for cc in I ]  for pt in S]
+        return (cost(costlist), costlist)
+    elif (set_type == setType.minus):
+        costlist = [ [ [LIPptdistance(negationLIpredicate(p), pt) for p in cc  ] for cc in I ]  for pt in S] 
+        return (cost(costlist), costlist)
+    else:
+        costlist = ([ [ [LIPptdistance(negationLIpredicate(p), pt[0]) for p in cc  ] for cc in I ]  for pt in S], 
+                            [ [ [LIPptdistance(p, pt[1]) for p in cc  ] for cc in I ]  for pt in S] )
+        return ( min( cost(costlist[0]), cost(costlist[1]) ), costlist)    
 
 
 def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
-    costlist = prev_costlist
-    
-    for j,pt in enumerate(S):
-        costlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
-    return (cost(costlist), costlist)   
+    costlist = deepcopy(prev_costlist)
+    if (set_type == setType.plus or set_type == setType.minus):
+        for j,pt in enumerate(S):
+            costlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
+        return (cost(costlist), costlist)
+    else:
+        for j,pt in enumerate(S):
+            costlist[0][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)        
+            costlist[1][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type) 
+        return ( min( cost(costlist[0]), cost(costlist[1]) ), costlist) 
 
 def f1(costplus, costminus, costICE):
     K = conf.alpha/3.0
