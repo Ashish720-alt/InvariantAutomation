@@ -37,20 +37,23 @@ def U(r, U_type):
     else:
         return 1.0 
 
-def cost(costlist):
+def cost_sum(costlist):
     return sum ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in costlist ])
+
+def cost_max(costlist):
+    return max ([ min([ sum([p for p in cc]) for cc in pt_I]) for pt_I in costlist ])
 
 def costtuple(I, S, set_type ):
     if (set_type == setType.plus):
         costlist = [ [ [LIPptdistance(p, pt) for p in cc  ] for cc in I ]  for pt in S]
-        return (cost(costlist), costlist)
+        return (cost_sum(costlist), costlist)
     elif (set_type == setType.minus):
         costlist = [ [ [LIPptdistance(negationLIpredicate(p), pt) for p in cc  ] for cc in I ]  for pt in S] 
-        return (cost(costlist), costlist)
+        return (cost_sum(costlist), costlist)
     else:
         costlist = ([ [ [LIPptdistance(negationLIpredicate(p), pt[0]) for p in cc  ] for cc in I ]  for pt in S], 
                             [ [ [LIPptdistance(p, pt[1]) for p in cc  ] for cc in I ]  for pt in S] )
-        return ( min( cost(costlist[0]), cost(costlist[1]) ), costlist)    
+        return ( min( cost_sum(costlist[0]), cost_sum(costlist[1]) ), costlist)    
 
 
 def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
@@ -58,12 +61,12 @@ def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
     if (set_type == setType.plus or set_type == setType.minus):
         for j,pt in enumerate(S):
             costlist[j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)
-        return (cost(costlist), costlist)
+        return (cost_sum(costlist), costlist)
     else:
         for j,pt in enumerate(S):
             costlist[0][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)        
             costlist[1][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type) 
-        return ( min( cost(costlist[0]), cost(costlist[1]) ), costlist) 
+        return ( min( cost_sum(costlist[0]), cost_sum(costlist[1]) ), costlist) 
 
 def f1(costplus, costminus, costICE):
     K = conf.alpha/3.0
@@ -74,11 +77,13 @@ def f1(costplus, costminus, costICE):
     return   ((K *  gamma**(-costplus) )/ Uplus) + ((K *  gamma**(-costminus) )/ Uminus) + ((K *  gamma**(-costICE) )/ UICE)
 
 def f2(costplus, costminus, costICE, beta  ):
+    totalcost = costplus + costminus + costICE
     K = conf.alpha
     gamma = conf.gamma
-    exp = -beta * (costplus + costminus + costICE)
-    
-    return K * (gamma**exp / 1.0)    
+    exp = -beta * totalcost
+    ret = K * (gamma**exp / 1.0) 
+    # print("totalcost, K, gamma, exp, f = ", totalcost, K, gamma, exp, ret)
+    return ret   
 
 def cost_to_f(costplus, costminus, costICE, beta):
     return f2(costplus, costminus, costICE, beta)

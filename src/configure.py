@@ -17,7 +17,7 @@ class Configure:
     
     alpha = 1e+10
     gamma = 2.0 #Need floating point constant here
-    beta0 = 100 #10 doesnt work for gamma = 2.0 or 10.0 as it takes too many bad transitions.
+    beta0 = 1000 #10, 100 doesnt work for gamma = 2.0 or 10.0 as it takes too many bad transitions.
 
     # Operators
     OP = {
@@ -32,6 +32,6 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
-    PRINT_ITERATIONS = OFF
+    PRINT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_TIME_STATISTICS = ON

@@ -46,7 +46,11 @@ def metropolisHastings (repr: Repr):
             descent = 1 if (cost_new > costI) else 0 
             a = min( ((deg(deglistI) * f_new) / deg(deglist_new)) / fI , 1) #Make sure we don't underapproximate to 0
             if (random.rand() <= (1 - conf.p) *a):          
-                (I, deglistI, fI, costI, costtupleI) = (I_new, deglist_new, f_new, cost_new, costtuple_new)   
+                # while(I_new[0][0][0] == 0 and I_new[0][0][1] == 0): #Remove this!!
+                #     (I, deglistI, fI, costI, costtupleI) = (I_new, deglist_new, f_new, cost_new, costtuple_new)   
+                
+                (I, deglistI, fI, costI, costtupleI) = (I_new, deglist_new, f_new, cost_new, costtuple_new)  
+
                 statistics(t, I_new, f_new, cost_new, descent, 0 )    
             else:
                 statistics(t, I_new, f_new, cost_new, descent, 1 )
