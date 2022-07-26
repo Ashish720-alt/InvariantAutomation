@@ -1,98 +1,87 @@
 """ Guessing a new invriant.
 """
 import numpy as np
+import random
 from cost_funcs import f
-from dnfs_and_transitions import deepcopy_DNF
+from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
+from configure import Configure as conf
+from math import inf
 
-# Returns a list of list of (n+1)-element-lists.
-def deg_list(I, Dp):
-    n = len(I[0][0]) - 2
-    def degcc_list(cc, Dp, n):
-        def degp_list(p, Dp, n):
-            ret = []
-            for i in range(n+2):
-                if (i < n):
-                    if (p[i] == min(Dp[0]) or p[i] == max(Dp[0]) ):
-                        ret.append(1)
-                    else:
-                        ret.append(2)
-                elif (i == n):
-                    continue
-                else:
-                    if (p[i] == min(Dp[1]) or p[i] == max(Dp[1]) ):
-                        ret.append(1)
-                    else:
-                        ret.append(2)
-            return ret
-        return [degp_list(p, Dp, n) for p in cc ]
-    return [degcc_list(cc, Dp, n) for cc in I ]
+def randomlysamplelistoflists(l):
+    ind = np.random.choice( len(l))
+    return l[ind]
 
-def deg(deglist):
-    return sum([ sum([ sum(p) for p in cc  ]) for cc in deglist])
 
-def uniformlysampleLII(Dp, c, d, n, samplepoints, beta):
-    def uniformlysampleLIcc(Dp, n, c):
-        def uniformlysampleLIp(Dp, n):
-            def uniformlysamplenumber(i):
-                if i < n:
-                    return np.random.choice(Dp[0])
-                elif i == n:
-                    return -1
-                else:
-                    return np.random.choice(Dp[1])
-            return np.fromfunction(np.vectorize(uniformlysamplenumber), shape = (n+2,), dtype=int)
+def uniformlysampleRTI( rotation_vertices, k1, c, d, n):
+    def uniformlysampleRTcc(rotation_vertices, k1, n, c):
+        def uniformlysampleRTp(rotation_vertices, k1, n):
+            coeff = randomlysamplelistoflists(rotation_vertices)
+            # Rejection Sampling
+            const = inf
+            while ( const > k1 or const < -k1 ):
+                pt = random.choices( list(range(conf.dspace_intmin, conf.dspace_intmax + 1)) , k = n)
+                const = np.dot(np.asarray(pt), np.asarray(coeff))
+            return [coeff, pt]
         
-        cc = np.empty(shape=(0,n+2), dtype = 'int')
-        for i in range(c):
-            cc = np.concatenate((cc, np.array([uniformlysampleLIp(Dp,n)], ndmin=2)))
-        return cc
+        return [ uniformlysampleRTp(rotation_vertices, k1, n) for i in range(c)  ]
+    RTI = [ uniformlysampleRTcc(rotation_vertices, k1, n, c) for i in range(d)  ]
+    return RTI
 
-    I = [uniformlysampleLIcc(Dp, n, c) for i in range(d) ]
-    (fI, costI, costtuple) = f(I, samplepoints, beta )
-    return (I, deg_list(I, Dp), fI, costI, costtuple)
+    # LII = RTI_to_LII(RTI)
+    # (fI, costI) = f(LII, samplepoints, beta)
+
+def translationneighbors (tp, rp, k1):
+    const_old = np.dot(np.asarray(tp), np.asarray(rp))
+    rv = []
+    for i,value in enumerate(tp):
+        tpcopy = tp.copy()
+        if (value <= conf.dspace_intmax - 1 and const_old + rp[i] <= k1 and const_old + rp[i] >= -k1-1):
+            tpcopy[i] = tpcopy[i] + 1
+            rv.append(tpcopy)
+        tpcopy = tp.copy()
+        if (value >= conf.dspace_intmin + 1 and const_old - rp[i] <= k1 and const_old - rp[i] >= -k1-1):
+            tpcopy[i] = tpcopy[i] - 1
+            rv.append(tpcopy)
+    return rv
+
+def translationdegree(tp, rp, k1):
+    return len(translationneighbors(tp, rp, k1))
+
+def rotationdegree(rotationneighbors):
+    return len(rotationneighbors)
+
+def allowedrotations(rotationneighbors, centreofrotation, k1):
+    rv = []
+    
+    for neighbor in rotationneighbors:
+        new_const = np.dot(np.asarray(neighbor), np.asarray(centreofrotation))
+        if(new_const <= k1 and new_const >= -k1-1 ):
+            rv.append(neighbor)
+    return rv    
+
+def rotationtransition(rotationneighbors, centreofrotation, k1):
+    allowedneighbors = allowedrotations(rotationneighbors, centreofrotation, k1)
+    if (len(allowedneighbors) == 0):
+        return ( [0] * len(centreofrotation) , 0)
+    return ( list(randomlysamplelistoflists(allowedneighbors)) , len(allowedneighbors))
 
 
-def randomwalktransition(I_prev, deglist_I, Dp, samplepoints, costtuple_I, beta):
-    # i is a number from 1 to degree
-    def ithneighbor(I_old, i, deglist, Dp):
-        I = I_old.copy()
-        k = i
-        n = len(I[0][0]) - 2
-        for ccindex, degcc_list in enumerate(deglist):
-            for pindex, degp_list in enumerate(degcc_list):
-                if ( k > sum(degp_list)):
-                    k = k - sum(degp_list)
-                    continue
-                else:
-                    index = (ccindex, pindex)
-                    for vindex, deg in enumerate(degp_list):
-                        if (k > deg):
-                            k = k - deg
-                            continue
-                        else:
-                            vindex_actual = vindex if (vindex < n) else (vindex + 1)                  
-                            if (deg == 2):
-                                I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + (1 if (k == 1) else -1)
-                            else: 
-                                j = 0 if (vindex_actual < n+1) else 1
-                                r = 1 if (min(Dp[j]) == I[ccindex][pindex][vindex_actual]) else -1
-                                I[ccindex][pindex][vindex_actual] = I[ccindex][pindex][vindex_actual] + r
-                            return (I, index)
-    I = deepcopy_DNF(I_prev) #deepcopy here!
-    degree = deg(deglist_I) 
-    i = np.random.choice(range(1, degree+1,1))
-    (Inew, index) = ithneighbor(I, i, deglist_I, Dp)
-    (fnew, costnew, costtuplenew) = f(Inew, samplepoints, beta, costtuple_I, index)
-    return (Inew, copy.deepcopy(deg_list(Inew, Dp)), fnew, costnew, costtuplenew)
+def translationtransition(trans_pred, rot_pred, k1):
+    translation_neighbors = translationneighbors(trans_pred, rot_pred, k1)
+    return (randomlysamplelistoflists(translation_neighbors) , len(translation_neighbors))
+
+# call this function, then choose either rotation or translation change with probability 1/2, and then do the respective change.
+# Also call the cost in the main function.
+def ischange():
+    return (np.random.rand() <= 1 - conf.p )
+
+def get_index(d, c):
+    return (np.random.choice( list(range(d)) ), np.random.choice( list(range(c)) ))
+
+def isrotationchange():
+    return (np.random.rand() <= conf.p_rot )
 
 
-# Testing
-# plus = [ [0] ]
-# minus = [ [7], [10000] ]
-# ICE = [ ( [5] , [6]  )  ]
-# samplepoints = (plus, minus, ICE)
-# (I, deglistI, fI, costI, costtupleI) = uniformlysampleLII( (list(range(-10, 10, 1)), list(range(-10,10,1)) ), 1, 1, 1, samplepoints )
-# print(I, deglistI, fI, costI, costtupleI) 
-# Dp = (range(-10, 10, 1), range(-10,10,1) )
-# print(randomwalktransition(I, deglistI, Dp, samplepoints, costtupleI ))
+
+
