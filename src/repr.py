@@ -6,6 +6,7 @@ from selection_points import get_plus0, get_minus0, get_ICE0
 from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
+from coefficientgraph import getrotationgraph
 
 '''
 The general single loop clause system is:
@@ -52,6 +53,10 @@ class Repr:
         self.k1 = max(self.Dp[1])
         self.theta0 = 1 + self.k1 + (self.k0* self.n * max( conf.dspace_intmax, -conf.dspace_intmin))
 
+        self.rotationgraph = getrotationgraph(self.k0, self.n)
+        self.rotationgraphvertices = self.rotationgraph[0]
+        self.rotationgraphedges = self.rotationgraph[1]
+
     def get_n(self):
         return self.n
 
@@ -85,6 +90,12 @@ class Repr:
     def get_d(self):
         return self.d   
 
+    def get_k0(self):
+        return self.k0
+
+    def get_k1(self):
+        return self.k1
+
     def get_theta0(self):
         return self.theta0
 
@@ -102,6 +113,12 @@ class Repr:
 
     def get_T_z3expr(self):
         return self.T_z3expr
+
+    def get_coeffvertices(self):
+        return self.rotationgraphvertices
+
+    def get_coeffneighbors(self, coeff):
+        return self.rotationgraphedges[tuple(coeff)]
 
 
 

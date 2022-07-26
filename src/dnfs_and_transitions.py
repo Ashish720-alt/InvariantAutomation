@@ -121,7 +121,23 @@ def deepcopy_DNF(I):
         I_new.append(cc_new)
     return I_new
 
-    
+
+# rtpred is ( n-rotationlist, n-translationlist ), rtcc is list of rtpreds, rtinv is list of rtcc's
+def RTI_to_LII(rtinv):
+    def rtcc_to_LIcc(rtcc, n):
+        def rtpred_to_LIpred(rtpred):
+            coeff = rtpred[0]
+            const =  np.dot(np.asarray(rtpred[0]), np.asarray(rtpred[1])) 
+            return np.array(coeff + [-1, const])
+        LIcc = np.empty(shape=(0, n + 2 ), dtype = int)
+        for rtpred in rtcc: 
+            LIcc = np.concatenate((LIcc, np.array( rtpred_to_LIpred(rtpred) , ndmin=2) )) 
+        return LIcc
+    n = len(rtinv[0][0][0])
+    return [rtcc_to_LIcc(rtcc, n) for rtcc in rtinv]
+
+
+
 
 # # Testing
 # print(dnfTrue(2))
@@ -133,7 +149,7 @@ def deepcopy_DNF(I):
 # print( dnfconjunction( [np.array([[1,2,3,-1,1], [1,2,3,0,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] , 0 )  )
 # print( dnfdisjunction( [np.array([[1,2,3,-1,1], [1,2,3,0,2]]) , np.array([[1,1,1,2,1], [1,2,2,2,2]]) ], [np.array([[1,2,3,-1,1], [1,2,3,-1,2]])] , 1 )  )
 # print(transition([1,5,3] , np.array([[1, 0, 0, 1], [0, 2, 0, 0], [1, 1, 0, 0] , [0, 0, 0, 1]  ]) ))
-
+# print( rtinv_to_LIinv( [[ ([1,3],[6,2])  ]]  ))
 
 
 

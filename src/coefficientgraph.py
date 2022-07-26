@@ -1,6 +1,6 @@
 from itertools import product
 import numpy as np
-from math import acos, sqrt, gcd, inf, pi
+from math import acos, sqrt, gcd, pi
 from functools import reduce
 
 def removeduplicates(coeffdomain):
@@ -28,65 +28,63 @@ def gcdnormalize(coeffdomain):
         coeffdomain[i] = tuple([int(x / cf) for x in list(coeffdomain[i])])  
     return coeffdomain
 
-# Scales only till n <= 3; for n = 4, K = 3 is allowed.
+def convert_tuplecoeff_to_listcoeff(coeffdomain):
+    return [ list(coeff) for coeff in coeffdomain]
+
 def enumeratecoeffdomain(K, n):
     if (n == 1):
-        return [ (-1, ), (1, ) ]
+        return [ [-1 ], [1] ]
     singlecoeffdomain = list(range(-K, K+1, 1))
     coeffdomain = list(product( singlecoeffdomain , repeat=n))
     coeffdomain.remove( tuple([0]*n) )
-    coeffdomain = gcdnormalize(removeduplicates( coeffdomain))
-    # print(coeffdomain, len(coeffdomain))
-    return  coeffdomain
+    return convert_tuplecoeff_to_listcoeff(gcdnormalize(removeduplicates( coeffdomain)))
 
 
-def getangle(tuple1, tuple2):
-    vec1 = np.asarray( tuple1)
-    vec2 = np.asarray( tuple2)
+def getangle(coeff1, coeff2):
+    vec1 = np.asarray( coeff1)
+    vec2 = np.asarray( coeff2)
     return acos( np.dot(vec1, vec2) / sqrt( np.dot(vec1, vec1) * np.dot(vec2, vec2) ) )    
 
-def getminangleofvector(tuple1, coeffdomain):
+def getminangleofvector(coeff, coeffdomain):
     mintheta = pi
-    for t in coeffdomain:
-        if (t == tuple1):
+    for ithcoeff in coeffdomain:
+        if (ithcoeff == coeff):
             continue
-        mintheta = min(mintheta, getangle(tuple1, t))
+        mintheta = min(mintheta, getangle(coeff, ithcoeff))
     return mintheta
 
+# Returns angle in radians
 def gettheta_0(coeffdomain):
     theta_0 = 0
     for t in coeffdomain:
         theta_0 = max(theta_0, getminangleofvector(t, coeffdomain))
     return theta_0
 
-def isneighbor(tuple1, tuple2, theta_0):
-    return ( getangle(tuple1, tuple2) <= theta_0 )
+def isneighbor(coeff1, coeff2, theta_0):
+    return ( getangle(coeff1, coeff2) <= theta_0 )
 
 
-def getneighborsofvector(tuple1, coeffdomain, theta_0):    
+def getneighborsofvector(coeff, coeffdomain, theta_0):    
     rv = []
-    for i,t in enumerate(coeffdomain):
-        if (t != tuple1 and isneighbor(tuple1, t, theta_0)):
-            rv.append(coeffdomain[i])
+    for i,ithcoeff in enumerate(coeffdomain):
+        if (ithcoeff != coeff and isneighbor(coeff, ithcoeff, theta_0)):
+            rv.append( list(coeffdomain[i]))
     return rv
 
-def getadjacencylist(coeffdomain):
+# Scales only till n <= 3; for n = 4, K = 3 is allowed.
+def getadjacencylist(coeffdomain, theta_0):
     n = len(coeffdomain[0])
     if (n == 1):
-        return [ (1, ), (-1, ) ]
-    theta_0 = gettheta_0(coeffdomain)
-    rv = []
-    for t in coeffdomain:
-        rv.append(getneighborsofvector(t, coeffdomain, theta_0))
+        return  { (1, ): [ [-1] ] , (-1, ): [ [1] ] } 
+    rv = {}
+    for coeff in coeffdomain:
+        rv.update({ tuple(coeff) : getneighborsofvector(coeff, coeffdomain, theta_0) })
     return rv
 
-# enumeratecoeffdomain(5,3)
-# print(isneighbor((1,2,1) , (1,1,8), 40*pi/180 ) )
-# print( getneighbors( (1,2,1) , enumeratecoeffdomain(2, 3) , 40*pi/180  )  )
-cd = enumeratecoeffdomain(1, 4)
-# print(cd)
-# theta_0 = gettheta_0(cd)
-# print(180*theta_0/pi)
-adjlist = getadjacencylist( cd)
-for i,l in enumerate(adjlist):
-    print( cd[i], '\t:\t' , l)
+def getrotationgraph(K, n):
+    coeffdomain = enumeratecoeffdomain(K, n)
+    theta_0 = gettheta_0(coeffdomain)
+    # print(180*theta_0/pi)   
+    return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
+
+# print(getrotationgraph(2,2)[0], '\n', getrotationgraph(2,2)[1])

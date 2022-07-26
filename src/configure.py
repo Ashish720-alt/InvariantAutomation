@@ -1,4 +1,3 @@
-
 """ Hyper Parameters.
 """
 import operator
@@ -14,8 +13,9 @@ class Configure:
     s = 20
 
     p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
-    
-    alpha = 1e+10
+    p_rot = 0.5
+
+    alpha = 1
     gamma = 2.0 #Need floating point constant here
     beta0 = 1000 #10, 100 doesnt work for gamma = 2.0 or 10.0 as it takes too many bad transitions.
 
@@ -34,4 +34,6 @@ class Configure:
     # Print iterations or not?
     PRINT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
+    PRINT_STAY_ITERATIONS = ON
+    PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
