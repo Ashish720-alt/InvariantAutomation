@@ -7,7 +7,7 @@ from guess import uniformlysampleRTI, translationneighbors, translationdegree, r
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
-from print import initialized, statistics, z3statistics, invariantfound, timestatistics
+from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints
 import copy
 from dnfs_and_transitions import RTI_to_LII
 from timeit import default_timer as timer
@@ -22,6 +22,7 @@ def metropolisHastings (repr: Repr):
     total_iterations = 0
     z3_time = 0
     initialize_time = 0
+    z3_callcount = 0
 
     initialize_start = timer()
     tmax = repr.get_tmax()
@@ -30,14 +31,13 @@ def metropolisHastings (repr: Repr):
     beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )  
     I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     LII = RTI_to_LII(I)
-    (fI, costI) = f(LII, samplepoints, beta)
+    (fI, costI, costlist) = f(LII, samplepoints, beta) #Debugging
     
-    statistics(0, 1, I, fI, costI, 0, 0 )
-    z3_callcount = 0
+    prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
+    statistics(0, 1, I, fI, costI, 0, 0, costlist ) 
+
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
-
-    # print(repr.get_k0(), repr.get_k1())
 
     while (1):
         mcmc_start = timer()
@@ -62,27 +62,24 @@ def metropolisHastings (repr: Repr):
                     deg = translationdegree(  oldtranslationpred , oldrotationpred , repr.get_k1())
                     (newtranspred, degnew) = translationtransition(oldtranslationpred, oldrotationpred, repr.get_k1())
                     I[index[0]][index[1]][1] = newtranspred
-                (fInew, costInew) = f(RTI_to_LII(I), samplepoints, beta)
+                (fInew, costInew, costlist) = f(RTI_to_LII(I), samplepoints, beta)
                 a = min( fInew * deg/ fI * degnew , 1) #Make sure we don't underapproximate to 0
                 if (random.rand() <=  a): 
                     reject = 0
                     descent = 1 if (costInew > costI) else 0 
                     (fI, costI) = (fInew, costInew)
-                    statistics(t, 1, I, fInew, costInew, descent, reject )                    
+                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist )                   
                 else:
                     reject = 1
                     descent = 0
-                    statistics(t, 1, I, fInew, costInew, descent, reject )
+                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist )
                     if (is_rotationchange):
                         I[index[0]][index[1]][0] = oldrotationpred
                     else:
                         I[index[0]][index[1]][1] = oldtranspred
             else:
-                statistics(t, 0, I, fI, costI, 0, 0 )
+                statistics(t, 0, I, fI, costI, 0, 0, costlist )
             
-
-        
-        
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)
         total_iterations = total_iterations + t
@@ -98,7 +95,7 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (fI, costI) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes
+        (fI, costI) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
         beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )
         statistics(0, 1, I, fI, costI, 0, 0 )
         initialize_end = timer()
@@ -107,7 +104,7 @@ def metropolisHastings (repr: Repr):
     invariantfound(I)
     timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount )
 
-    return (I, f, z3_callcount)
+    return (I, fI, z3_callcount)
 
 
 
