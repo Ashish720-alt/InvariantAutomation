@@ -3,7 +3,7 @@ from dnfs_and_transitions import dnfTrue
 import numpy as np
 from repr import genLItransitionrel, Repr
 from main import metropolisHastings
-from hillclimbing import hill_climbing
+
 
 #IMP: Remember Q is Q \/ B for standard CHC
 
@@ -30,4 +30,6 @@ Q = loop_lit.afnp2014.Q
 
 
 ''''''''''''''''''''''''''''''''''''''
+# Hill Climbing Algorithm:
+from hillclimbing import hill_climbing
 hill_climbing(Repr(P, B, T, Q))

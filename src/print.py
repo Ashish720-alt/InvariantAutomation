@@ -22,12 +22,12 @@ def initialized():
     if (conf.PRINT_ITERATIONS == conf.ON):
         print("Initialization Complete...")
 
-def statistics(t, is_change, I, cost, mincost, descent, reject):
+def statistics(t, is_change, I, cost, mincost, descent, reject, costlist):
     if (conf.PRINT_ITERATIONS == conf.ON):
         if (not is_change):
             if (conf.PRINT_STAY_ITERATIONS == conf.ON):
                 end_string = "[S]" 
-                print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string )
+                print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
                 return
             else:
                 return            
@@ -35,13 +35,13 @@ def statistics(t, is_change, I, cost, mincost, descent, reject):
             if (reject):
                 if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                     end_string = "[X]" 
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string )
+                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist )
                     return
                 else:
                     return
             else:
-                end_string = "(L)" if descent else ""
-                print("t = ", t, ":\t", I, "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string )
+                end_string = "(L)" if descent else "   "
+                print("t = ", t, ":\t", I, "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist )
                 return
     
 
