@@ -26,10 +26,10 @@ P = loop_lit.afnp2014.P
 B = loop_lit.afnp2014.B
 T = loop_lit.afnp2014.T
 Q = loop_lit.afnp2014.Q
-# metropolisHastings(Repr(P, B, T, Q))
+metropolisHastings(Repr(P, B, T, Q))
 
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:
-from hillclimbing import hill_climbing
-hill_climbing(Repr(P, B, T, Q))
+# from hillclimbing import hill_climbing
+# hill_climbing(Repr(P, B, T, Q))

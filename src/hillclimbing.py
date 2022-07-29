@@ -73,9 +73,11 @@ def hill_climbing(repr: Repr):
     # I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
     #Deterministic X_0:
+    I = [[ [[-1,1], [7782,6932]] ]] #only translations
+    # I = [[ [[-2,1], [4000,7000]] ]] #rotation with bad centre of rotation
     # I = [[ [[-2,1], [500,100]] ]]  # rotation with close centre of rotation
-    # I = [[ [[-1,1], [7782,6932]] ]] #only translations
-    I = [[ [[-2,1], [4000,7000]] ]] #rotation with bad centre of rotation
+    
+    
 
     LII = RTI_to_LII(I)
     (_, costI, costlist) = f(LII, samplepoints, beta)  
