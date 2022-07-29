@@ -30,11 +30,13 @@ def metropolisHastings (repr: Repr):
     initialized()
     beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )  
     I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
+    # I = [[ [[-1,1], [0,1000]] ]]
+    
     LII = RTI_to_LII(I)
     (fI, costI, costlist) = f(LII, samplepoints, beta) #Debugging
     
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
-    statistics(0, 1, I, fI, costI, 0, 0, costlist ) 
+    statistics(0, 1, I, fI, costI, 0, 0, costlist, "-" ) 
 
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
@@ -63,22 +65,22 @@ def metropolisHastings (repr: Repr):
                     (newtranspred, degnew) = translationtransition(oldtranslationpred, oldrotationpred, repr.get_k1())
                     I[index[0]][index[1]][1] = newtranspred
                 (fInew, costInew, costlist) = f(RTI_to_LII(I), samplepoints, beta)
-                a = min( fInew * deg/ fI * degnew , 1) #Make sure we don't underapproximate to 0
+                a = min( fInew * deg/ fI * degnew , 1.0) #Make sure we don't underapproximate to 0
                 if (random.rand() <=  a): 
                     reject = 0
                     descent = 1 if (costInew > costI) else 0 
                     (fI, costI) = (fInew, costInew)
-                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist )                   
+                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist,a )                   
                 else:
                     reject = 1
                     descent = 0
-                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist )
+                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist,a )
                     if (is_rotationchange):
                         I[index[0]][index[1]][0] = oldrotationpred
                     else:
                         I[index[0]][index[1]][1] = oldtranspred
             else:
-                statistics(t, 0, I, fI, costI, 0, 0, costlist )
+                statistics(t, 0, I, fI, costI, 0, 0, costlist, "-" )
             
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)
@@ -97,7 +99,7 @@ def metropolisHastings (repr: Repr):
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
         (fI, costI) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
         beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )
-        statistics(0, 1, I, fI, costI, 0, 0 )
+        statistics(0, 1, I, fI, costI, 0, 0, "-" )
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 

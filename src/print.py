@@ -15,19 +15,47 @@ def prettyprint_samplepoints(samplepoints, header, indent):
         print(ICE,',\t', end = '')    
     print("\n", end = '')
 
-def prettyprint_invariant(I):
+def prettyprint_invariant(I, endstring):
+    n = len(I[0][0]) - 2
+    rv = ""
+    for k1,cc in enumerate(I):
+        if (k1 > 0):
+            rv = rv + " \/ " 
+        rv = rv + "("
+        for k2,p in enumerate(cc):
+            if (k2 > 0):
+                rv = rv + " /\ "
+            rv = rv + "("
+            for i in range(len(p)):
+                if (i < n):
+                    rv = rv + str(p[i]) + ("*x%s" % i)
+                elif (i == n):
+                    rv = rv + " <= "
+                else:
+                    rv = rv + str(p[i])
+                if (i < n - 1):
+                    rv = rv + " + "
+            rv = rv + ')'
+        rv = rv + ')'
+    rv = rv + endstring
+    return rv
+
+    
     print(DNF_to_z3expr(I, primed = 0))
 
 def initialized():
     if (conf.PRINT_ITERATIONS == conf.ON):
         print("Initialization Complete...")
 
-def statistics(t, is_change, I, cost, mincost, descent, reject, costlist):
+def statistics(t, is_change, I, cost, mincost, descent, reject, costlist, acc):
     if (conf.PRINT_ITERATIONS == conf.ON):
         if (not is_change):
             if (conf.PRINT_STAY_ITERATIONS == conf.ON):
                 end_string = "[S]" 
-                print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
+                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                else:
+                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
                 return
             else:
                 return            
@@ -35,13 +63,19 @@ def statistics(t, is_change, I, cost, mincost, descent, reject, costlist):
             if (reject):
                 if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                     end_string = "[X]" 
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist )
-                    return
+                    if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
+                        print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                    else:
+                        print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                        return
                 else:
                     return
             else:
                 end_string = "(L)" if descent else "   "
-                print("t = ", t, ":\t", I, "\t", DNF_aslist(RTI_to_LII(I)) , "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist )
+                if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
+                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                else:
+                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
                 return
     
 
@@ -53,7 +87,7 @@ def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcoun
 
 def invariantfound(I):
     print("Invariant Found:\t", end = '')
-    prettyprint_invariant(RTI_to_LII(I))
+    prettyprint_invariant(RTI_to_LII(I), '')
 
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 
