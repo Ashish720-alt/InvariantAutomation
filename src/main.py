@@ -29,8 +29,8 @@ def metropolisHastings (repr: Repr):
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
     beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )  
-    I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
-    # I = [[ [[-1,1], [0,1000]] ]]
+    # I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
+    I = [[ [[-1,1], [7782,6932]] ]]
     
     LII = RTI_to_LII(I)
     (fI, costI, costlist) = f(LII, samplepoints, beta) #Debugging

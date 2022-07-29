@@ -53,9 +53,9 @@ def statistics(t, is_change, I, cost, mincost, descent, reject, costlist, acc):
             if (conf.PRINT_STAY_ITERATIONS == conf.ON):
                 end_string = "[S]" 
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
                 else:
-                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
                 return
             else:
                 return            
@@ -64,18 +64,17 @@ def statistics(t, is_change, I, cost, mincost, descent, reject, costlist, acc):
                 if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                     end_string = "[X]" 
                     if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                        print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                        print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
                     else:
-                        print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
-                        return
+                        print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist)
                 else:
                     return
             else:
                 end_string = "(L)" if descent else "   "
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
                 else:
-                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost) = ", (cost, mincost) , "\t", end_string, "\t", costlist  )
+                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
                 return
     
 
