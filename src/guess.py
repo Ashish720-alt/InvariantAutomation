@@ -45,6 +45,7 @@ def translationneighbors (tp, rp, k1):
             rv.append(tpcopy)
     return rv
 
+
 def translationdegree(tp, rp, k1):
     return len(translationneighbors(tp, rp, k1))
 
