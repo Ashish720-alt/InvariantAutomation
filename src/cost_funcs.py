@@ -13,14 +13,13 @@ def negationLIpredicate(p):
 
 def LIPptdistance(p, pt):
     magnitude = sqrt(sum(i*i for i in p[:-2]))
-    # magnitude = 1.0
-    return max( (sum(p[:-2]* pt) - p[-1])/magnitude  , 0)
+    return max( (sum(p[:-2]* pt) - p[-1])/magnitude  , 0.0)
 
 def LIccptdistance(cc, pt):
-    rv = 0
+    rv = 0.0
     for p in cc:
         rv = rv + LIPptdistance(p, pt)
-    return rv
+    return (rv/len(cc))
 
 def LIDNFptdistance(dnf, pt):
     rv = inf
@@ -29,30 +28,30 @@ def LIDNFptdistance(dnf, pt):
     return rv
 
 def costplus(I, pluspoints):
-    rv = 0
+    rv = 0.0
     rvlist = [] # Debugging
     for plus in pluspoints:
         rv = rv + LIDNFptdistance(I, plus)
         rvlist.append(LIDNFptdistance(I, plus))
-    return (rv, rvlist)
+    return (rv/ len(pluspoints), rvlist)
 
 def costminus(I, minuspoints):
     negI = dnfnegation(I)
-    rv = 0
+    rv = 0.0
     rvlist = [] # Debugging
     for minus in minuspoints:
         rv = rv + LIDNFptdistance(negI, minus)
         rvlist.append(LIDNFptdistance(negI, minus))
-    return (rv, rvlist)    
+    return (rv/ len(minuspoints), rvlist)    
 
 def costICE(I, ICEpoints):
     negI = dnfnegation(I) 
-    rv = 0
+    rv = 0.0
     rvlist = [] # Debugging
     for ICE in ICEpoints:
         rv = rv + min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1]))
         rvlist.append(min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1])))
-    return (rv, rvlist)
+    return (rv/ len(ICEpoints), rvlist)
 
 def U(r):
     return 1.0

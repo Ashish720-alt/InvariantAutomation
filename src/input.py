@@ -21,6 +21,15 @@ class loop_lit:
         Q = [np.array([[1, -1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
 
+class lineararbitrary:
+    class testcase1:
+        # variable vector = (h,i,j,k, m,n)
+        P = [np.array([ [0,0,0,0,0,1,1,0] , [0,0,0,0,0,1,-1,200], [0,1,0,0,0,0,0,0], [0,0,0,0,1,0,0,0] , [0,0,1,0,0,1,0,0] , [0,0,0,1,0,1,0,0] , [1,0,0,0,0,1,0,0] ])]
+        B = [np.array([[0,0,1,0,0,0,2,0] ])]
+        Q = [np.array([[0,0,1,0,0,0,2,0], [0,1,0,0,0,0,1,0]])]
+        T = genLItransitionrel(B, ( [np.array([[0,0,1,0,1,0, 0], [0,1,0,0,0,0, 0], [0,0,1,0,0,0,-1], [0,0,0,1,0,0,0], 
+                        [0,0,0,0,1,0, 1], [0,0,0,0,0,1, 0] ])] , dnfTrue(6) ) ) 
+
 
 P = loop_lit.afnp2014.P
 B = loop_lit.afnp2014.B

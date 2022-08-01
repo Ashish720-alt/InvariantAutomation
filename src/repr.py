@@ -7,6 +7,7 @@ from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
 from coefficientgraph import getrotationgraph
+from math import sqrt, log
 
 '''
 The general single loop clause system is:
@@ -51,7 +52,8 @@ class Repr:
 
         self.k0 = max(self.Dp[0])
         self.k1 = max(self.Dp[1])
-        self.theta0 = 1 + self.k1 + (self.k0* self.n * max( conf.dspace_intmax, -conf.dspace_intmin))
+        self.beta = (sqrt( (self.n - 1) * self.k1**2 + (self.k1 - 1)**2  ) * log(1.0/conf.descent_prob, conf.gamma) )/ conf.beta0
+
 
         self.rotationgraph = getrotationgraph(self.k0, self.n)
         self.rotationgraphvertices = self.rotationgraph[0]
@@ -96,8 +98,8 @@ class Repr:
     def get_k1(self):
         return self.k1
 
-    def get_theta0(self):
-        return self.theta0
+    def get_beta(self):
+        return self.beta
 
     def get_tmax(self):
         return self.tmax
