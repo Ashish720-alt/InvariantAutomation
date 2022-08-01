@@ -28,7 +28,8 @@ def metropolisHastings (repr: Repr):
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
-    beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )  
+    beta = repr.get_beta()
+    print(beta)
     # I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     I = [[ [[-1,1], [7782,6932]] ]]
     
@@ -65,7 +66,7 @@ def metropolisHastings (repr: Repr):
                     (newtranspred, degnew) = translationtransition(oldtranslationpred, oldrotationpred, repr.get_k1())
                     I[index[0]][index[1]][1] = newtranspred
                 (fInew, costInew, costlist) = f(RTI_to_LII(I), samplepoints, beta)
-                a = min( fInew * deg/ fI * degnew , 1.0) #Make sure we don't underapproximate to 0
+                a = min( ( fInew * deg)/ (fI * degnew) , 1.0) #Make sure we don't underapproximate to 0
                 if (random.rand() <=  a): 
                     reject = 0
                     descent = 1 if (costInew > costI) else 0 
@@ -78,7 +79,7 @@ def metropolisHastings (repr: Repr):
                     if (is_rotationchange):
                         I[index[0]][index[1]][0] = oldrotationpred
                     else:
-                        I[index[0]][index[1]][1] = oldtranspred
+                        I[index[0]][index[1]][1] = oldtranslationpred
             else:
                 statistics(t, 0, I, fI, costI, 0, 0, costlist, "-" )
             
@@ -97,9 +98,9 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (fI, costI) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
-        beta = conf.beta0/(repr.get_c() * ( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2])) * repr.get_theta0() )
-        statistics(0, 1, I, fI, costI, 0, 0, "-" )
+        (fI, costI, costlist) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
+        beta = repr.get_beta()
+        statistics(0, 1, I, fI, costI, 0, 0, "-", "-" )
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 
