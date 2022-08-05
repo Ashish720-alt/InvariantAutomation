@@ -4,8 +4,8 @@ import operator
 
 class Configure:
     
-    dspace_intmin = -10000
-    dspace_intmax = 10000
+    dspace_intmin = -2000
+    dspace_intmax = 2000
   
     k = 2
     r = 1
@@ -15,9 +15,9 @@ class Configure:
     p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
     p_rot = 0.5
 
-    alpha = 1e70
+    alpha = 1
     gamma = 2.0 #Need floating point constant here
-    beta0 = 1000 #This has no more meaning, but haven't worked out the theory yet.
+    beta0 = 10000
     descent_prob = 0.5
 
     # Operators

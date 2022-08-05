@@ -136,7 +136,10 @@ def RTI_to_LII(rtinv):
     n = len(rtinv[0][0][0])
     return [rtcc_to_LIcc(rtcc, n) for rtcc in rtinv]
 
-
+def list3D_to_listof2Darrays (I):
+    def cclist_to_ccarray (cc_I):
+        return np.array([np.array(p) for p in cc_I])
+    return [cclist_to_ccarray(cc) for cc in I ]
 
 
 # # Testing

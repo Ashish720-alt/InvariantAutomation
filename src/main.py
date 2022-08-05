@@ -2,14 +2,14 @@
 """ Imports.
 """
 from configure import Configure as conf
-from cost_funcs import f
-from guess import uniformlysampleRTI, translationneighbors, translationdegree, rotationdegree, rotationtransition, translationtransition, ischange, get_index, isrotationchange
+from cost_funcs import cost, cost_to_f
+from guess import uniformlysample_I, rotationdegree, rotationtransition, translationtransition, ischange, get_index, isrotationchange
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints
 import copy
-from dnfs_and_transitions import RTI_to_LII
+from dnfs_and_transitions import RTI_to_LII, list3D_to_listof2Darrays
 from timeit import default_timer as timer
 
 
@@ -29,18 +29,23 @@ def metropolisHastings (repr: Repr):
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
     beta = repr.get_beta()
-    print(beta)
-    # I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
-    I = [[ [[-1,1], [7782,6932]] ]]
     
-    LII = RTI_to_LII(I)
-    (fI, costI, costlist) = f(LII, samplepoints, beta) #Debugging
+    # I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
+
+    I = [[ [-1,1, -1, 850] ]] #Translation
+    # I = [[ [1,-1, -1, 850] ]] #Rotation
+    
+    LII = list3D_to_listof2Darrays(I)
+    (costI, costlist) = cost(LII, samplepoints, beta) 
+    fI = cost_to_f(costI, beta)
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
-    statistics(0, 1, I, fI, costI, 0, 0, costlist, "-" ) 
+    print("\n")
+    statistics(0, 1, I, fI, costI, 0, 0, costlist, -1 ) 
 
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
+
 
     while (1):
         mcmc_start = timer()
@@ -50,23 +55,29 @@ def metropolisHastings (repr: Repr):
             is_change = ischange() 
             if (is_change):
                 index = get_index(repr.get_d(), repr.get_c())
-                oldtranslationpred =  I[index[0]][index[1]][1]
-                oldrotationpred = I[index[0]][index[1]][0]
+                oldpredicate = I[index[0]][index[1]]
                 is_rotationchange = isrotationchange()
-                if (is_rotationchange ):
-                    rotneighbors = repr.get_coeffneighbors(oldrotationpred)
+                if (is_rotationchange ): 
+                    rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
                     deg = rotationdegree(rotneighbors)
-                    (newrotationpred, degnew) = rotationtransition(rotneighbors, oldtranslationpred, repr.get_k1())
-                    if (degnew == 0):
-                        newrotationpred = oldrotationpred
-                        degnew = deg
-                    I[index[0]][index[1]][0] = newrotationpred
+                    newpred = rotationtransition(oldpredicate, rotneighbors) #Change the code here!
+                    degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
+                    I[index[0]][index[1]] = newpred
                 else:
-                    deg = translationdegree(  oldtranslationpred , oldrotationpred , repr.get_k1())
-                    (newtranspred, degnew) = translationtransition(oldtranslationpred, oldrotationpred, repr.get_k1())
-                    I[index[0]][index[1]][1] = newtranspred
-                (fInew, costInew, costlist) = f(RTI_to_LII(I), samplepoints, beta)
-                a = min( ( fInew * deg)/ (fI * degnew) , 1.0) #Make sure we don't underapproximate to 0
+                    newpred = translationtransition(oldpredicate) 
+                    I[index[0]][index[1]] = newpred
+                    (deg, degnew) = (2,2)
+                    
+                (costInew, costlist) = cost(list3D_to_listof2Darrays(I), samplepoints, beta)
+                if (costInew * conf.beta0 <= 5000):
+                    fInew = cost_to_f(costInew, beta)
+                    if (fI != 0):
+                        a = min( ( fInew * deg)/ (fI * degnew) , 1.0) #Make sure we don't underapproximate to 0
+                    else:
+                        a = 1.0
+                else:
+                    fInew = 0
+                    a = 0
                 if (random.rand() <=  a): 
                     reject = 0
                     descent = 1 if (costInew > costI) else 0 
@@ -75,20 +86,17 @@ def metropolisHastings (repr: Repr):
                 else:
                     reject = 1
                     descent = 0
-                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist,a )
-                    if (is_rotationchange):
-                        I[index[0]][index[1]][0] = oldrotationpred
-                    else:
-                        I[index[0]][index[1]][1] = oldtranslationpred
+                    statistics(t, 1, I, fInew, costInew, descent, reject, costlist, a )
+                    I[index[0]][index[1]] = oldpredicate
             else:
-                statistics(t, 0, I, fI, costI, 0, 0, costlist, "-" )
+                statistics(t, 0, I, fI, costI, 0, 0, costlist, -1 )
             
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)
         total_iterations = total_iterations + t
         
         z3_start = timer()
-        (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), RTI_to_LII(I) )           
+        (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), list3D_to_listof2Darrays(I) )           
         z3_end = timer()
         z3_time = z3_time + (z3_end - z3_start)
 
@@ -98,9 +106,10 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (fI, costI, costlist) = f( RTI_to_LII(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
+        (costI, costlist) = cost( list3D_to_listof2Darrays(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
+        fI = cost_to_f(costI, beta)
         beta = repr.get_beta()
-        statistics(0, 1, I, fI, costI, 0, 0, "-", "-" )
+        statistics(0, 1, I, fI, costI, 0, 0, [], -1 )
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 
