@@ -52,7 +52,7 @@ class Repr:
 
         self.k0 = max(self.Dp[0])
         self.k1 = max(self.Dp[1])
-        self.beta = (sqrt( (self.n - 1) * self.k1**2 + (self.k1 - 1)**2  ) * log(1.0/conf.descent_prob, conf.gamma) )/ conf.beta0
+        self.beta = conf.beta0
 
 
         self.rotationgraph = getrotationgraph(self.k0, self.n)

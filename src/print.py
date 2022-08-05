@@ -1,6 +1,15 @@
 from configure import Configure as conf
-from dnfs_and_transitions import RTI_to_LII, DNF_aslist
+from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays
 from z3verifier import DNF_to_z3expr
+
+def decimaltruncate(number, digits = 4):
+    if (digits == -1):
+        return number
+    power = "{:e}".format(number).split('e')[1]
+    return round(number, -(int(power) - digits))
+
+def decimaltruncate_list(l, digits = 4):
+    return [decimaltruncate(x, digits) for x in l ]
 
 def prettyprint_samplepoints(samplepoints, header, indent):
     print(indent + header + ":")
@@ -14,6 +23,8 @@ def prettyprint_samplepoints(samplepoints, header, indent):
     for ICE in samplepoints[2]:
         print(ICE,',\t', end = '')    
     print("\n", end = '')
+
+
 
 def prettyprint_invariant(I, endstring):
     n = len(I[0][0]) - 2
@@ -53,9 +64,11 @@ def statistics(t, is_change, I, cost, mincost, descent, reject, costlist, acc):
             if (conf.PRINT_STAY_ITERATIONS == conf.ON):
                 end_string = "[S]" 
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
+                    print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), decimaltruncate(acc )) 
+                                    , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
                 else:
-                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
+                    print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), ''), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                            decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
                 return
             else:
                 return            
@@ -64,17 +77,21 @@ def statistics(t, is_change, I, cost, mincost, descent, reject, costlist, acc):
                 if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                     end_string = "[X]" 
                     if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                        print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
+                        print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
+                                decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
                     else:
-                        print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist)
+                        print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), ''), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                                decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n")
                 else:
                     return
             else:
                 end_string = "(L)" if descent else "   "
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("t = ", t, ":\t", I , "\t", DNF_aslist(RTI_to_LII(I)), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
+                    print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
+                            decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
                 else:
-                    print("t = ", t, ":\t", I , "\t", prettyprint_invariant((RTI_to_LII(I)), ''), "\t", "(f, cost, a) = ", (cost, mincost, acc) , "\t", end_string, "\t", costlist )
+                    print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), ''), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                            decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist) , "\n")
                 return
     
 
@@ -83,10 +100,11 @@ def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcoun
         print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", int(timeout), '\n', "\tz3_correct = ", correct)
         prettyprint_samplepoints(original_samplepoints, "original-selection-points", "\t")
         prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
+        print("\n\n")
 
 def invariantfound(I):
     print("Invariant Found:\t", end = '')
-    prettyprint_invariant(RTI_to_LII(I), '')
+    prettyprint_invariant(list3D_to_listof2Darrays(I), '')
 
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 

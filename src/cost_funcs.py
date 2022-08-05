@@ -13,7 +13,7 @@ def negationLIpredicate(p):
 
 def LIPptdistance(p, pt):
     magnitude = sqrt(sum(i*i for i in p[:-2]))
-    return max( (sum(p[:-2]* pt) - p[-1])/magnitude  , 0.0)
+    return max( (sum(p[:-2]* pt) - p[-1])/(magnitude*(conf.dspace_intmax - conf.dspace_intmin ))  , 0.0)
 
 def LIccptdistance(cc, pt):
     rv = 0.0
@@ -31,42 +31,40 @@ def costplus(I, pluspoints):
     rv = 0.0
     rvlist = [] # Debugging
     for plus in pluspoints:
-        rv = rv + LIDNFptdistance(I, plus)
-        rvlist.append(LIDNFptdistance(I, plus))
-    return (rv/ len(pluspoints), rvlist)
+        rv = rv + LIDNFptdistance(I, plus)/ len(pluspoints)
+        rvlist.append(LIDNFptdistance(I, plus)/ len(pluspoints))
+    return (rv, rvlist)
 
 def costminus(I, minuspoints):
     negI = dnfnegation(I)
     rv = 0.0
     rvlist = [] # Debugging
     for minus in minuspoints:
-        rv = rv + LIDNFptdistance(negI, minus)
-        rvlist.append(LIDNFptdistance(negI, minus))
-    return (rv/ len(minuspoints), rvlist)    
+        rv = rv + LIDNFptdistance(negI, minus)/ len(minuspoints)
+        rvlist.append(LIDNFptdistance(negI, minus)/ len(minuspoints))
+    return (rv, rvlist)    
 
 def costICE(I, ICEpoints):
     negI = dnfnegation(I) 
     rv = 0.0
     rvlist = [] # Debugging
     for ICE in ICEpoints:
-        rv = rv + min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1]))
-        rvlist.append(min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1])))
-    return (rv/ len(ICEpoints), rvlist)
+        rv = rv + min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1]))/ len(ICEpoints)
+        rvlist.append(min( LIDNFptdistance(negI, ICE[0]), LIDNFptdistance(I, ICE[1]))/ len(ICEpoints))
+    return (rv, rvlist)
 
 def U(r):
     return 1.0
 
-def cost_to_f(costplus, costminus, costICE, beta  ):
-    totalcost = costplus + costminus + costICE
-    costlist = costplus + costminus + costICE 
+def cost_to_f(totalcost, beta  ):
     return conf.alpha * (conf.gamma**(-beta * totalcost) / U(totalcost))
 
 
-def f(I, tupleofpoints, beta  ):
+def cost(I, tupleofpoints, beta  ):
     (cost_plus, l1) = costplus(I, tupleofpoints[0])
     (cost_minus, l2) = costminus(I, tupleofpoints[1])
     (cost_ICE, l3) = costICE(I, tupleofpoints[2])
-    return (cost_to_f(cost_plus, cost_minus, cost_ICE, beta), cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 ) # Debugging
+    return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 ) # Debugging
 
 
 

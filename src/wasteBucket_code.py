@@ -1100,3 +1100,34 @@ def optimized_costtuple(I, S, set_type, prev_costlist, inv_i):
             costlist[0][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type)        
             costlist[1][j][inv_i[0]][inv_i[1]] = d(I[inv_i[0]][inv_i[1]], pt, set_type) 
         return ( min( cost_sum(costlist[0]), cost_sum(costlist[1]) ), costlist) 
+
+
+def translationneighbors (tp, rp, k1):
+    const_old = np.dot(np.asarray(tp), np.asarray(rp))
+    rv = []
+    for i,value in enumerate(tp):
+        tpcopy = tp.copy()
+        if (value <= conf.dspace_intmax - 1 and const_old + rp[i] <= k1 and const_old + rp[i] >= -k1-1):
+            tpcopy[i] = tpcopy[i] + 1
+            rv.append(tpcopy)
+        tpcopy = tp.copy()
+        if (value >= conf.dspace_intmin + 1 and const_old - rp[i] <= k1 and const_old - rp[i] >= -k1-1):
+            tpcopy[i] = tpcopy[i] - 1
+            rv.append(tpcopy)
+    return rv
+
+
+def translationdegree(tp, rp, k1):
+    return len(translationneighbors(tp, rp, k1))
+
+
+
+
+def allowedrotations(rotationneighbors, centreofrotation, k1):
+    rv = []
+    
+    for neighbor in rotationneighbors:
+        new_const = np.dot(np.asarray(neighbor), np.asarray(centreofrotation))
+        if(new_const <= k1 and new_const >= -k1-1 ):
+            rv.append(neighbor)
+    return rv    
