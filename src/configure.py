@@ -4,8 +4,8 @@ import operator
 
 class Configure:
     
-    dspace_intmin = -2000
-    dspace_intmax = 2000
+    dspace_intmin = -10000
+    dspace_intmax = 10000
   
     k = 2
     r = 1

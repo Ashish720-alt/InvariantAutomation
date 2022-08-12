@@ -50,7 +50,7 @@ class Repr:
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
-        self.k0 = max(self.Dp[0])
+        self.k0 = 1 #max(self.Dp[0])
         self.k1 = max(self.Dp[1])
         self.beta = conf.beta0
 
