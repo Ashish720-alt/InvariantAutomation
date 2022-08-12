@@ -21,6 +21,8 @@ class loop_lit:
         Q = [np.array([[1, -1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
 
+
+# This takes too much time.
 class lineararbitrary:
     class testcase1:
         # variable vector = (h,i,j,k, m,n)

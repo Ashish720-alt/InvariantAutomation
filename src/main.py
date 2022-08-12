@@ -30,14 +30,14 @@ def metropolisHastings (repr: Repr):
     initialized()
     beta = repr.get_beta()
     
-    # I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
+    I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
 
-    I = [[ [-1,1, -1, 850] ]] #Translation
+    # I = [[ [-1,1, -1, 850] ]] #Translation
     # I = [[ [1,-1, -1, 850] ]] #Rotation
     
     LII = list3D_to_listof2Darrays(I)
-    (costI, costlist) = cost(LII, samplepoints, beta) 
+    (costI, costlist, spinI) = cost(LII, samplepoints, beta)  #spin = |-| - |+|
     fI = cost_to_f(costI, beta)
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
     print("\n")
@@ -60,7 +60,7 @@ def metropolisHastings (repr: Repr):
                 if (is_rotationchange ): 
                     rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
                     deg = rotationdegree(rotneighbors)
-                    newpred = rotationtransition(oldpredicate, rotneighbors) #Change the code here!
+                    newpred = rotationtransition(oldpredicate, rotneighbors, spinI) #Change the code here!
                     degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
                     I[index[0]][index[1]] = newpred
                 else:
@@ -68,20 +68,20 @@ def metropolisHastings (repr: Repr):
                     I[index[0]][index[1]] = newpred
                     (deg, degnew) = (2,2)
                     
-                (costInew, costlist) = cost(list3D_to_listof2Darrays(I), samplepoints, beta)
+                (costInew, costlist, spinInew) = cost(list3D_to_listof2Darrays(I), samplepoints, beta)
                 if (costInew * conf.beta0 <= 5000):
                     fInew = cost_to_f(costInew, beta)
                     if (fI != 0):
                         a = min( ( fInew * deg)/ (fI * degnew) , 1.0) #Make sure we don't underapproximate to 0
                     else:
-                        a = 1.0
+                        a = 1.0 
                 else:
                     fInew = 0
                     a = 0
                 if (random.rand() <=  a): 
                     reject = 0
                     descent = 1 if (costInew > costI) else 0 
-                    (fI, costI) = (fInew, costInew)
+                    (fI, costI, spinI) = (fInew, costInew, spinInew)
                     statistics(t, 1, I, fInew, costInew, descent, reject, costlist,a )                   
                 else:
                     reject = 1
@@ -106,7 +106,7 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (costI, costlist) = cost( list3D_to_listof2Darrays(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
+        (costI, costlist, spinI) = cost( list3D_to_listof2Darrays(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
         fI = cost_to_f(costI, beta)
         beta = repr.get_beta()
         statistics(0, 1, I, fI, costI, 0, 0, [], -1 )
