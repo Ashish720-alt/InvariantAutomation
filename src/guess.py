@@ -63,7 +63,7 @@ def centre_of_rotation_new(pred, newcoefficient, spin):
 # print(centre_of_rotation_new( [-1,2,-1,200] , [-1,1] , 1 ))
 
 
-# Returns a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
+# Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
 def centre_of_rotation(pred):
     n = len(pred) - 2
     coeff = pred[:-2]

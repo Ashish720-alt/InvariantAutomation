@@ -33,7 +33,7 @@ def metropolisHastings (repr: Repr):
     I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
 
-    # I = [[ [-1,1, -1, 850] ]] #Translation
+    I = [[ [-1,1, -1, 850] ]] #Translation
     # I = [[ [1,-1, -1, 850] ]] #Rotation
     
     LII = list3D_to_listof2Darrays(I)
