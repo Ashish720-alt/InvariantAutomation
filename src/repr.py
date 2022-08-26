@@ -40,7 +40,7 @@ class Repr:
         self.Q_z3expr = DNF_to_z3expr(Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 1
+        self.c = 2
         self.d = 1
         self.tmax = 1000000
 

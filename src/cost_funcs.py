@@ -67,7 +67,7 @@ def costICE(I, ICEpoints):
             else:
                 spin = spin - 1
         rv = rv + cost
-        rvlist.append(spin)
+        rvlist.append(cost)
     return (rv, rvlist, spin)
 
 def U(r):
