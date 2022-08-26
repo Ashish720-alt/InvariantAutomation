@@ -42,7 +42,7 @@ def listadd(l1, l2):
     return [sum(p) for p in zip(l1, l2)]
 
 # Here, posed as an ILP!
-def centre_of_rotation_new(pred, newcoefficient, spin):
+def centre_of_rotation_new(pred, newcoefficient, spin, k1):
     # Need to convert the type of elements of this array to float?
     coeff = pred[:-2]
     const = pred[-1]
@@ -57,7 +57,10 @@ def centre_of_rotation_new(pred, newcoefficient, spin):
         np.zeros(n), #This is the initial guess!
         args=(v,spin),
         bounds = Bounds(lb = np.full(n, conf.dspace_intmin), ub = np.full(n, conf.dspace_intmax) ),
-        constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) , newcoefficient]  ), np.array( [-np.inf, -np.inf, -100] ), np.array( [const, -const, 100] ) )], #Convert this to shape (1,n) instead of (n)?
+        # Without newconstant constraints
+        # constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) ]  ), np.array( [-np.inf, -np.inf] ), np.array( [const, -const] ) )],
+        # With new constant constraints
+        constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) , newcoefficient]  ), np.array( [-np.inf, -np.inf, -k1 - 1] ), np.array( [const, -const, k1] ) )], #Convert this to shape (1,n) instead of (n)?
     ).x
 
 # print(centre_of_rotation_new( [-1,2,-1,200] , [-1,1] , 1 ))
@@ -101,10 +104,10 @@ def centre_of_rotation(pred):
 
 
 
-def rotationtransition(oldpredicate, rotationneighbors, spin):
+def rotationtransition(oldpredicate, rotationneighbors, spin, k1):
     # centreofrotation = centre_of_rotation(oldpredicate)
     newcoefficient = list(randomlysamplelistoflists(rotationneighbors)) 
-    centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin)
+    centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1)
     const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
     return newcoefficient + [-1, const]
 
