@@ -10,7 +10,7 @@ class Configure:
     k = 2
     r = 1
 
-    s = 20
+    s = 5
 
     p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
     p_rot = 0.5
@@ -35,7 +35,7 @@ class Configure:
     # Print iterations or not?
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = OFF
+    PRINT_REJECT_ITERATIONS = ON
     PRINT_STAY_ITERATIONS = ON
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
