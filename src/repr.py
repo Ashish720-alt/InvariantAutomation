@@ -52,7 +52,6 @@ class Repr:
 
         self.k0 = max(self.Dp[0])
         self.k1 = max(self.Dp[1])
-        self.beta = conf.beta0
 
 
         self.rotationgraph = getrotationgraph(self.k0, self.n)
@@ -97,9 +96,6 @@ class Repr:
 
     def get_k1(self):
         return self.k1
-
-    def get_beta(self):
-        return self.beta
 
     def get_tmax(self):
         return self.tmax

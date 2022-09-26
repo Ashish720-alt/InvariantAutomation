@@ -15,9 +15,9 @@ class Configure:
     p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
     p_rot = 0.5
 
-    alpha = 1
+    alpha = 10**302
     gamma = 2.0 #Need floating point constant here
-    beta0 = 10000
+    beta0 = 1000 #2^-1000 ~ 10^(-301)
     descent_prob = 0.5
 
     # Operators
@@ -35,7 +35,7 @@ class Configure:
     # Print iterations or not?
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = ON
+    PRINT_REJECT_ITERATIONS = OFF
     PRINT_STAY_ITERATIONS = ON
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON

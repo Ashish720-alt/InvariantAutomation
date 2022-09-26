@@ -746,7 +746,7 @@ def norm_DNF(D, n):
         """
         assert(len(p) == self.num_var)
 
-        def distance_point_conj_clauses(C):
+        def distance_point_conj_clauses(p, C):
             """
             :C: a 2d array, (conj, pred).
             """

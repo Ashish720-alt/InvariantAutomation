@@ -83,7 +83,9 @@ def getadjacencylist(coeffdomain, theta_0):
 
 def getrotationgraph(K, n):
     coeffdomain = enumeratecoeffdomain(K, n)
-    theta_0 = gettheta_0(coeffdomain)
+    # theta_0 = gettheta_0(coeffdomain)
+    # Does large rotation angles work?
+    theta_0 = pi
     # print(180*theta_0/pi)   
     return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
 

@@ -28,7 +28,6 @@ def metropolisHastings (repr: Repr):
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized()
-    beta = repr.get_beta()
     
     I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
@@ -37,8 +36,8 @@ def metropolisHastings (repr: Repr):
     # I = [[ [1,-1, -1, 850] ]] #Rotation
     
     LII = list3D_to_listof2Darrays(I)
-    (costI, costlist, spinI) = cost(LII, samplepoints, beta)  #spin = |-| - |+|
-    fI = cost_to_f(costI, beta)
+    (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
+    fI = cost_to_f(costI)
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
     print("\n")
     statistics(0, 1, I, fI, costI, 0, 0, costlist, -1 ) 
@@ -68,8 +67,8 @@ def metropolisHastings (repr: Repr):
                     I[index[0]][index[1]] = newpred
                     (deg, degnew) = (2,2)
                     
-                (costInew, costlist, spinInew) = cost(list3D_to_listof2Darrays(I), samplepoints, beta)
-                fInew = cost_to_f(costInew, beta)
+                (costInew, costlist, spinInew) = cost(list3D_to_listof2Darrays(I), samplepoints)
+                fInew = cost_to_f(costInew)
                 if (costInew <= costI):
                     a = 1.0
                 else:
@@ -109,9 +108,8 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        (costI, costlist, spinI) = cost( list3D_to_listof2Darrays(I), samplepoints, beta ) #samplepoints has changed, so cost and f changes for same invariant
-        fI = cost_to_f(costI, beta)
-        beta = repr.get_beta()
+        (costI, costlist, spinI) = cost( list3D_to_listof2Darrays(I), samplepoints) #samplepoints has changed, so cost and f changes for same invariant
+        fI = cost_to_f(costI)
         statistics(0, 1, I, fI, costI, 0, 0, [], -1 )
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
