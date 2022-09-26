@@ -1,6 +1,6 @@
 from configure import Configure as conf
 from cost_funcs import cost, cost_to_f
-from guess import rotationtransition, translationtransition, centre_of_rotation_new
+from guess import rotationtransition, translationtransition, centre_of_rotation_new, uniformlysample_I
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
@@ -73,9 +73,9 @@ def hill_climbing(repr: Repr):
     z3_callcount = 0
     beta = repr.get_beta()
 
-    # I = uniformlysampleRTI( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
+    I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     #Deterministic X_0:
-    I = [[ [-1,1, -1, 850], [1,0, -1, 1] ]]
+    # I = [[ [-1,1, -1, 0], [0,-1, -1, 0] ]]
 
     
     LII = list3D_to_listof2Darrays(I)

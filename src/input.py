@@ -14,13 +14,35 @@ class handcrafted:
         Q = [np.array([[1, -1, 6]])] 
         T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
 
+    # Variable vector: (x,y)
+    class c2d1_1:
+        P = [np.array([[1, 0, 0, 1], [0, 1, 0, 1] ])]
+        B = dnfTrue(2)
+        Q = [np.array([[1, -1, 1, 0], [0,1,1,1] ])]
+        T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )         
+
 class loop_lit:
+    # Variable vector: (x,y)
     class afnp2014:
-        P = [np.array([[1, 0, 0, 1], [0, 1, 0, 0] ])]
+        P = [np.array([[1, 0, 0, 2], [0, 1, 0, 2] ])]
         B = [np.array([[0, 1, -2, 1000]])]
         Q = [np.array([[1, -1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
 
+    # Variable vector: (a,b,i,n)
+    class bhmr2007:
+        P = [np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 1, 0], [0, 0, 0, 1, -1, 10000] ])]
+        B = [np.array([[0, 0, 1,-1, -1, 0]])]
+        Q = [np.array([[1, 1, 0, -3, 0, 0], [0, 0, 1 ,-1, -1, 0]])]
+        T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 1], [0, 1, 0, 0, 2], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0]]) , 
+                                       np.array([[1, 0, 0, 0, 2], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0]])  ] , dnfTrue(4) ) ) 
+    
+    # Variable vector: (i,j)
+    class cggmp2005:
+        P = [np.array([[1, 0, 0, 1], [0, 1, 0, 10] ])]
+        B = [np.array([[-1, 1, 1, 0]])]
+        Q = [np.array([[0, 1, 0, 6], [-1, 1, 1, 0]])]
+        T = genLItransitionrel(B, ( [np.array([[1, 0, 2], [0, 1, -1], [0, 0, 1]])] , dnfTrue(2) ) )         
 
 # This takes too much time.
 class lineararbitrary:
@@ -33,14 +55,14 @@ class lineararbitrary:
                         [0,0,0,0,1,0, 1], [0,0,0,0,0,1, 0] ])] , dnfTrue(6) ) ) 
 
 
-P = loop_lit.afnp2014.P
-B = loop_lit.afnp2014.B
-T = loop_lit.afnp2014.T
-Q = loop_lit.afnp2014.Q
-# metropolisHastings(Repr(P, B, T, Q))
+P = handcrafted.c2d1_1.P
+B = handcrafted.c2d1_1.B
+T = handcrafted.c2d1_1.T
+Q = handcrafted.c2d1_1.Q
+metropolisHastings(Repr(P, B, T, Q))
 
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:
-from hillclimbing import hill_climbing
-hill_climbing(Repr(P, B, T, Q))
+# from hillclimbing import hill_climbing
+# hill_climbing(Repr(P, B, T, Q))
