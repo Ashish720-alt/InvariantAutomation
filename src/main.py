@@ -3,7 +3,7 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost, cost_to_f
-from guess import uniformlysample_I, rotationdegree, rotationtransition, translationtransition, ischange, get_index, isrotationchange
+from guess import uniformlysample_I, rotationdegree, rotationtransition, translationtransition, ischange, get_index, isrotationchange, getrotationcentre_points
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
@@ -59,7 +59,9 @@ def metropolisHastings (repr: Repr):
                 if (is_rotationchange ): 
                     rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
                     deg = rotationdegree(rotneighbors)
-                    newpred = rotationtransition(oldpredicate, rotneighbors, spinI, repr.get_k1()) #Change the code here!
+                    # Get required points from samplepoints and costlist
+                    filteredpoints = getrotationcentre_points(samplepoints, costlist) 
+                    newpred = rotationtransition(oldpredicate, rotneighbors, spinI, repr.get_k1(), filteredpoints) #Change the code here!
                     degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
                     I[index[0]][index[1]] = newpred
                 else:
