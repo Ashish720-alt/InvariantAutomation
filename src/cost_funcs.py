@@ -14,6 +14,9 @@ from scipy.optimize import minimize, LinearConstraint
 def normalizationfn(x, K):
     return K*(x/(1.0 + x))
 
+def sigmoidfn(x, K):
+    return 2*K*(1/(1 + np.exp(-x)) - 0.5)
+
 def negationLIpredicate(p):
     return (dnfnegation( [np.array( [p], ndmin = 2 )] ))[0][0]
 
@@ -97,7 +100,8 @@ def U(r):
     return 1.0
 
 def cost_to_f(totalcost):
-    exp = normalizationfn(totalcost, conf.beta0)
+    # exp = sigmoidfn(totalcost, conf.beta0) #Sigmoid variant
+    exp = normalizationfn(totalcost, conf.beta0) #Linear normalization
     den = U(totalcost)
     return conf.alpha * (conf.gamma **(-exp) / den)
 

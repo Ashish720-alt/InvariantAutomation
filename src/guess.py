@@ -6,8 +6,9 @@ from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
 from configure import Configure as conf
 from math import inf, sqrt
-from scipy.linalg import null_space
+from scipy.linalg import null_space, inv
 from scipy.optimize import minimize, LinearConstraint, Bounds
+from cost_funcs import costplus, costminus, costICE
 
 def randomlysamplelistoflists(l):
     return l[np.random.choice( len(l))]
@@ -65,6 +66,48 @@ def centre_of_rotation_new(pred, newcoefficient, spin, k1):
 
 # print(centre_of_rotation_new( [-1,2,-1,200] , [-1,1] , 1 ))
 
+def origin_fp(pred):
+    coeff = pred[:-2]
+    const = pred[-1]
+    K = np.dot(np.array(coeff) , np.array(coeff))
+    return [ (x * const * 1.0)/K for x in coeff ]
+
+
+### HERE!!!!
+def centre_of_rotation_walk(pred):
+    n = len(pred) - 2
+    coeff = pred[:-2]
+    A = np.array([ np.array(coeff) for i in range(n)])
+    ns_columnarray = null_space(A)
+    ns_array = np.transpose(ns_columnarray)
+    ns_list = [list(x) for x in ns_array] 
+
+    def coordinate_bounds(basis):
+        def coeffbounds(basisvector):
+            (maxvalue, minvalue) = (max(basisvector), min(basisvector))
+            (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
+            U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
+            L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
+            return (L,U)
+        return [coeffbounds(v) for v in basis]
+
+    bounds = coordinate_bounds(ns_list)
+
+    def coordinate_to_point(coordinates, basis_list): #ns_list is basis_list
+        rv = np.zeros(n, dtype = float)
+        for i in range(len(basis_list)):
+            rv = np.add(rv, coordinates[i]*np.array(basis_list[i]) )
+        return list(rv)
+
+    x0 = origin_fp(pred)
+    coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
+    k = len(coordinate_curr)
+    for i in range(conf.centre_walklength):
+        for j in range(k):
+            coordinate_curr = () # Update coordinate
+
+
+    return coordinate_to_point(coordinate_curr, ns_list)
 
 # Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
 def centre_of_rotation(pred):
@@ -99,17 +142,63 @@ def centre_of_rotation(pred):
             rv = np.add(rv, K*np.array(coeff))
         return list(rv)
     
-    return samplepoint(ns_list, bounds, coeff, pred[-1])
+    return [ samplepoint(ns_list, bounds, coeff, pred[-1]) for x in range(conf.centres_sampled)]
+
+def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
+    centreofrotation_list = centre_of_rotation(newcoefficient + [-1,0])
+
+    def centreofrotation_cost(newI, filteredpoints):
+        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+        return pos_cost + neg_cost + ICE_cost
+
+    centreofrotation = centreofrotation_list[0]
+    const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
+    newpred = newcoefficient + [-1, const]
+    newI = [np.array( newpred, ndmin = 2)]
+    cost = centreofrotation_cost(newI, filteredpoints)
+
+    i = 1
+    while (i < conf.centres_sampled):
+        curr_centreofrotation = centreofrotation_list[i]
+        curr_const = round(np.dot(np.array(newcoefficient), np.array(curr_centreofrotation)), 0) 
+        currpred = newcoefficient + [-1, curr_const]
+        currI = [np.array( currpred, ndmin = 2)]
+        curr_cost = centreofrotation_cost(currI, filteredpoints)
+        if (curr_cost < cost):
+            cost = curr_cost
+            centreofrotation = curr_centreofrotation
+        i = i+1
+    return centreofrotation
+
+#samplepoints is a triple, costlist is a single list
+# This is what I have to change in points!!!!
+def getrotationcentre_points(samplepoints, costlists):
+    pos_costlist = costlists[0: len(samplepoints[0])]
+    neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
+    ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
+
+
+    def filter_samplepoints(samplepoint, costlist):
+        rv = []
+        for (i, x) in enumerate(costlist):
+            if x <= conf.d:
+                rv.append(samplepoint[i]) 
+        return rv
+
+    return (filter_samplepoints(samplepoints[0], pos_costlist),
+            filter_samplepoints(samplepoints[1], neg_costlist),filter_samplepoints(samplepoints[2], ICE_costlist))
 
 
 
-
-def rotationtransition(oldpredicate, rotationneighbors, spin, k1):
-    # centreofrotation = centre_of_rotation(oldpredicate)
+def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints):
     newcoefficient = list(randomlysamplelistoflists(rotationneighbors)) 
-    centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1)
+    # centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1) #Uses the previously worked out math
+    centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient)
     const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
     return newcoefficient + [-1, const]
+
 
 
 def translationtransition(predicate):
