@@ -74,7 +74,7 @@ def origin_fp(pred):
 
 
 ### HERE!!!!
-def centre_of_rotation_walk(pred):
+def centre_of_rotation_walk(pred, filteredpoints):
     n = len(pred) - 2
     coeff = pred[:-2]
     A = np.array([ np.array(coeff) for i in range(n)])
@@ -92,22 +92,44 @@ def centre_of_rotation_walk(pred):
         return [coeffbounds(v) for v in basis]
 
     bounds = coordinate_bounds(ns_list)
+    K = pred[-1] / np.dot(np.array(coeff), np.array(coeff))
 
-    def coordinate_to_point(coordinates, basis_list): #ns_list is basis_list
+    def coordinate_to_point(coordinates, basis_list, K): #ns_list is basis_list
         rv = np.zeros(n, dtype = float)
         for i in range(len(basis_list)):
             rv = np.add(rv, coordinates[i]*np.array(basis_list[i]) )
+        rv = np.add(rv, K*np.array(coeff))
         return list(rv)
 
-    x0 = origin_fp(pred)
-    coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
-    k = len(coordinate_curr)
-    for i in range(conf.centre_walklength):
-        for j in range(k):
-            coordinate_curr = () # Update coordinate
+    def centreofrotation_cost(newI, filteredpoints):
+        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+        return pos_cost + neg_cost + ICE_cost
 
 
-    return coordinate_to_point(coordinate_curr, ns_list)
+    # x0 = origin_fp(pred)
+    # coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
+    k = len(ns_list)
+    coordinate_curr = [0] * k
+    point_curr = coordinate_to_point(coordinate_curr, ns_list, K)
+    curr_const = round(np.dot(np.array(coeff), np.array(point_curr)), 0) 
+    curr_cost = centreofrotation_cost([np.array(coeff + [-1, curr_const], ndmin = 2)], filteredpoints)
+    i = 1
+    while (i < conf.centre_walklength):
+        j = random.choice(list(range(k)))
+        change = random.choice([-1,1])
+        coordinate_temp = coordinate_curr.copy()
+        coordinate_temp[j] = coordinate_temp[j] + change
+        point_temp = coordinate_to_point(coordinate_temp, ns_list, K)
+        temp_const = round(np.dot(np.array(coeff), np.array(point_temp)), 0) 
+        temp_cost = centreofrotation_cost([np.array(coeff + [-1, temp_const], ndmin = 2)], filteredpoints)
+        if (temp_cost < curr_cost):
+            curr_cost = temp_cost
+            coordinate_curr = coordinate_temp
+            point_curr = point_temp
+        i = i + 1
+    return point_curr
 
 # Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
 def centre_of_rotation(pred):
@@ -135,7 +157,8 @@ def centre_of_rotation(pred):
         rv = [conf.dspace_intmax+1]*n
         K = b / np.dot(np.array(coeff), np.array(coeff))
         while( not isvalidvector(list(rv))):
-            coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds]
+            # coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
+            coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
             rv = np.zeros(n, dtype = float)
             for i in range(len(basis)):
                 rv = np.add(rv, coordinates[i]*np.array(basis[i]) )
@@ -195,7 +218,8 @@ def getrotationcentre_points(samplepoints, costlists):
 def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints):
     newcoefficient = list(randomlysamplelistoflists(rotationneighbors)) 
     # centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1) #Uses the previously worked out math
-    centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient)
+    centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient) # Uniformly/ Gaussian Randomly samples from the hyperplane
+    # centreofrotation = centre_of_rotation_walk(oldpredicate, filteredpoints) # Deterministic Random Walk of bounded length
     const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
     return newcoefficient + [-1, const]
 

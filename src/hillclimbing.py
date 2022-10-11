@@ -1,6 +1,6 @@
 from configure import Configure as conf
 from cost_funcs import cost, cost_to_f
-from guess import rotationtransition, translationtransition, centre_of_rotation_new, uniformlysample_I, centre_of_rotation_old
+from guess import rotationtransition, translationtransition, centre_of_rotation_new, uniformlysample_I, centre_of_rotation_old , centre_of_rotation_walk, getrotationcentre_points
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
@@ -25,6 +25,7 @@ def get_best_neighbor(I, repr, cost_prev, samplepoints, c, d, og_costlist, spin,
     for i in range(d):
         for j in range(c):
             oldpredicate = I[i][j][:-2]
+            oldconst = I[i][j][:-1]
             rotneighbors = repr.get_coeffneighbors(I[i][j][:-2])
             translation_neighbors = []
             for k in [-1,1]:
@@ -52,10 +53,12 @@ def get_best_neighbor(I, repr, cost_prev, samplepoints, c, d, og_costlist, spin,
                 Inew = deepcopy(I)
                 # centreofrotation = centre_of_rotation_new(I[i][j], rotneighbor, spin, k1) #Uses the math worked out before
                 # Trying to work this out!!
-                centreofrotation = centre_of_rotation_old( oldpredicate , samplepoints , rotneighbor)
+                filteredpoints = getrotationcentre_points(samplepoints, og_costlist) 
+                centreofrotation = centre_of_rotation_old( oldpredicate , filteredpoints , rotneighbor) #Uses random/ Gaussian Sampling
+                # centreofrotation = centre_of_rotation_walk(I[i][j], filteredpoints) #Uses random walk on hyperplane.
                 const = round(np.dot(np.array(rotneighbor), np.array(centreofrotation)), 1)                 
                 Inew[i][j] = rotneighbor + [-1, const]
-                print(I, centreofrotation, Inew) # Gives possible rotation transitions!s
+                # print(I, centreofrotation, Inew) # Gives possible rotation transitions!s
                 (newcost, costlist, spinI) = cost( list3D_to_listof2Darrays(Inew), samplepoints)
                 if (newcost < currcost):
                     currcost = newcost
