@@ -13,15 +13,16 @@ from copy import deepcopy
 import numpy as np
 import sys
 
-def randomlysamplelistoflists(l, costlists):
+def randomlysamplelistoflists(l, costlists, centres):
     ind = random.choice( len(l))
-    return (l[ind], costlists[ind])
+    return (l[ind], costlists[ind], centres[ind])
 
 
 def get_best_neighbor(I, repr, cost_prev, samplepoints, c, d, og_costlist, spin, k1):
     currcost = cost_prev 
     possible_invs = [I]
     possible_costlists = [og_costlist]
+    latest_centres = [[-1]]
     for i in range(d):
         for j in range(c):
             oldpredicate = I[i][j][:-2]
@@ -49,13 +50,14 @@ def get_best_neighbor(I, repr, cost_prev, samplepoints, c, d, og_costlist, spin,
             #     else:
             #         continue
 
+            
             for rotneighbor in rotneighbors:
                 Inew = deepcopy(I)
                 # centreofrotation = centre_of_rotation_new(I[i][j], rotneighbor, spin, k1) #Uses the math worked out before
                 # Trying to work this out!!
-                filteredpoints = getrotationcentre_points(samplepoints, og_costlist) 
-                centreofrotation = centre_of_rotation_old( oldpredicate , filteredpoints , rotneighbor) #Uses random/ Gaussian Sampling
-                # centreofrotation = centre_of_rotation_walk(I[i][j], filteredpoints) #Uses random walk on hyperplane.
+                filteredpoints = getrotationcentre_points(samplepoints, og_costlist, I[i][j]) 
+                # centreofrotation = centre_of_rotation_old( oldpredicate , filteredpoints , rotneighbor) #Uses random/ Gaussian Sampling
+                centreofrotation = centre_of_rotation_walk(I[i][j], filteredpoints) #Uses random walk on hyperplane.
                 const = round(np.dot(np.array(rotneighbor), np.array(centreofrotation)), 1)                 
                 Inew[i][j] = rotneighbor + [-1, const]
                 # print(I, centreofrotation, Inew) # Gives possible rotation transitions!s
@@ -64,14 +66,16 @@ def get_best_neighbor(I, repr, cost_prev, samplepoints, c, d, og_costlist, spin,
                     currcost = newcost
                     possible_invs = [Inew]
                     possible_costlists = [costlist]
+                    latest_centres = [centreofrotation]
                 elif (newcost == currcost):
                     possible_invs.append(Inew)
                     possible_costlists.append(costlist)
+                    latest_centres.append(centreofrotation)
                 else:
                     continue
 
     
-    return (possible_invs, currcost, possible_costlists)                
+    return (possible_invs, currcost, possible_costlists, latest_centres)                
 
 def hill_climbing(repr: Repr):
     tmax = repr.get_tmax()
@@ -79,10 +83,10 @@ def hill_climbing(repr: Repr):
     initialized()
     z3_callcount = 0
 
-    I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
+    # I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     #Deterministic X_0:
     # I = [[ [-1,1, -1, 0], [0,-1, -1, 0] ]]
-
+    I    = [ [[1,-1, -1, 0] , [-1,0,-1,0]] ] #Rotation
     
     LII = list3D_to_listof2Darrays(I)
     (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
@@ -94,14 +98,15 @@ def hill_climbing(repr: Repr):
         for t in range(1,tmax + 1):
             if (costI == 0): #Put this in the start, because if by some magic we guess the first invariant in the first go, we dont want to change
                 break  
-            (besttransitions, costI, costlists) = get_best_neighbor(I, repr, costI, samplepoints, repr.get_c(), repr.get_d(), costlist, spinI, repr.get_k1())
+            (besttransitions, costI, costlists, centres) = get_best_neighbor(I, repr, costI, samplepoints, repr.get_c(), repr.get_d(), costlist, spinI, repr.get_k1())
             
             if (besttransitions == [I]):
                 print("LOCAL MAXIMA wrt our transition guesses!!")
 
-            (I, costlist) = randomlysamplelistoflists(besttransitions, costlists)
+            (I, costlist, centre) = randomlysamplelistoflists(besttransitions, costlists, centres)
             
             # print(besttransitions, I, costI, costlist)
+            print("Centre:", centre)
             statistics(t, 1, I, -1, costI, 0, 0, costlist, -1  )
         
         (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), list3D_to_listof2Darrays(I) )

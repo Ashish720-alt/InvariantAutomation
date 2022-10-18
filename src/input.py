@@ -59,10 +59,10 @@ P = handcrafted.c2d1_1.P
 B = handcrafted.c2d1_1.B
 T = handcrafted.c2d1_1.T
 Q = handcrafted.c2d1_1.Q
-# metropolisHastings(Repr(P, B, T, Q))
+metropolisHastings(Repr(P, B, T, Q))
 
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:
-from hillclimbing import hill_climbing
-hill_climbing(Repr(P, B, T, Q))
+# from hillclimbing import hill_climbing
+# hill_climbing(Repr(P, B, T, Q))
