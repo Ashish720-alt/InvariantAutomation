@@ -121,10 +121,12 @@ def centre_of_rotation_walk(pred, filteredpoints):
         change = random.choice([-1,1])
         coordinate_temp = coordinate_curr.copy()
         coordinate_temp[j] = coordinate_temp[j] + change
+        print(coordinate_curr, coordinate_temp) #Debug
         point_temp = coordinate_to_point(coordinate_temp, ns_list, K)
         temp_const = round(np.dot(np.array(coeff), np.array(point_temp)), 0) 
         temp_cost = centreofrotation_cost([np.array(coeff + [-1, temp_const], ndmin = 2)], filteredpoints)
         if (temp_cost < curr_cost):
+            print("Walk has moved!") #Debug
             curr_cost = temp_cost
             coordinate_curr = coordinate_temp
             point_curr = point_temp
@@ -157,8 +159,8 @@ def centre_of_rotation(pred):
         rv = [conf.dspace_intmax+1]*n
         K = b / np.dot(np.array(coeff), np.array(coeff))
         while( not isvalidvector(list(rv))):
-            # coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
-            coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
+            coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
+            # coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
             rv = np.zeros(n, dtype = float)
             for i in range(len(basis)):
                 rv = np.add(rv, coordinates[i]*np.array(basis[i]) )
@@ -197,21 +199,32 @@ def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
 
 #samplepoints is a triple, costlist is a single list
 # This is what I have to change in points!!!!
-def getrotationcentre_points(samplepoints, costlists):
+def getrotationcentre_points(samplepoints, costlists, oldpred):
     pos_costlist = costlists[0: len(samplepoints[0])]
     neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
     ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
 
-
-    def filter_samplepoints(samplepoint, costlist):
+    def filter_samplepoints(samplepoint, costlist, oldpred):
         rv = []
-        for (i, x) in enumerate(costlist):
+        # def LIPptdistance(p, pt):
+        #     magnitude = sqrt(sum(i*i for i in p[:-2]))
+        #     return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0)
+        #     # return abs( sum( [ pt[i] * p[i] for i in range(len(pt))] ) - p[-1]/(1.0*magnitude)  )
+        
+        #  # New correct code
+        # for pt in samplepoint:
+        #     if LIPptdistance(oldpred, pt) <= conf.d:
+        #         rv.append(pt) 
+
+        for (i, x) in enumerate(costlist):         #Old Version
             if x <= conf.d:
                 rv.append(samplepoint[i]) 
+            
         return rv
 
-    return (filter_samplepoints(samplepoints[0], pos_costlist),
-            filter_samplepoints(samplepoints[1], neg_costlist),filter_samplepoints(samplepoints[2], ICE_costlist))
+    return (filter_samplepoints(samplepoints[0], pos_costlist, oldpred),
+            filter_samplepoints(samplepoints[1], neg_costlist, oldpred),
+            filter_samplepoints(samplepoints[2], ICE_costlist, oldpred))
 
 
 

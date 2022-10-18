@@ -22,7 +22,7 @@ class Configure:
 
     d = 1
     centres_sampled = 20
-    centre_walklength = 20
+    centre_walklength = 10
 
     # Operators
     OP = {
@@ -38,7 +38,7 @@ class Configure:
     OFF = 0
     # Print iterations or not?
     PRINT_ITERATIONS = ON
-    PRETTYPRINTINVARIANT_ITERATIONS = OFF
+    PRETTYPRINTINVARIANT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = ON
     PRINT_STAY_ITERATIONS = ON
     PRINT_Z3_ITERATIONS = ON

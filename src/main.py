@@ -33,7 +33,7 @@ def metropolisHastings (repr: Repr):
     
 
     # I = [[ [-1,1, -1, 850] ]] #Translation
-    # I = [[ [1,-1, -1, 850] ]] #Rotation
+    # I = [ np.array([[2,1, -1, 0] , [-1,0,-1,0]], ndmin = 2) ] #Rotation
     
     LII = list3D_to_listof2Darrays(I)
     (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
@@ -60,7 +60,7 @@ def metropolisHastings (repr: Repr):
                     rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
                     deg = rotationdegree(rotneighbors)
                     # Get required points from samplepoints and costlist
-                    filteredpoints = getrotationcentre_points(samplepoints, costlist) 
+                    filteredpoints = getrotationcentre_points(samplepoints, costlist, oldpredicate) 
                     newpred = rotationtransition(oldpredicate, rotneighbors, spinI, repr.get_k1(), filteredpoints) #Change the code here!
                     degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
                     I[index[0]][index[1]] = newpred
@@ -76,8 +76,7 @@ def metropolisHastings (repr: Repr):
                 else:
                     if (fI == 0 or isnan(fI)):
                         if (fInew == 0 or isnan(fInew)):
-                            r = 10.0 #???
-                            a = min( ( costI * deg)/ (r*costInew * degnew) , 1.0)                        
+                            a = 0.0                    
                         else:
                             a = 1.0
                     else:
