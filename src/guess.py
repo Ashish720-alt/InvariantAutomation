@@ -239,7 +239,10 @@ def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints
 
 
 def translationtransition(predicate):
-    s = np.random.choice([-1,1])
+    translation_range = 10
+    translation_indices = list(range(-translation_range, translation_range +1))
+    translation_indices.remove(0)
+    s = np.random.choice(translation_indices)
     rv = predicate.copy()
     rv[-1] = rv[-1] + s
     return rv

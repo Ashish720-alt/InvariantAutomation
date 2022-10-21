@@ -61,7 +61,7 @@ def metropolisHastings (repr: Repr):
                     deg = rotationdegree(rotneighbors)
                     # Get required points from samplepoints and costlist
                     filteredpoints = getrotationcentre_points(samplepoints, costlist, oldpredicate) 
-                    newpred = rotationtransition(oldpredicate, rotneighbors, spinI, repr.get_k1(), filteredpoints) #Change the code here!
+                    newpred = rotationtransition(oldpredicate, rotneighbors, spinI, repr.get_k1(), filteredpoints) 
                     degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
                     I[index[0]][index[1]] = newpred
                 else:
