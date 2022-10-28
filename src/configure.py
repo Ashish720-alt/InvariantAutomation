@@ -20,7 +20,7 @@ class Configure:
     beta0 = 20 #2^-20 ~ 10^(-7)
     descent_prob = 0.5
 
-    d = 1
+    d = 100
     centres_sampled = 20
     centre_walklength = 10
 
@@ -37,8 +37,9 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
+    SAMPLEPOINTS_DEBUGGER = OFF
     PRINT_ITERATIONS = ON
-    PRETTYPRINTINVARIANT_ITERATIONS = ON
+    PRETTYPRINTINVARIANT_ITERATIONS = OFF
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_STAY_ITERATIONS = ON
     PRINT_Z3_ITERATIONS = ON

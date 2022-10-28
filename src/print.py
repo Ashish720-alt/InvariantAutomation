@@ -104,7 +104,7 @@ def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcoun
 
 def invariantfound(I):
     print("Invariant Found:\t", end = '')
-    prettyprint_invariant(list3D_to_listof2Darrays(I), '')
+    print(prettyprint_invariant( list3D_to_listof2Darrays(I), ''))
 
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 

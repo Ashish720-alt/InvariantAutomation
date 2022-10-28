@@ -44,12 +44,18 @@ class loop_lit:
         Q = [np.array([[0, 1, 0, 6]]), np.array([[-1, 1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 0, 2], [0, 1, -1], [0, 0, 1]])] , dnfTrue(2) ) )         
 
+    # Variable vector: 
+    class cggmp2005_variant:
+        s = 0
+
     # Variable vector: (x,y)
     class gsv2008:
         P = [np.array([[1, 0, 0, -50], [0, 1, 2, 1000], [0,1,-2,10000] ])]
         B = [np.array([[1, 0, -2, 0]])]
         Q = [np.array([[0, 1, 2, 0]]), np.array([[1, 0, -2, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )    
+
+    
 
 # This takes too much time.
 class lineararbitrary:
