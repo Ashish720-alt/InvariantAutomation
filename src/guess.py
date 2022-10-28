@@ -73,7 +73,32 @@ def origin_fp(pred):
     return [ (x * const * 1.0)/K for x in coeff ]
 
 
-### HERE!!!!
+def centre_of_rotation_projectedWalk(pred, filteredpoints):
+    def centreofrotation_cost(newI, filteredpoints):
+        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+        return pos_cost + neg_cost + ICE_cost
+    coeff = pred[:-2]
+    o_fp = origin_fp(pred)
+    const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
+    i = 0
+    og_cost = centreofrotation_cost([np.array(coeff + [-1, const], ndmin = 2)], filteredpoints)  
+    while ( i < conf.centre_walklength):
+        temp_cost1 = centreofrotation_cost([np.array(coeff + [-1, const + 1], ndmin = 2)], filteredpoints)        
+        temp_cost2 = centreofrotation_cost([np.array(coeff + [-1, const - 1], ndmin = 2)], filteredpoints)  
+        if (temp_cost1 < temp_cost2 and temp_cost1 < og_cost):    
+            const = const + 1
+            og_cost = temp_cost1
+        elif (temp_cost2 < temp_cost1 and temp_cost2 < og_cost):
+            const = const - 1
+            og_cost = temp_cost2 
+        else:
+            return const     
+        i = i + 1
+    return const
+
+
 def centre_of_rotation_walk(pred, filteredpoints):
     n = len(pred) - 2
     coeff = pred[:-2]
@@ -198,42 +223,58 @@ def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
     return centreofrotation
 
 #samplepoints is a triple, costlist is a single list
-# This is what I have to change in points!!!!
 def getrotationcentre_points(samplepoints, costlists, oldpred):
     pos_costlist = costlists[0: len(samplepoints[0])]
     neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
     ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
 
-    def filter_samplepoints(samplepoint, costlist, oldpred):
-        rv = []
-        # def LIPptdistance(p, pt):
-        #     magnitude = sqrt(sum(i*i for i in p[:-2]))
-        #     return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0)
-        #     # return abs( sum( [ pt[i] * p[i] for i in range(len(pt))] ) - p[-1]/(1.0*magnitude)  )
-        
-        #  # New correct code
-        # for pt in samplepoint:
-        #     if LIPptdistance(oldpred, pt) <= conf.d:
-        #         rv.append(pt) 
+    neg_oldpred = [-1*x for x in oldpred]  
+    neg_oldpred[-2] = -1
+    neg_oldpred[-1] = neg_oldpred[-1] - 1
 
-        for (i, x) in enumerate(costlist):         #Old Version
-            if x <= conf.d:
-                rv.append(samplepoint[i]) 
-            
-        return rv
+    positivepts = samplepoints[0]
+    negativepts = samplepoints[1]
+    ICEpts = samplepoints[2]
 
-    return (filter_samplepoints(samplepoints[0], pos_costlist, oldpred),
-            filter_samplepoints(samplepoints[1], neg_costlist, oldpred),
-            filter_samplepoints(samplepoints[2], ICE_costlist, oldpred))
+    filtered_pos = []
+    filtered_neg = []
+    filtered_ICE = []
+
+    def pt_linedistance(pred, pt):
+        magnitude = sqrt(sum(i*i for i in pred[:-2]))
+        s = 0
+        for i in range(len(pt)):
+            s = pred[i]*pt[i]
+        s = s - pred[-1]    
+        return  s/magnitude
+
+    for i,pos in enumerate(positivepts):
+        dist = pt_linedistance(oldpred, pos)
+        if ( dist > 0 and dist <= conf.d and pos_costlist[i] > 0):
+            filtered_pos.append(pos)
+
+    for i,neg in enumerate(negativepts):
+        dist = pt_linedistance(neg_oldpred, neg)
+        if ( dist > 0 and dist <= conf.d and neg_costlist[i] > 0):
+            filtered_neg.append(neg)
+
+    for i,ICE in enumerate(ICEpts):
+        dist1 = pt_linedistance(neg_oldpred, ICE[0])
+        dist2 = pt_linedistance(oldpred, ICE[1])
+        if ( dist1 <= 0 and dist2 > 0 and min(-dist1, dist2) <= conf.d and ICE_costlist[i] > 0):
+            filtered_ICE.append(ICE)
+
+    return (filtered_pos, filtered_neg, filtered_ICE )
 
 
 
 def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints):
     newcoefficient = list(randomlysamplelistoflists(rotationneighbors)) 
     # centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1) #Uses the previously worked out math
-    centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient) # Uniformly/ Gaussian Randomly samples from the hyperplane
+    # centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient) # Uniformly/ Gaussian Randomly samples from the hyperplane
     # centreofrotation = centre_of_rotation_walk(oldpredicate, filteredpoints) # Deterministic Random Walk of bounded length
-    const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
+    # const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
+    const = centre_of_rotation_projectedWalk(oldpredicate, filteredpoints) #Projected Walk
     return newcoefficient + [-1, const]
 
 

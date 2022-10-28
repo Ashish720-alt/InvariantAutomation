@@ -45,10 +45,13 @@ def metropolisHastings (repr: Repr):
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
 
-
     while (1):
         mcmc_start = timer()
         for t in range(1,tmax + 1):
+            if (conf. SAMPLEPOINTS_DEBUGGER == conf.ON):
+                if (t % 1000 == 0): 
+                    prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t") 
+
             if (costI == 0): #Put this in the start, because if by some magic we guess the first invariant in the first go, we dont want to change
                 break  
             is_change = ischange() 
