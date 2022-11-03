@@ -137,6 +137,44 @@ def p_convertor (string, var_vector):
 def wff_converter(string, var_vector):
     return
 
+def bracket_parser(string, recursion_depth):
+
+    rv = {}
+    bracket_ct = 0
+    str_index = 0
+    prop_ct = 0
+    rv_string = ""
+    for i in range(len(string)):
+        ch = string[i]
+        rv_string = rv_string + ch
+        if (ch == '('):
+            if (bracket_ct == 0):
+                str_index = i
+            bracket_ct = bracket_ct + 1
+        elif (ch == ')'):
+            bracket_ct = bracket_ct - 1
+            if (bracket_ct == 0):
+                key = "P" + str(recursion_depth) + str(prop_ct)
+                rv.update({ key : string[str_index+1:i] })
+                rv_string = rv_string[:len(rv_string)-(i - str_index+1)]
+                rv_string = rv_string + key
+                prop_ct = prop_ct + 1
+    
+
+    rv2 = {}
+    for key in rv:
+        if '(' in rv[key]:
+            T = bracket_parser( rv[key], recursion_depth + 1)
+            rv2.update( T[0]  )
+            rv_string = rv_string.replace(key, "(" + T[1] + ")")
+        else:
+            rv2.update({ key: rv[key] })
+
+    return (rv2, rv_string)
+
+A = bracket_parser("((2x + 3y = 20 && 2x - 8u <= 50) and (x + y = 20)) \/ (x-y <= 10)", 0) 
+print(A[0], '\n', A[1])
+
 
 def transition_converter( transition, var_vector ):
     
