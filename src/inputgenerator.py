@@ -1,3 +1,5 @@
+from pyeda.inter import *
+import numpy as np
 
 def convert_minus (exp):
     exp = exp.strip()
@@ -134,8 +136,7 @@ def p_convertor (string, var_vector):
 
     return rv    
 
-def wff_converter(string, var_vector):
-    return
+# print(p_convertor( "2*low - 3*high + 15 <= -2 + mid" , ["low", "high", "mid"] ))
 
 def bracket_parser(string, recursion_depth):
 
@@ -160,20 +161,150 @@ def bracket_parser(string, recursion_depth):
                 rv_string = rv_string + key
                 prop_ct = prop_ct + 1
     
-
     rv2 = {}
     for key in rv:
         if '(' in rv[key]:
             T = bracket_parser( rv[key], recursion_depth + 1)
             rv2.update( T[0]  )
-            rv_string = rv_string.replace(key, "(" + T[1] + ")")
+            rv_string = rv_string.replace(key.strip(), "(" + T[1] + ")")
         else:
             rv2.update({ key: rv[key] })
 
     return (rv2, rv_string)
 
-A = bracket_parser("((2x + 3y = 20 && 2x - 8u <= 50) and (x + y = 20)) \/ (x-y <= 10)", 0) 
-print(A[0], '\n', A[1])
+# A = bracket_parser("((2x + 3y = 20 && 2x - 8u <= 50) and (x + y = 20)) \/ (x-y <= 10)", 0) 
+# print(A[0], '\n', A[1])
+
+
+def logical_connective_parser (string, symb, replace_symb, T):
+    n = len(symb)
+    rv = {}
+    rv_string = ""
+    str_index = 0
+    prop_ct = 0
+    i = 0
+    while i < len(string):
+        curr = string[i:i+n]
+        if (curr == symb or i == len(string) - 1):
+            key = "Q" + str(T) + str(prop_ct)
+            if (curr == symb):
+                rv.update({key: string[str_index : i].strip()})
+            else:
+                rv.update({key: string[str_index : i+1].strip() })
+            rv_string = rv_string[: len(rv_string) - (i - str_index) ]
+            if (curr == symb):
+                rv_string = rv_string + key + " " + replace_symb
+            else:
+                rv_string = rv_string + key
+            str_index = i + n
+            prop_ct = prop_ct + 1
+            i = i + n
+        else:
+            rv_string = rv_string + string[i]
+            i = i + 1
+
+    return (rv, rv_string)
+        
+# A = logical_connective_parser( "2*x + 3*y <= 54 && 3*x - 2*y >= 41 && !p0 && 2*y = 8" , "&&" , " /\ " )
+# print(A[0], A[1])
+
+def pyeda_conj_parser(exp, D):
+    if (not "And" in exp): #exp is pyeda expression, not a string
+        return np.array( D[exp.strip()] , ndmin = 2)
+    else:
+        temp = exp.strip()
+        exp = temp[4: len(temp) - 1]
+        pred_list = exp.split(',')
+        rv = []
+        for pred in pred_list:
+            rv.append( D[pred.strip()]  )
+        return np.array( rv, ndmin = 2 )
+
+#Deal with NEGATION!
+def pyeda_dnf_parser(exp, D):
+    if (not "Or" in exp): #exp is pyeda expression, not a string
+        return [ pyeda_conj_parser(exp, D) ]
+    else:
+        temp = exp.strip()
+        exp = temp[3: len(temp) - 1]
+
+        conj_list = []
+
+        bracket_ct = 0
+        start_ind = 0
+        for i in range(len(exp)):
+            ch = exp[i]
+            if (ch == '('):
+                bracket_ct = bracket_ct + 1
+            elif (ch == ')'):
+                bracket_ct = bracket_ct - 1
+            elif (ch == ',' and bracket_ct == 0):
+                conj_list.append( exp[start_ind: i].strip() )
+                start_ind = i+1
+        conj_list.append( exp[start_ind: ].strip())
+
+        rv = []
+        for conj in conj_list:
+            rv.append( pyeda_conj_parser(conj, D)  )
+        return rv    
+
+
+
+def DNF_parser(string, var_vector):
+
+    temp = bracket_parser(string, 0)
+    
+    # print(temp)
+    # print(temp[0], temp[1]) ##MOST WEIRD ERROR???? print(temp) is not same output as print(temp[0], temp[1]) as temp[1] has symbol '\\/' instead of '\/'??????
+
+    curr_dict = temp[0]
+    rv_string = temp[1]
+    rv_dict = {}
+    i = 0
+    for key in curr_dict:
+        temp_string = curr_dict[key]
+        A = logical_connective_parser(curr_dict[key] , "&&", " & ", i)
+        rv_dict.update( A[0] )
+        if ( len(A[0]) > 1):
+            rv_string = rv_string.replace( key , "(" + A[1] + ")" )
+        else:
+            rv_string = rv_string.replace( key ,  A[1]  ) 
+        i = i + 1
+    rv_string = rv_string.replace( "&&", " & " )
+
+
+    rv_dict2 = {}
+    for key in rv_dict:
+        temp_string = rv_dict[key]
+        A = logical_connective_parser(rv_dict[key] , "||", " | ", i)
+        rv_dict2.update( A[0] )
+        if ( len(A[0]) > 1):
+            rv_string = rv_string.replace( key , "(" + A[1] + ")" )
+        else:
+            rv_string = rv_string.replace( key ,  A[1]  )  
+        i = i + 1
+    rv_string = rv_string.replace( "||", " | ")
+
+
+    rv_string = rv_string.replace( "!", "~" )
+
+    final_dict = {}
+    for key in rv_dict2:
+        final_dict.update({ key: p_convertor(rv_dict2[key], var_vector)})
+
+    pyeda_expr = expr(rv_string).to_dnf()
+
+    A = pyeda_dnf_parser(str(pyeda_expr), final_dict)
+    
+
+    return A
+
+# pyeda expr:  Or(Q50, And(Q30, ~Q40), And(Q31, ~Q40))
+
+S = DNF_parser("((2*x + 3*y == 20 || 2*x - 8*u <= 50) && (x + y == 20)) || (x - y <= 10)", ["u", "x", "y"] ) 
+# A = DNF_parser("((2*x + 3*y == 20 || 2*x - 8*u <= 50) && !(x + y == 20)) || (x - y <= 10)", ["u", "x", "y"] ) 
+print(S)
+
 
 
 def transition_converter( transition, var_vector ):
@@ -238,12 +369,11 @@ def transitions_converter (transitions, var_vector):
 
         rv.append( transition_dict[var_str]  )
 
+    a = [0]*(n+1)
+    a[-1] = 1
+
+    rv.append(a)
+
     return rv
-
-
-
-
-
-# print(p_convertor( "2*low - 3*high + 15 <= -2 + mid" , ["low", "high", "mid"] ))
 
 # print(transitions_converter( [ "x = y + 2*z + 3" , "z = y + 1", "y = x + 2 + y" ] , ["x", "y", "z"] ))
