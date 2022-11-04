@@ -35,7 +35,10 @@ def convert_minus (exp):
                     rv =  num_string + "*" + tail
                     i = i + len(num_string) 
             else:
-                rv = rv[ 0: i] + "+ " + num_string + "*" + tail
+                if (not tail == ""):
+                    rv = rv[ 0: i] + "+ " + num_string + "*" + tail
+                else:
+                    rv = rv[ 0: i] + "+ " + num_string 
                 i = i + len(num_string) + 1
         i = i + 1
 
@@ -104,6 +107,7 @@ def p_convertor (string, var_vector):
     rhs_coeff_dictionary = {}
     for i in range(len(monomials)):
         if ("*" in monomials[i]):
+            coeff_string = monomials[i].split("*")
             if (coeff_string[1].strip() in rhs_coeff_dictionary):
                 rhs_coeff_dictionary[coeff_string[1].strip()] = rhs_coeff_dictionary[coeff_string[1].strip()] + int(coeff_string[0].strip())
             else:
@@ -137,6 +141,8 @@ def p_convertor (string, var_vector):
     return rv    
 
 # print(p_convertor( "2*low - 3*high + 15 <= -2 + mid" , ["low", "high", "mid"] ))
+
+
 
 def bracket_parser(string, recursion_depth):
 
@@ -208,21 +214,44 @@ def logical_connective_parser (string, symb, replace_symb, T):
 # A = logical_connective_parser( "2*x + 3*y <= 54 && 3*x - 2*y >= 41 && !p0 && 2*y = 8" , "&&" , " /\ " )
 # print(A[0], A[1])
 
+def negation(pred):
+    temp = pred.copy()
+    op = pred[-2]
+    if (op > 0):
+        temp[-2] = temp[-2] - 3 
+        return [ temp ]
+    elif (op < 0):
+        temp[-2] = temp[-2] + 3 
+        return [ temp ]
+    else:
+        temp2 = temp.copy()
+        temp[-2] = -1
+        temp2[-2] = 1
+        return [temp, temp2]
+
 def pyeda_conj_parser(exp, D):
-    if (not "And" in exp): #exp is pyeda expression, not a string
-        return np.array( D[exp.strip()] , ndmin = 2)
+    if (not "And" in exp): 
+        expr = exp.strip()
+        if "~" in expr:
+            return negation(D[expr[1:]])
+        else:
+            return [ D[expr] ]
     else:
         temp = exp.strip()
         exp = temp[4: len(temp) - 1]
         pred_list = exp.split(',')
         rv = []
         for pred in pred_list:
-            rv.append( D[pred.strip()]  )
-        return np.array( rv, ndmin = 2 )
+            expr = pred.strip()
+            if "~" in expr:
+                rv = rv + negation( D[expr[1:]] )
+            else: 
+                rv.append( D[expr]  )
+        return rv
 
-#Deal with NEGATION!
+# pyeda expr:  Or(Q50, And(Q30, ~Q40), And(Q31, ~Q40))
 def pyeda_dnf_parser(exp, D):
-    if (not "Or" in exp): #exp is pyeda expression, not a string
+    if (not "Or" in exp): 
         return [ pyeda_conj_parser(exp, D) ]
     else:
         temp = exp.strip()
@@ -299,11 +328,8 @@ def DNF_parser(string, var_vector):
 
     return A
 
-# pyeda expr:  Or(Q50, And(Q30, ~Q40), And(Q31, ~Q40))
 
-S = DNF_parser("((2*x + 3*y == 20 || 2*x - 8*u <= 50) && (x + y == 20)) || (x - y <= 10)", ["u", "x", "y"] ) 
-# A = DNF_parser("((2*x + 3*y == 20 || 2*x - 8*u <= 50) && !(x + y == 20)) || (x - y <= 10)", ["u", "x", "y"] ) 
-print(S)
+
 
 
 
@@ -347,33 +373,63 @@ def transition_converter( transition, var_vector ):
         rv_list.append( coeff_dictionary[var_str]  )
     rv_list.append(coeff_dictionary["constant"] )
 
-    return (lhs , rv_list)
+    rv2 = []
+    n = len(var_vector)
+    for (i,var) in enumerate(var_vector):
+        if (var == lhs):
+            rv2.append(rv_list)
+        else:
+            temp = [0]*(n+1)
+            temp[i] = 1
+            rv2.append(temp)
+    temp = [0]*(n+1)
+    temp[n] = 1
+    rv2.append(temp) 
+    return rv2 #Returns 2D list which is transition for that step
 
-# No static Analysis done
+# Static Analysis for Transitions Done!
 def transitions_converter (transitions, var_vector):
     n = len(var_vector)
-    transition_dict = {}
+    rv = np.identity(n+1, dtype = int)
     for transition in transitions:
-        (x, L) = transition_converter( transition, var_vector )
-        transition_dict.update({ x : L  } )
+        temp = np.array( transition_converter( transition, var_vector ), ndmin = 2)
+        rv = np.matmul(temp , rv)
     
-    
-    for var_str in var_vector:
-        if not (var_str in transition_dict):
-            val = [0] * n
-            val[i] = 1
-            transition_dict.update({ var_str : val })
+    rv_list = list(rv)
+    return [list(x) for x in rv_list]
 
-    rv = []
-    for (i,var_str) in enumerate(var_vector):
-
-        rv.append( transition_dict[var_str]  )
-
-    a = [0]*(n+1)
-    a[-1] = 1
-
-    rv.append(a)
-
-    return rv
-
+# print(DNF_parser("(!(2*x + 3*y == 20 || 2*x - 8*u <= 50) && !(x + y == 20)) || (x - y <= 10)", ["u", "x", "y"] ) )
 # print(transitions_converter( [ "x = y + 2*z + 3" , "z = y + 1", "y = x + 2 + y" ] , ["x", "y", "z"] ))
+
+def variable_def_formatter (s):
+    if "int " in s:
+        s = s.replace("int ", " ")
+    if ";" in s:
+        s = s.replace(";", " ")
+    rv = s.split(",")
+    return [x.strip() for x in rv]
+
+def transition_str_formatter(s):
+    s = s.strip()[: -1]
+    rv = s.split(";")
+    return [x.strip() for x in rv]
+
+
+def program_converter ( var_string, P, B, T, Q):
+    var_vector = variable_def_formatter(var_string)
+    T_list = transition_str_formatter(T)
+    print("P: ", DNF_parser(P, var_vector) )
+    print("B: ", DNF_parser(B, var_vector) )
+    print("Q: ", DNF_parser(Q, var_vector) )
+    print("T: ", transitions_converter( T_list, var_vector) )
+    return
+
+#NEED TO MANUALLY ADD BRACKETS TO DNFs, else ERROR!!!
+# LARGE INT is 10000
+V = "int lo, mid, hi;"
+P = "(lo == 0) && (mid > 0) && (mid < 10000) && (hi == 2*mid) " #  
+B = "(mid > 0)"
+T = "lo = lo + 1; hi = hi - 1; mid = mid - 1;"
+Q = "(lo == hi)" 
+
+program_converter( V, P, B , T , Q  )

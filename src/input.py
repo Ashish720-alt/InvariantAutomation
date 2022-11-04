@@ -1,11 +1,12 @@
 # Testing
-from dnfs_and_transitions import dnfTrue
+from dnfs_and_transitions import dnfTrue, list3D_to_listof2Darrays, dnfdisjunction
 import numpy as np
 from repr import genLItransitionrel, Repr
 from main import metropolisHastings
 
 
 #IMP: Remember Q is Q \/ B for standard CHC
+# LARGE INT is 10000
 
 class handcrafted:
     class mock:
@@ -15,7 +16,7 @@ class handcrafted:
         T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
 
     # Variable vector: (x,y)
-    class c2d1_1:
+    class c2d1_1:2
         P = [np.array([[1, 0, 0, 1], [0, 1, 0, 1] ])]
         B = dnfTrue(2)
         Q = [np.array([[1, -1, 1, 0], [0,1,1,1] ])]
@@ -44,9 +45,12 @@ class loop_lit:
         Q = [np.array([[0, 1, 0, 6]]), np.array([[-1, 1, 1, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 0, 2], [0, 1, -1], [0, 0, 1]])] , dnfTrue(2) ) )         
 
-    # Variable vector: 
+    # Variable vector: (lo, mid, hi)
     class cggmp2005_variant:
-        s = 0
+        P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0], [0, 1, 0, 2, 0], [0, 1, 0, -2, 10000], [0, -2, 1, 0, 0]]])
+        B = list3D_to_listof2Darrays([[[0, 1, 0, 2, 0]]])
+        Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, -1, 0, 0]]]) , B , 1)
+        T = genLItransitionrel(B, (  np.array([[1, 0, 0, 1], [0, 1, 0, -1], [0, 0, 1, -1], [0, 0, 0, 1]] , ndmin = 2) , dnfTrue(n)) )
 
     # Variable vector: (x,y)
     class gsv2008:
@@ -54,6 +58,13 @@ class loop_lit:
         B = [np.array([[1, 0, -2, 0]])]
         Q = [np.array([[0, 1, 2, 0]]), np.array([[1, 0, -2, 0]])]
         T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )    
+
+    # Variable vector: ( , )
+    class standard_name:
+        P = list3D_to_listof2Darrays([])
+        B = list3D_to_listof2Darrays([])
+        Q = dnfdisjunction(list3D_to_listof2Darrays([]) , B , 1)
+        T = genLItransitionrel(B, (  np.array([] , ndmin = 2) , dnfTrue(n)) )
 
     
 
