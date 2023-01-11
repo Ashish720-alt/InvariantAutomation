@@ -4,8 +4,8 @@ import operator
 
 class Configure:
     
-    dspace_intmin = -10000
-    dspace_intmax = 10000
+    dspace_intmin = -1000000
+    dspace_intmax = 1000000
   
     k = 2
     r = 1
@@ -39,7 +39,7 @@ class Configure:
     # Print iterations or not?
     SAMPLEPOINTS_DEBUGGER = OFF
     PRINT_ITERATIONS = ON
-    PRETTYPRINTINVARIANT_ITERATIONS = OFF
+    PRETTYPRINTINVARIANT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_STAY_ITERATIONS = ON
     PRINT_Z3_ITERATIONS = ON

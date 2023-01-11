@@ -40,8 +40,8 @@ class Repr:
         self.Q_z3expr = DNF_to_z3expr(Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 3
-        self.d = 1
+        self.c = 2
+        self.d = 2
         self.tmax = 1000000
 
         self.plus0 = get_plus0(P)
@@ -54,7 +54,7 @@ class Repr:
         self.k1 = max(self.Dp[1])
 
 
-        self.rotationgraph = getrotationgraph(self.k0, self.n)
+        self.rotationgraph = getrotationgraph(self.k0, self.n) 
         self.rotationgraphvertices = self.rotationgraph[0]
         self.rotationgraphedges = self.rotationgraph[1]
 
