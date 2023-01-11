@@ -8,10 +8,10 @@ def DNF_to_z3expr(I, primed):
         return True
 
     d = len(I)
-    c = len(I[0])
+    # c = len(I[0])
     n = len(I[0][0]) - 2
     return simplify(  Or([ And([ conf.OP[int(I[i][j][-2])](Sum([I[i][j][k] * Int(('x%s'+p) % k) 
-        for k in range(n)]), int(I[i][j][-1])) for j in range(c) ]) for i in range(d) ]))
+        for k in range(n)]), int(I[i][j][-1])) for j in range(len(I[i])) ]) for i in range(d) ]))
 
 
 def genTransitionRel_to_z3expr(T):

@@ -14,7 +14,7 @@ from itertools import product
 def dnfTrue (n):
     p = np.zeros(shape = (n+2), dtype = int)
     p[n] = -1
-    return [ np.array([p]) ] 
+    return [ np.array([p], ndmin = 2) ] 
 
 
 def dnfFalse (n):
@@ -82,10 +82,15 @@ def dnfnegation (dnf):
 
 def dnfconjunction (dnf1, dnf2, gLII):    
     ret = []
-    for cc1 in dnf1:
-        for cc2 in dnf2:
-            cc = np.append(cc1, cc2, axis = 0)
-            ret.append(cc)   
+    if (len(dnf1) == 0):
+        ret = dnf2
+    elif (len(dnf2) == 0):
+        ret = dnf1
+    else:
+        for cc1 in dnf1:
+            for cc2 in dnf2:
+                cc = np.append(cc1, cc2, axis = 0)
+                ret.append(cc)   
     if (gLII == 0):
         ret = genLII_to_LII(ret)
     return deepcopy_DNF(ret)
@@ -139,7 +144,8 @@ def RTI_to_LII(rtinv):
 def list3D_to_listof2Darrays (I):
     def cclist_to_ccarray (cc_I):
         return np.array([np.array(p) for p in cc_I])
-    return [cclist_to_ccarray(cc) for cc in I ]
+    A = [cclist_to_ccarray(cc) for cc in I ]
+    return A
 
 
 # # Testing

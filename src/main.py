@@ -32,8 +32,8 @@ def metropolisHastings (repr: Repr):
     I = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
     
 
-    # I = [[ [-1,1, -1, 850] ]] #Translation
-    # I = [ np.array([[2,1, -1, 0] , [-1,0,-1,0]], ndmin = 2) ] #Rotation
+    # I = [[ [-1, 0, 0, -2, 0] ] , [ [0, -1, 0, -2, 0] ] , [ [0, 0, -1, -2, 0] ]] #Deterministic start
+
     
     LII = list3D_to_listof2Darrays(I)
     (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
