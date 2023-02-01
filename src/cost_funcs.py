@@ -96,14 +96,11 @@ def costICE(I, ICEpoints):
         rvlist.append(cost)
     return (rv, rvlist, spin)
 
-def U(r):
-    return 1.0
 
-def cost_to_f(totalcost):
+def cost_to_f(totalcost, temp):
     # exp = sigmoidfn(totalcost, conf.beta0) #Sigmoid variant
     exp = normalizationfn(totalcost, conf.beta0) #Linear normalization
-    den = U(totalcost)
-    return conf.alpha * (conf.gamma **(-exp) / den)
+    return conf.alpha * (conf.gamma **(-exp) / temp)
 
 
 def cost(I, tupleofpoints):

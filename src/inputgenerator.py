@@ -674,7 +674,7 @@ class loop_zilu:
         V = "int i, j, x, y, k;"
         P = "(x+y==k) && (j==0)"
         B = ""
-        T = [ ( ["x = x + 1; y = y - 1;"] , "(j==i)"), ( ["x = x - 1; y = y + 1;"] , "(j< i) || (i < j)") ]
+        T = [ ( ["x = x + 1; y = y - 1; j = j + 1;"] , "(j==i)"), ( ["x = x - 1; y = y + 1; j = j + 1;"] , "(j< i) || (i < j)") ]
         Q = "(x+y==k)"
 
     class benchmark07_linear:

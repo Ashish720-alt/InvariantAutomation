@@ -18,7 +18,8 @@ def uniformlysample_I( rotation_vertices, k1, c, d, n):
     def uniformlysample_cc(rotation_vertices, k1, n, c):
         def uniformlysample_p(rotation_vertices, k1, n):
             coeff = randomlysamplelistoflists(rotation_vertices)
-            const = np.random.choice( list(range(-k1-1, k1 + 1 )) )
+            # const = np.random.choice( list(range(-k1-1, k1 + 1 )) )
+            const = 0 # This gives  better results
             return list(coeff) + [-1,const]
         return  [ uniformlysample_p(rotation_vertices, k1, n) for i in range(c)  ]
     return [ uniformlysample_cc(rotation_vertices, k1, n, c) for i in range(d)  ]
@@ -68,34 +69,34 @@ def centre_of_rotation_new(pred, newcoefficient, spin, k1):
 
 def origin_fp(pred):
     coeff = pred[:-2]
-    const = pred[-1]
+    const = 1.0 * pred[-1] #This should be plus as our invariant is ax + by - c <= 0 and fp is (h-x1)/a = (k - y1)/b = -(ax1 + by1 + c)/ (a^2 + b^2)
     K = np.dot(np.array(coeff) , np.array(coeff))
     return [ (x * const * 1.0)/K for x in coeff ]
 
 
 def centre_of_rotation_projectedWalk(pred, filteredpoints):
-    def centreofrotation_cost(newI, filteredpoints):
-        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-        return pos_cost + neg_cost + ICE_cost
+    # def centreofrotation_cost(newI, filteredpoints):
+    #     (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+    #     (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+    #     (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+    #     return pos_cost + neg_cost + ICE_cost
     coeff = pred[:-2]
     o_fp = origin_fp(pred)
     const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
-    i = 0
-    og_cost = centreofrotation_cost([np.array(coeff + [-1, const], ndmin = 2)], filteredpoints)  
-    while ( i < conf.centre_walklength):
-        temp_cost1 = centreofrotation_cost([np.array(coeff + [-1, const + 1], ndmin = 2)], filteredpoints)        
-        temp_cost2 = centreofrotation_cost([np.array(coeff + [-1, const - 1], ndmin = 2)], filteredpoints)  
-        if (temp_cost1 < temp_cost2 and temp_cost1 < og_cost):    
-            const = const + 1
-            og_cost = temp_cost1
-        elif (temp_cost2 < temp_cost1 and temp_cost2 < og_cost):
-            const = const - 1
-            og_cost = temp_cost2 
-        else:
-            return const     
-        i = i + 1
+    # i = 0
+    # og_cost = centreofrotation_cost([np.array(coeff + [-1, const], ndmin = 2)], filteredpoints)  
+    # while ( i < conf.centre_walklength):
+    #     temp_cost1 = centreofrotation_cost([np.array(coeff + [-1, const + 1], ndmin = 2)], filteredpoints)        
+    #     temp_cost2 = centreofrotation_cost([np.array(coeff + [-1, const - 1], ndmin = 2)], filteredpoints)  
+    #     if (temp_cost1 < temp_cost2 and temp_cost1 < og_cost):    
+    #         const = const + 1
+    #         og_cost = temp_cost1
+    #     elif (temp_cost2 < temp_cost1 and temp_cost2 < og_cost):
+    #         const = const - 1
+    #         og_cost = temp_cost2 
+    #     else:
+    #         return const     
+    #     i = i + 1
     return const
 
 
@@ -288,10 +289,6 @@ def translationtransition(predicate):
     rv[-1] = rv[-1] + s
     return rv
 
-# call this function, then choose either rotation or translation change with probability 1/2, and then do the respective change.
-# Also call the cost in the main function.
-def ischange():
-    return (np.random.rand() <= 1 - conf.p )
 
 def get_index(d, c):
     return (np.random.choice( list(range(d)) ), np.random.choice( list(range(c)) ))
