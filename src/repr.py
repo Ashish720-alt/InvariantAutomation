@@ -8,7 +8,7 @@ from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
 from coefficientgraph import getrotationgraph
 from math import sqrt, log
-
+from preprocessing import affineSubspace
 '''
 The general single loop clause system is:
 P -> I
@@ -26,7 +26,7 @@ def genLItransitionrel(B, *args):
     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
 
 class Repr:
-    def __init__(self, P, B, T, Q):
+    def __init__(self, P, B, T, Q, Var):
 
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
         
@@ -34,14 +34,17 @@ class Repr:
         self.B = B.copy()
         self.Q = Q.copy()
         self.T = T.copy()
-        
+        self.Var = Var.copy()
+        self.affineSubspace = affineSubspace(P, Q, T)
+
+
         self.P_z3expr = DNF_to_z3expr(P, primed = 0)
         self.B_z3expr = DNF_to_z3expr(B, primed = 0)
         self.Q_z3expr = DNF_to_z3expr(Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 2
-        self.d = 2
+        self.c = 3
+        self.d = 1
         self.tmax = 1000000
 
         self.plus0 = get_plus0(P)
@@ -72,6 +75,9 @@ class Repr:
 
     def get_T(self):
         return self.T
+
+    def get_Var(self):
+        return self.Var
 
     def get_plus0(self):
         return self.plus0
@@ -118,6 +124,7 @@ class Repr:
     def get_coeffneighbors(self, coeff):
         return self.rotationgraphedges[tuple(coeff)]
 
-
+    def get_affineSubspace(self):
+        return self.affineSubspace
 
 

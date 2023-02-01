@@ -2,6 +2,11 @@ from itertools import product
 import numpy as np
 from math import acos, sqrt, gcd, pi
 from functools import reduce
+import pprint 
+import sys
+import ast
+import os.path
+from os import path
 
 def removeduplicates(coeffdomain):
     i = 0
@@ -81,7 +86,7 @@ def getadjacencylist(coeffdomain, theta_0):
         rv.update({ tuple(coeff) : getneighborsofvector(coeff, coeffdomain, theta_0) })
     return rv
 
-def getrotationgraph(K, n):
+def computeRotationGraph(K, n):
     coeffdomain = enumeratecoeffdomain(K, n)
     # theta_0 = gettheta_0(coeffdomain)
     # Does large rotation angles work? We need large rotation angles
@@ -89,4 +94,21 @@ def getrotationgraph(K, n):
     # print(180*theta_0/pi)   
     return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
 
-# print(getrotationgraph(2,2)[0], '\n', getrotationgraph(2,2)[1])
+def getrotationgraph(K, n):
+
+    filename = "n" + str(n) + "K" + str(K)
+    
+    if (not path.isfile(filename)):
+            G = computeRotationGraph(K,n)
+            original_stdout = sys.stdout
+            with open(filename, 'w') as f:
+                sys.stdout = f # Change the standard output to the file we created.
+                pprint.pprint(G[1], f)
+                sys.stdout = original_stdout # Reset the standard output to its original value
+
+    with open(filename) as f:
+        data = f.read()
+        E = ast.literal_eval(data)
+
+    return ( list(E.keys()), E)
+

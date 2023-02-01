@@ -30,7 +30,7 @@ def genLII_to_LII (genLII):
     for gencc in genLII:
         cc = np.empty(shape=(0, n + 2 ), dtype = int)
         for genp in gencc:
-            p = genp
+            p = genp.copy()
             if (p[n] == -2):
                 p[n] = -1
                 p[n+1] = p[n+1] - 1

@@ -12,7 +12,6 @@ class Configure:
 
     s = 5
 
-    p = 0.0005 #if you take this as 0.05, this rejects many good invariant jumps.
     p_rot = 0.5
 
     alpha = 10**7
@@ -22,7 +21,9 @@ class Configure:
 
     d = 100
     centres_sampled = 20
-    centre_walklength = 10
+    # centre_walklength = 10
+
+    temp_C = 100.0
 
     # Operators
     OP = {
