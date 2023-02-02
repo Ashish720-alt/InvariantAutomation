@@ -8,7 +8,7 @@ from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
 from coefficientgraph import getrotationgraph
 from math import sqrt, log
-from preprocessing import affineSubspace
+from preprocessing import affineSubspace, getIterativeP, getnonIterativeP
 '''
 The general single loop clause system is:
 P -> I
@@ -30,26 +30,27 @@ class Repr:
 
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
         
-        self.P = P.copy()
+        self.P = getIterativeP(P, B)
+        self.P_noniters = getnonIterativeP(P, B, self.n)
         self.B = B.copy()
         self.Q = Q.copy()
         self.T = T.copy()
         self.Var = Var.copy()
-        self.affineSubspace = affineSubspace(P, Q, T)
+        self.affineSubspace = affineSubspace(self.P, self.Q, self.T)
 
 
-        self.P_z3expr = DNF_to_z3expr(P, primed = 0)
-        self.B_z3expr = DNF_to_z3expr(B, primed = 0)
-        self.Q_z3expr = DNF_to_z3expr(Q, primed = 0)
+        self.P_z3expr = DNF_to_z3expr(self.P, primed = 0)
+        self.B_z3expr = DNF_to_z3expr(self.B, primed = 0)
+        self.Q_z3expr = DNF_to_z3expr(self.Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 3
-        self.d = 1
+        self.c = 4
+        self.d = 2
         self.tmax = 1000000
 
-        self.plus0 = get_plus0(P)
-        self.minus0 = get_minus0(Q)
-        self.ICE0 = get_ICE0(T)        
+        self.plus0 = get_plus0(self.P)
+        self.minus0 = get_minus0(self.Q)
+        self.ICE0 = get_ICE0(self.T)        
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
@@ -66,6 +67,9 @@ class Repr:
 
     def get_P(self):
         return self.P
+
+    def get_nonItersP(self):
+        return self.P_noniters
 
     def get_B(self):
         return self.B

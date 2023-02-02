@@ -1,5 +1,5 @@
 from configure import Configure as conf
-from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays
+from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays, dnfTrue, dnfFalse
 from z3verifier import DNF_to_z3expr
 
 def decimaltruncate(number, digits = 4):
@@ -15,40 +15,42 @@ def prettyprint_samplepoints(samplepoints, header, indent):
     print(indent + header + ":")
     print(2*indent + "+ := ", end = '')
     for plus in samplepoints[0]:
-        print(plus,',\t', end = '')
+        print(plus,' , ', end = '')
     print("\n" + 2*indent + "- := ", end = '')
     for minus in samplepoints[1]:
-        print(minus,',\t', end = '')        
+        print(minus,' , ', end = '')        
     print("\n" + 2*indent + "-> := ", end = '')
     for ICE in samplepoints[2]:
-        print(ICE,',\t', end = '')    
+        print('(', ICE[0], '->', ICE[1], ')',' , ', end = '')    
     print("\n", end = '')
 
 
 
-def prettyprint_invariant(I, endstring , op_string, Vars):
+def prettyprint_invariant(I, endstring , Vars):
     n = len(I[0][0]) - 2
     rv = ""
-    for k1,cc in enumerate(I):
-        if (k1 > 0):
-            rv = rv + " \/ " 
-        rv = rv + "("
-        for k2,p in enumerate(cc):
-            if (k2 > 0):
-                rv = rv + " /\ "
+    opstring_dict = { -2 : "<" , -1 : "<=" , 0 : "==" , 1 : ">=" , 2 : ">" }
+    if (I != []):
+        for k1,cc in enumerate(I):
+            if (k1 > 0):
+                rv = rv + " \/ " 
             rv = rv + "("
-            for i in range(len(p)):
-                if (i < n):
-                    # rv = rv + str(p[i]) + "*" + ("x%s" % i) #For the no variable print
-                    rv = rv + str(p[i]) + "*" + (Vars[i])
-                elif (i == n):
-                    rv = rv + " " + op_string + " "
-                else:
-                    rv = rv + str(p[i])
-                if (i < n - 1):
-                    rv = rv + " + "
+            for k2,p in enumerate(cc):
+                if (k2 > 0):
+                    rv = rv + " /\ "
+                rv = rv + "("
+                for i in range(len(p)):
+                    if (i < n):
+                        # rv = rv + str(p[i]) + "*" + ("x%s" % i) #For the no variable print
+                        rv = rv + str(p[i]) + "*" + (Vars[i])
+                    elif (i == n):
+                        rv = rv + " " + opstring_dict[p[i]] + " "
+                    else:
+                        rv = rv + str(p[i])
+                    if (i < n - 1):
+                        rv = rv + " + "
+                rv = rv + ')'
             rv = rv + ')'
-        rv = rv + ')'
     rv = rv + endstring
     return rv
 
@@ -63,7 +65,7 @@ def initialized(A, Vars):
         print("Initialization Complete...")
         print("\tAffine SubSpace: ", end = '')
         if (A != []):
-            print( prettyprint_invariant(A, '', "==", Vars))
+            print( prettyprint_invariant(A, '', Vars))
         else:
             print( '\n')
 
@@ -74,20 +76,28 @@ def statistics(t, I, cost, mincost, descent, reject, costlist, acc, Vars):
                 end_string = "[X]" 
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
                     print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
-                            decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
+                            decimaltruncate(acc )) , "\t", end_string )
+                if (conf.PRINT_COSTLIST == conf.ON):
+                    print(decimaltruncate_list(costlist), "\n")
                 else:
-                    print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', "<=", Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
-                            decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n")
+                    print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                            decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
+                if (conf.PRINT_COSTLIST == conf.ON):
+                    print(decimaltruncate_list(costlist), "\n")
             else:
                 return
         else:
             end_string = "(L)" if descent else "   "
             if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
                 print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
-                        decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist), "\n" )
+                        decimaltruncate(acc )) , "\t", end_string )
+                if (conf.PRINT_COSTLIST == conf.ON):
+                    print(decimaltruncate_list(costlist), "\n")
             else:
-                print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  "<=", Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
-                        decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string, "\t", decimaltruncate_list(costlist) , "\n")
+                print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                        decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
+                if (conf.PRINT_COSTLIST == conf.ON):
+                    print(decimaltruncate_list(costlist), "\n")
             return
     
 
@@ -98,9 +108,19 @@ def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcoun
         prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
         print("\n\n")
 
-def invariantfound(I, Vars):
+def invariantfound( NonIterativeI , Affine_I , I, Vars):
     print("Invariant Found:\t", end = '')
-    print(prettyprint_invariant( list3D_to_listof2Darrays(I), '',  "<=", Vars))
+    n = len(Vars) 
+    if (NonIterativeI != []):
+        print(prettyprint_invariant( list3D_to_listof2Darrays(NonIterativeI), '  \/  [', Vars), end = '')
+    if (Affine_I != []):
+        print(prettyprint_invariant( list3D_to_listof2Darrays(Affine_I), '  /\  [', Vars),  end = '')
+    print(prettyprint_invariant( list3D_to_listof2Darrays(I), '', Vars), end = '')
+    if (Affine_I != []):
+        print(']', end = '')
+    if (NonIterativeI != []):
+        print(']', end = '')
+    print('\n')
 
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 

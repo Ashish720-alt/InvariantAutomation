@@ -32,12 +32,12 @@ def metropolisHastings (repr: Repr):
 
     I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
 
-    # I_guess = [ [ [2, -1, -1, 0] , [-2, 1, -1, 0] , [1, 0, -1, 100] ] ]
+    # I_guess = [ [ [-1, 0, -1, -50], [1, -1, -1, 0], [-1, 1, -1, 0], [1, 0, -1, 100]  ] , [ [1, 0, -1, 50], [1, 0, -1, 100], [0, 1, -1, 50], [0, -1, -1, -50] ] ]
 
     # I_guess = [[ [-1, 0, 0, -2, 0] ] , [ [0, -1, 0, -2, 0] ] , [ [0, 0, -1, -2, 0] ]] #Deterministic start
 
 
-    LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.affineSubspace, 0)
+    LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
     (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
     temp = conf.temp_C/log(2)
     fI = cost_to_f(costI, temp)
@@ -74,7 +74,7 @@ def metropolisHastings (repr: Repr):
                 I_guess[index[0]][index[1]] = newpred
                 (deg, degnew) = (2,2)
                 
-            LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.affineSubspace, 0)
+            LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace(), 0)
             (costInew, costlist, spinInew) = cost(LII, samplepoints)
             temp = conf.temp_C/log(1 + t)
             fInew = cost_to_f(costInew, temp)
@@ -82,12 +82,12 @@ def metropolisHastings (repr: Repr):
                 a = 1.0
             else:
                 if (fI == 0 or isnan(fI)):
-                    if (fInew == 0 or isnan(fInew)):
+                    if (fInew == 0 or isnan(fInew)): #Handle underflow!
                         a = 0.5                    
                     else:
                         a = 1.0
                 else:
-                    a = min( ( fInew * deg)/ (fI * degnew) , 1.0) #Make sure we don't underapproximate to 0
+                    a = min( ( fInew * deg)/ (fI * degnew) , 1.0) 
             if (random.rand() <=  a): 
                 reject = 0
                 descent = 1 if (costInew > costI) else 0 
@@ -104,7 +104,7 @@ def metropolisHastings (repr: Repr):
         total_iterations = total_iterations + t
         
         z3_start = timer()
-        LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.affineSubspace, 0)
+        LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace(), 0)
         (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), LII )           
         z3_end = timer()
         z3_time = z3_time + (z3_end - z3_start)
@@ -124,7 +124,7 @@ def metropolisHastings (repr: Repr):
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 
-    invariantfound(LII, repr.get_Var())
+    invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I_guess, repr.get_Var())
     timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount )
 
     return (LII, fI, z3_callcount)

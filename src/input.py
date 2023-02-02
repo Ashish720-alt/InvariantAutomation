@@ -37,8 +37,8 @@ class loop_lit:
         P = [np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 1, 0], [0, 0, 0, 1, -1, 1000000] ])]
         B = [np.array([[0, 0, 1,-1, -1, 0]])]
         Q = [np.array([[1, 1, 0, -3, 0, 0]]), np.array([[0, 0, 1 ,-1, -1, 0]])]
-        T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 1], [0, 1, 0, 0, 2], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0]]) , 
-                                       np.array([[1, 0, 0, 0, 2], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0]])  ] , dnfTrue(4) ) ) 
+        T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 1], [0, 1, 0, 0, 2], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0] , [0, 0, 0, 0, 1] ]) , 
+                                       np.array([[1, 0, 0, 0, 2], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0] , [0, 0, 0, 0, 1] ])  ] , dnfTrue(4) ) ) 
     
     class cggmp2005:
         Var = [ 'i', 'j']
@@ -407,7 +407,7 @@ class loop_zilu:
     class benchmark30_conjunctive:
         Var =  ['x', 'y']
         P = list3D_to_listof2Darrays([[[-1, 1, 0, 0]]])
-        B = list3D_to_listof2Darrays([])
+        B = dnfTrue(2)
         Q = list3D_to_listof2Darrays([[[1, -1, 0, 0]]]) 
         T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
 
@@ -652,7 +652,7 @@ def classwrapper_metropolisHastings (obj):
     metropolisHastings(Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var))
 
 
-classwrapper_metropolisHastings(loop_zilu.benchmark23_conjunctive)
+classwrapper_metropolisHastings(loop_lit.gj2007)
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:

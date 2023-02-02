@@ -1,7 +1,7 @@
 import numpy as np
 from z3 import *
 from z3verifier import DNF_to_z3expr
-from dnfs_and_transitions import list3D_to_listof2Darrays, dnfdisjunction, dnfTrue, dnfconjunction
+from dnfs_and_transitions import list3D_to_listof2Darrays, dnfdisjunction, dnfTrue, dnfconjunction, dnfnegation, dnfFalse
 
 
 
@@ -54,10 +54,9 @@ def getAffinePredicates (S):
     
     return rv
 
-# S is list of 2d numpy arrays, a is 1d numpy array or 1d list
-def doesAffinePredicateSatisfySet (a , S):
-    #a -> S
-    a_DNF = [np.array(a , ndmin = 2)]
+
+def checkImplies( A, B ):
+    n = len(A[0][0]) - 2
     def __get_cex(C):
         result = []
         s = Solver()
@@ -83,10 +82,12 @@ def doesAffinePredicateSatisfySet (a , S):
                 return result
         return result
 
-    def isTrue(a_DNF, S, n):
-        return (len(__get_cex(Implies( DNF_to_z3expr( S , primed = 0) , DNF_to_z3expr (a_DNF , primed = 0) )) ) == 0)
+    return ( len(__get_cex(Implies( DNF_to_z3expr( A , primed = 0) , DNF_to_z3expr (B , primed = 0) )) ) == 0 )
 
-    return isTrue(a_DNF, S, len(a) - 2)
+# S is list of 2d numpy arrays, a is 1d numpy array or 1d list
+def doesAffinePredicateSatisfySet (a , S):
+    a_DNF = [np.array(a , ndmin = 2)]
+    return checkImplies(S, a_DNF)
 
 #P,Q are lists of 2d numpy arrays, T is a transition function
 def affineSubspace( P, Q, T ):
@@ -101,7 +102,7 @@ def affineSubspace( P, Q, T ):
     for p in temp:
         flag = 0
         for a in rv:
-            if (a == p):
+            if (a == p or (a == [-x for x in p]) ):
                 flag = 1
                 break
         if (flag == 1):
@@ -116,6 +117,13 @@ def affineSubspace( P, Q, T ):
     
     return []
 
+def getIterativeP(P, B):
+    A = dnfconjunction(P, B, 1)
+    return P.copy() if (checkImplies(P, B)) else A.copy()
+
+def getnonIterativeP(P, B, n):
+    A = dnfconjunction(P, dnfnegation(B), 1)
+    return [] if (checkImplies(P, B)) else A.copy()    
 
 # class B_LItransitionrel:
 #     def __init__(self, transition_matrix_list, DNF, B):

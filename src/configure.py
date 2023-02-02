@@ -10,7 +10,7 @@ class Configure:
     k = 2
     r = 1
 
-    s = 5
+    s = 5 #Number of cex Z3 generates
 
     p_rot = 0.5
 
@@ -42,6 +42,6 @@ class Configure:
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
-    PRINT_STAY_ITERATIONS = ON
+    PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
