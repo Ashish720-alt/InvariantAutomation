@@ -1,6 +1,7 @@
 """ Hyper Parameters.
 """
 import operator
+from math import pi
 
 class Configure:
     
@@ -11,6 +12,9 @@ class Configure:
     r = 1
 
     s = 5 #Number of cex Z3 generates
+
+    translation_range = 10
+    rotation_degree = pi/4 + 0.01
 
     p_rot = 0.5
 
