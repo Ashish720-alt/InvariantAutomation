@@ -7,9 +7,13 @@ class Configure:
     
     dspace_intmin = -1000000
     dspace_intmax = 1000000
-  
+
+    threads = 1
+
     k = 2
     r = 1
+
+    ICEBallRadius = 1
 
     s = 5 #Number of cex Z3 generates
 

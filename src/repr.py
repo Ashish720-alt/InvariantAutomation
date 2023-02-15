@@ -8,7 +8,7 @@ from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
 from coefficientgraph import getrotationgraph
 from math import sqrt, log
-from preprocessing import affineSubspace, getIterativeP, getnonIterativeP
+from preprocessing import modifiedHoudini, getIterativeP, getnonIterativeP
 '''
 The general single loop clause system is:
 P -> I
@@ -36,7 +36,7 @@ class Repr:
         self.Q = Q.copy()
         self.T = T.copy()
         self.Var = Var.copy()
-        self.affineSubspace = affineSubspace(self.P, self.Q, self.T)
+        self.affineSubspace = modifiedHoudini(self.P, self.Q, self.T)
 
 
         self.P_z3expr = DNF_to_z3expr(self.P, primed = 0)

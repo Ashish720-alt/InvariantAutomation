@@ -21,7 +21,9 @@ def Dstate(n):
         cc = np.concatenate((cc, np.array([p1, p2], ndmin=2)))
     
     return [cc]
-        
+
+
+
 
 # Assumes cc has LI predicates only, and not genLI predicates
 def v_representation (cc):
@@ -70,6 +72,33 @@ def get_minus0 (Q):
 
 # An ICE pair is a pair of 2 states, where a state is a list of n numbers
 def get_ICE0 (T):
+    n = len( (T[0].b)[0][0] ) - 2
+    def get_XICE(n, T):
+        def next_element (curr, K, n):
+            temp = curr.copy()
+            i = n - 1
+            while( temp[i] == K ):
+                i = i - 1
+            temp[i] = temp[i] + 1
+            i = i + 1
+            while (i < n):
+                temp[i] = -1 * K
+                i = i + 1
+            return temp
+
+        K = conf.ICEBallRadius
+        head = [-1 * K]*n
+        ret = []
+        while (head != [K] * n):
+            for Btr in T:
+                for ptf in Btr.tlist:
+                    ret.append( (head, transition(head, ptf)) )
+            head = next_element(head, K, n)
+        
+        return ret
+
+    X_ICE = get_XICE(n, T)
+
     def get_ICEfromBtr (Btr, n):
         B = dnfconjunction( Btr.b, Dstate(n) , 0)
         heads_of_ICEpairs = []
@@ -82,13 +111,33 @@ def get_ICE0 (T):
                 ret.append( (head, transition(head, ptf)) )
         return ret
 
-    n = len( (T[0].b)[0][0] ) - 2
-    X_ICE = [] # Need to write a function for this!
     ICE0 = X_ICE 
-    for Btr in T:
-        ICE0 = ICE0 + get_ICEfromBtr(Btr, n) 
+    # print(ICE0)
+    # for Btr in T:
+    #     ICE0 = ICE0 + get_ICEfromBtr(Btr, n) 
     return ICE0
 
+# FINISH THIS FUNCTION - Removes redundancies from H representation!s
+# Assumes cc has LI predicates only, and not genLI predicates        
+def removeredundancies(cc):
+    def pred_to_matrixrow (p):
+        matrixrow = np.roll(p * -1, 1)[:-1]
+        matrixrow[0] = matrixrow[0] * -1
+        return matrixrow
+
+    mat = []
+    for p in cc:
+        mat.append(pred_to_matrixrow(p))
+    
+    mat_cdd = cdd.Matrix( mat, number_type='float')
+    mat_cdd.rep_type = cdd.RepType.INEQUALITY
+    
+    print(mat_cdd.canonicalize()) 
+    print(mat_cdd)
+
+
+S = np.array([[1,2,-1,1] , [2,1,-1,1]])
+removeredundancies(S)
 
 
 
