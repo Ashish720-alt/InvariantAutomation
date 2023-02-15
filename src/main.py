@@ -6,7 +6,7 @@ from guess import uniformlysample_I, rotationdegree, rotationtransition, transla
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier 
-from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints
+from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
 import copy
 from dnfs_and_transitions import RTI_to_LII, list3D_to_listof2Darrays, dnfconjunction
 from timeit import default_timer as timer
@@ -51,7 +51,7 @@ def metropolisHastings (repr: Repr):
     while (1):
         mcmc_start = timer()
         for t in range(1,tmax+1):
-            if (conf. SAMPLEPOINTS_DEBUGGER == conf.ON):
+            if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
                 if (t % 1000 == 0): 
                     prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t") 
 
@@ -115,6 +115,7 @@ def metropolisHastings (repr: Repr):
         if (z3_correct):
             break        
         elif ((not z3_correct) and (t == tmax)):
+            noInvariantFound(z3_callcount)
             return ("No Invariant Found", "-", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
         (costI, costlist, spinI) = cost( LII, samplepoints) #samplepoints has changed, so cost and f changes for same invariant

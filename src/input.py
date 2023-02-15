@@ -432,7 +432,7 @@ class loop_zilu:
         Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 1, 100]]]) , B , 1)
         T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )
 
-    # Weird bug here!
+
     class benchmark34_conjunctive:
         Var =  ['j', 'k', 'n']
         P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0], [0, 1, -1, 0, 0], [0, 0, 1, 2, 0]]])

@@ -1,10 +1,10 @@
 import numpy as np
 from z3 import *
 from z3verifier import DNF_to_z3expr
-from dnfs_and_transitions import list3D_to_listof2Darrays, dnfdisjunction, dnfTrue, dnfconjunction, dnfnegation, dnfFalse
-
-
-
+from dnfs_and_transitions import list3D_to_listof2Darrays, dnfdisjunction, dnfTrue, dnfconjunction, dnfnegation, dnfFalse, transition
+import itertools
+from selection_points import v_representation, Dstate
+import sympy
 
 def isAffinePredicateInductive ( p, T  ):
     # p is a list, ptf is a 2d numpy array
@@ -90,7 +90,7 @@ def doesAffinePredicateSatisfySet (a , S):
     return checkImplies(S, a_DNF)
 
 #P,Q are lists of 2d numpy arrays, T is a transition function
-def affineSubspace( P, Q, T ):
+def modifiedHoudini( P, Q, T ):
     n = len(P[0][0]) - 2
     temp = []
     temp = temp + getAffinePredicates(P)
@@ -125,23 +125,51 @@ def getnonIterativeP(P, B, n):
     A = dnfconjunction(P, dnfnegation(B), 1)
     return [] if (checkImplies(P, B)) else A.copy()    
 
-# class B_LItransitionrel:
-#     def __init__(self, transition_matrix_list, DNF, B):
-#         self.tlist = transition_matrix_list
-#         self.b = dnfconjunction(DNF, B, gLII = 1)
+def fullaffineSpace(n):
+    V = [ [0]*n ]
+    for i in range(n):
+        temp = [0] * n
+        temp[i] = 1
+        V.append(temp)
+    return V
 
-# def genLItransitionrel(B, *args):
-#     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
+def affineHull (V1, V2):
+    V = V1.copy() + V2.copy()
+    mat = np.array(V)
+    _, inds = sympy.Matrix(mat).T.rref() 
+    return mat[inds].tolist()
 
-# A = np.array([[1, 0, 0, -1], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]] )
-# s = [1, -1, 1, 0, 0]
-# P = [ np.array( [[1,0,1,1,0], [4,3,2,-1,0], [4,3,2,0,0], [1, -1, 1, 0, 0]] ) , np.array( [[1,0,1,0,0], [4,3,2,-2,0], [4,3,2,0,0] , [1, -1, 1, 0, 0]] ) ]
-# Q =  [ np.array( [[1,0,17,1,0], [4,37,2,-1,0], [4,7,2,0,0], [1, -1, 1, 0, 0]] ) , np.array( [[1,0,71,0,0], [4,3,72,-2,0], [4,3,27,0,0] , [1, -1, 1, 0, 0]] ) ]
-# P = list3D_to_listof2Darrays([[[1, 0, -1, 0, 0], [0, 1, -1, 0, 0], [0, 0, 1, 2, 0]]])
-# B = list3D_to_listof2Darrays([[[0, 0, 1, 2, 0], [1, 0, 0, 2, 0]]])
-# Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1, 0, 0, 0]]]) , B , 1)
-# T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
-# # print(isAffinePredicateInductive(s, A))
-# # print(getAffinePredicates(P))
-# # print(doesAffinePredicateSatisfySet(s, P))
-# print(affineSubspace(P,Q,T))
+
+# Assumes P is a list of 2D numpy array with normalized predicates
+def AffineHullPrecondition (P):
+    
+    n = len(P[0][0]) - 2
+    P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)
+    
+    rv = []
+    for cc in P_LII_in_Dstate:
+        rv = affineHull( rv,   v_representation(cc) )
+
+    return rv
+
+# ptf is 2d numpy array, P is list of 2d numpy arrays
+def KarrAnalysisSingleptf (P, ptf):
+    rv = AffineHull_Precondition(P)
+    for i in range(n):
+        rv = affineHull(rv, [ transition(x, ptf) for x in rv ] )
+
+    return rv 
+
+
+#TO DO: Convert to H representation
+def KarrAnalysis (P, T):
+
+    rv = []
+    for tr in T:
+        for ptf in tr.tlist:
+            rv = affineHull(rv, KarrAnalysisSingleptf(P, ptf) )
+
+
+    return rv 
+
+# print(  affineHull (fullaffineSpace(3) , fullaffineSpace(3)) )

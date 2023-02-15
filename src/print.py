@@ -127,6 +127,9 @@ def invariantfound( NonIterativeI , Affine_I , I, Vars):
         print(']', end = '')
     print('\n')
 
+def noInvariantFound (Z3calls):
+    print("SA failed to converge after", Z3calls , "Z3 runs")
+
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 
         print("\nTime Statistics:")
