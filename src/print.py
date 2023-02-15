@@ -60,12 +60,17 @@ def prettyprint_invariant(I, endstring , Vars):
 
 
 
-def initialized(A, Vars):
+def initialized(A, B, Vars):
     if (conf.PRINT_ITERATIONS == conf.ON):
         print("Initialization Complete...")
         print("\tAffine SubSpace: ", end = '')
         if (A != []):
             print( prettyprint_invariant(A, '', Vars))
+        else:
+            print( '\n', end = '')
+        print("\tNon Iterative Precondition: ", end = '')
+        if (B != []):
+            print( prettyprint_invariant(B, '', Vars))
         else:
             print( '\n')
 

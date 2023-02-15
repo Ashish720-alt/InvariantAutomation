@@ -281,7 +281,7 @@ def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints
 
 
 def translationtransition(predicate):
-    translation_range = 10
+    translation_range = conf.translation_range
     translation_indices = list(range(-translation_range, translation_range +1))
     translation_indices.remove(0)
     s = np.random.choice(translation_indices)

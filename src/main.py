@@ -26,13 +26,13 @@ def metropolisHastings (repr: Repr):
     initialize_start = timer()
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
-    initialized( repr.get_affineSubspace() , repr.get_Var())
+    initialized( repr.get_affineSubspace() , repr.get_nonItersP(), repr.get_Var())
     
 
 
     I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
 
-    # I_guess = [ [ [-1, 0, -1, -50], [1, -1, -1, 0], [-1, 1, -1, 0], [1, 0, -1, 100]  ] , [ [1, 0, -1, 50], [1, 0, -1, 100], [0, 1, -1, 50], [0, -1, -1, -50] ] ]
+    # I_guess = [[[0, -1, 0, -1, -1]], [[-1, 0, 0, -1, -1]], [[0, 0, -1, -1, -1]]]
 
     # I_guess = [[ [-1, 0, 0, -2, 0] ] , [ [0, -1, 0, -2, 0] ] , [ [0, 0, -1, -2, 0] ]] #Deterministic start
 
@@ -72,7 +72,7 @@ def metropolisHastings (repr: Repr):
             else:
                 newpred = translationtransition(oldpredicate) 
                 I_guess[index[0]][index[1]] = newpred
-                (deg, degnew) = (2,2)
+                (deg, degnew) = (conf.translation_range,conf.translation_range)
                 
             LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace(), 0)
             (costInew, costlist, spinInew) = cost(LII, samplepoints)

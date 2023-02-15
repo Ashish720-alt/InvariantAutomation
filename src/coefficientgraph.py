@@ -6,6 +6,7 @@ import pprint
 import sys
 import ast
 import os.path
+import configure as conf
 from os import path
 
 def removeduplicates(coeffdomain):
@@ -90,14 +91,14 @@ def computeRotationGraph(K, n):
     coeffdomain = enumeratecoeffdomain(K, n)
     # theta_0 = gettheta_0(coeffdomain)
     # Does large rotation angles work? We need large rotation angles
-    theta_0 = pi/4
+    theta_0 = conf.rotation_degree
     # print(180*theta_0/pi)   
     return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
 
 def getrotationgraph(K, n):
 
     filename = "n" + str(n) + "K" + str(K)
-    
+
     if (not path.isfile(filename)):
             G = computeRotationGraph(K,n)
             original_stdout = sys.stdout
