@@ -162,6 +162,10 @@ def KarrAnalysisSingleptf (P, ptf):
 
 
 #TO DO: Convert to H representation
+def VtoH_affinespace (cc):
+    return
+
+
 def KarrAnalysis (P, T):
 
     rv = []
