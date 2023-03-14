@@ -281,7 +281,8 @@ def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints
 
 
 def translationtransition(predicate):
-    translation_range = conf.translation_range
+    slope = np.dot(np.array(predicate[:-2]), np.array(predicate[:-2]))
+    translation_range = conf.translation_range * slope
     translation_indices = list(range(-translation_range, translation_range +1))
     translation_indices.remove(0)
     s = np.random.choice(translation_indices)
