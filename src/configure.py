@@ -8,7 +8,7 @@ class Configure:
     dspace_intmin = -1000000
     dspace_intmax = 1000000
 
-    threads = 1
+    num_processes = 8
 
     k = 2
     r = 1

@@ -4,7 +4,7 @@ import numpy as np
 
 #Can't handle following: '!=' operator, '->' or '<->' logical connective.
 
-def convert_minus (exp):
+def convert_minus(exp):
     exp = exp.strip()
     rv = exp
     plus_stack = 0
@@ -19,13 +19,13 @@ def convert_minus (exp):
             plus_stack = 0
 
         if (ch == '-' and plus_stack == 0):
-            tail = rv[i+1 : ].strip()
+            tail = rv[i+1:].strip()
             num_string = "-1"
             if (tail[0].isnumeric() or tail[0] == '-'):
-                j = 0 
+                j = 0
                 while j < len(tail):
                     ch2 = tail[j]
-                    if (  not(ch2.isnumeric() or (j == 0 and ch2 == '-')) ):
+                    if (not(ch2.isnumeric() or (j == 0 and ch2 == '-'))):
                         break
                     j = j + 1
                 num_string = str(-1 * int(tail[:j]))
@@ -36,15 +36,15 @@ def convert_minus (exp):
                     i = i + len(num_string)
                 elif (tail[0] == ' ' or tail[0] == '+' or tail[0] == '-'):
                     rv = num_string + " " + tail
-                    i = i +  len(num_string) 
+                    i = i + len(num_string)
                 else:
-                    rv =  num_string + "*" + tail
-                    i = i + len(num_string) 
+                    rv = num_string + "*" + tail
+                    i = i + len(num_string)
             else:
                 if (not tail == ""):
-                    rv = rv[ 0: i] + "+ " + num_string + "*" + tail
+                    rv = rv[0:i] + "+ " + num_string + "*" + tail
                 else:
-                    rv = rv[ 0: i] + "+ " + num_string 
+                    rv = rv[0:i] + "+ " + num_string
                 i = i + len(num_string) + 1
         i = i + 1
 
