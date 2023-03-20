@@ -6,7 +6,7 @@ import pprint
 import sys
 import ast
 import os.path
-import configure as conf
+from configure import Configure as conf
 from os import path
 
 def removeduplicates(coeffdomain):
