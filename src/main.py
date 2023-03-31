@@ -144,7 +144,7 @@ def main(repr: Repr):
                 break
         
         # prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
-        input("Press Enter to continue...")
+        # input("Press Enter to continue...")
             
         """ Z3 validation """
         z3_callcount = z3_callcount + 1
