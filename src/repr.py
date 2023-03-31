@@ -26,7 +26,7 @@ def genLItransitionrel(B, *args):
     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
 
 class Repr:
-    def __init__(self, P, B, T, Q, Var):
+    def __init__(self, P, B, T, Q, Var, c, d):
 
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
         
@@ -44,8 +44,8 @@ class Repr:
         self.Q_z3expr = DNF_to_z3expr(self.Q, primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
-        self.c = 1
-        self.d = 3
+        self.c = c
+        self.d = d
         self.tmax = 10000000
 
         self.plus0 = get_plus0(self.P)
