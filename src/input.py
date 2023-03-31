@@ -649,8 +649,8 @@ class Inputs:
     
 
 
-def input_to_repr(obj):
-    return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var)
+def input_to_repr(obj, c, d):
+    return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d)
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:
