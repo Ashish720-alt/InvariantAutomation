@@ -7,7 +7,7 @@ from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
-import copy
+import ctypes
 from dnfs_and_transitions import RTI_to_LII, list3D_to_listof2Darrays, dnfconjunction
 from timeit import default_timer as timer
 from math import isnan, log
@@ -18,27 +18,30 @@ import multiprocessing as mp
 
 
 # @jit(nopython=False)
-def search(repr: Repr, I, samplepoints, process_id, return_value):
+def search(repr: Repr, I_list, samplepoints, process_id, return_value):
+    I = I_list[process_id]
     tmax = repr.get_tmax()
     mcmc_start = timer()
-    LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
+    LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist, spinI) = cost(LII, samplepoints)  #spin = |-| - |+|
     temp = conf.temp_C/log(2)
     fI = cost_to_f(costI, temp)
 
-
     for t in range(1, tmax+1):
+        if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
+            for i in range(conf.num_processes):
+                if return_value[i] != None:
+                    print("Process ", process_id, " exit early")
+                    I_list[process_id] = I
+                    return
         if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
             if (t % 1000 == 0):
-                for i in range(conf.num_processes):
-                    if return_value[i] != None:
-                        print("Process ", process_id, " exit early")
-                        return
                 prettyprint_samplepoints(samplepoints,
                                          "Samplepoints Now", "\t")
         if (costI == 0):
             return_value[process_id] = (I, (0, 0, 0))
             print("Process ", process_id, " found invariant")
+            I_list[process_id] = I
             return
         index = get_index(repr.get_d(), repr.get_c())
         oldpredicate = I[index[0]][index[1]]
@@ -87,6 +90,7 @@ def search(repr: Repr, I, samplepoints, process_id, return_value):
 
     # Failed
     print("Process ", process_id, " failed")
+    I_list[process_id] = I
     return
 
 
@@ -108,7 +112,8 @@ def main(repr: Repr):
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
     print("\n")
 
-    I_list = []
+    manager = mp.Manager()
+    I_list = manager.list()
     for i in range(conf.num_processes):
         I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
         LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
@@ -116,7 +121,7 @@ def main(repr: Repr):
         temp = conf.temp_C/log(2)
         fI = cost_to_f(costI, temp)
         statistics(0, I_guess, fI, costI, 0, 0, costlist, -1, repr.get_Var() ) 
-        I_list.append(I_guess)
+        I_list.append(I_guess.copy())
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
     """ ===== Initialization ends. ===== """
@@ -124,22 +129,23 @@ def main(repr: Repr):
     while (1):
         """ Searching Loop """
         process_list = []
-        manager = mp.Manager()
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list[i], samplepoints, i, return_value)))
+            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value)))
             process_list[i].start()
         
         for i in range(conf.num_processes):
             process_list[i].join()
 
         for result in return_value:
-            print(result)
             if (result != None):
                 (I, (t, mcmc_time, total_iterations)) = result
                 break
-
+        
+        # prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
+        input("Press Enter to continue...")
+            
         """ Z3 validation """
         z3_callcount = z3_callcount + 1
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
@@ -183,8 +189,8 @@ if __name__ == "__main__":
             print("Please specify either input object name or all inputs")
             exit(1)
         for subfolder in dir(Inputs):
-            for input in dir(getattr(Inputs, subfolder)):
-                print(main(input_to_repr(getattr(getattr(Inputs, subfolder), input), parse_res['c'], parse_res['d'])))
+            for inp in dir(getattr(Inputs, subfolder)):
+                print(main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'])))
     else:
         if parse_res['input'] is None:
             print(parser.print_help())
@@ -195,6 +201,6 @@ if __name__ == "__main__":
 
             for subfolder in Inputs.__dict__:
                 if subfolder == first_name:
-                    for input in getattr(Inputs, subfolder).__dict__:
-                        if input == last_name:
-                            print(main(input_to_repr(getattr(getattr(Inputs, subfolder), input), parse_res['c'], parse_res['d'])))
+                    for inp in getattr(Inputs, subfolder).__dict__:
+                        if inp == last_name:
+                            print(main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'])))
