@@ -8,7 +8,7 @@ class Configure:
     dspace_intmin = -1000000
     dspace_intmax = 1000000
 
-    num_processes = 8
+    num_processes = 2
 
     k = 2
     r = 1
@@ -53,3 +53,4 @@ class Configure:
     PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
+    NUM_ROUND_CHECK_EARLY_EXIT = 1000
