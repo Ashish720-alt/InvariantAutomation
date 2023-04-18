@@ -49,37 +49,30 @@ def LIccptdistance_ILP(cc, pt):
 def LIDNFptdistance(dnf, pt):
     rv = inf
     for cc in dnf:
-        rv = min(rv, LIccptdistance(cc, pt)) #Average of individual distances Variant
+        rv = conf.beta * min(rv, LIccptdistance(cc, pt)) #Average of individual distances Variant
         # rv = min(rv, LIccptdistance_ILP(cc, pt)) #ILP Variant
     return rv
 
 def costplus(I, pluspoints):
-    spin = 0
     rv = 0.0
     rvlist = [] 
     for plus in pluspoints:
         cost = LIDNFptdistance(I, plus)
-        if (cost > 0):
-            spin = spin - 1
         rv = rv + cost
         rvlist.append(cost)
-    return (rv, rvlist, spin)
+    return (rv, rvlist)
 
 def costminus(I, minuspoints):
-    spin = 0
     negI = dnfnegation(I)
     rv = 0.0
     rvlist = [] 
     for minus in minuspoints:
         cost = LIDNFptdistance(negI, minus)
-        if (cost > 0):
-            spin = spin + 1
         rv = rv + cost
         rvlist.append(cost)
-    return (rv, rvlist, spin)    
+    return (rv, rvlist)    
 
 def costICE(I, ICEpoints):
-    spin = 0
     negI = dnfnegation(I) 
     rv = 0.0
     rvlist = [] 
@@ -87,27 +80,23 @@ def costICE(I, ICEpoints):
         cost1 = LIDNFptdistance(negI, ICE[0])
         cost2 = LIDNFptdistance(I, ICE[1])
         cost = min(cost1, cost2)
-        if (cost > 0):
-            if (cost == cost1):
-                spin = spin + 1
-            else:
-                spin = spin - 1
         rv = rv + cost
         rvlist.append(cost)
-    return (rv, rvlist, spin)
+    return (rv, rvlist)
 
 
-def cost_to_f(totalcost, temp):
-    # exp = sigmoidfn(totalcost, conf.beta0) #Sigmoid variant
-    exp = normalizationfn(totalcost, conf.beta0) #Linear normalization
-    return conf.alpha * (conf.gamma **(-exp) / temp)
+# def cost_to_f(totalcost, temp):
+#     # exp = sigmoidfn(totalcost, conf.beta0) #Sigmoid variant
+#     exp = normalizationfn(totalcost, conf.beta0) #Linear normalization
+#     return conf.alpha * (conf.gamma **(-exp) / temp)
 
 
 def cost(I, tupleofpoints):
-    (cost_plus, l1, spinplus) = costplus(I, tupleofpoints[0])
-    (cost_minus, l2, spinminus) = costminus(I, tupleofpoints[1])
-    (cost_ICE, l3, spinICE) = costICE(I, tupleofpoints[2])
-    return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 , spinplus + spinminus + spinICE) # Debugging
+    (cost_plus, l1) = costplus(I, tupleofpoints[0])
+    (cost_minus, l2) = costminus(I, tupleofpoints[1])
+    (cost_ICE, l3) = costICE(I, tupleofpoints[2])
+    return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 ) 
+    # return (normalizationfn(cost_plus + cost_minus + cost_ICE, conf.beta0) , l1 + l2 + l3 ) 
 
 
 

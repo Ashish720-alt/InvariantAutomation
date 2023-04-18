@@ -1,7 +1,7 @@
 """ Hyper Parameters.
 """
 import operator
-from math import pi
+from math import pi, e
 
 class Configure:
     
@@ -18,20 +18,18 @@ class Configure:
     s = 5 #Number of cex Z3 generates
 
     translation_range = 10
-    rotation_degree = pi/4 + 0.01
+    rotation_degree = pi/4 
 
     p_rot = 0.5
 
-    alpha = 10**7
-    gamma = 2.0 #Need floating point constant here
-    beta0 = 20 #2^-20 ~ 10^(-7)
-    descent_prob = 0.5
+    gamma = e #Need floating point constant here
+    beta0 = 100 #2^-20 ~ 10^(-7)
+    beta = 100
+    # descent_prob = 0.5
 
-    d = 100
-    centres_sampled = 20
-    # centre_walklength = 10
+    # d = 100
 
-    temp_C = 100.0
+    temp_C = 100.0 #Change this!!
 
     # Operators
     OP = {

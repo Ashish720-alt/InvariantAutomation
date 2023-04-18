@@ -125,55 +125,57 @@ def getnonIterativeP(P, B, n):
     A = dnfconjunction(P, dnfnegation(B), 1)
     return [] if (checkImplies(P, B)) else A.copy()    
 
-def fullaffineSpace(n):
-    V = [ [0]*n ]
-    for i in range(n):
-        temp = [0] * n
-        temp[i] = 1
-        V.append(temp)
-    return V
-
-def affineHull (V1, V2):
-    V = V1.copy() + V2.copy()
-    mat = np.array(V)
-    _, inds = sympy.Matrix(mat).T.rref() 
-    return mat[inds].tolist()
 
 
-# Assumes P is a list of 2D numpy array with normalized predicates
-def AffineHullPrecondition (P):
+# def fullaffineSpace(n):
+#     V = [ [0]*n ]
+#     for i in range(n):
+#         temp = [0] * n
+#         temp[i] = 1
+#         V.append(temp)
+#     return V
+
+# def affineHull (V1, V2):
+#     V = V1.copy() + V2.copy()
+#     mat = np.array(V)
+#     _, inds = sympy.Matrix(mat).T.rref() 
+#     return mat[inds].tolist()
+
+
+# # Assumes P is a list of 2D numpy array with normalized predicates
+# def AffineHullPrecondition (P):
     
-    n = len(P[0][0]) - 2
-    P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)
+#     n = len(P[0][0]) - 2
+#     P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)
     
-    rv = []
-    for cc in P_LII_in_Dstate:
-        rv = affineHull( rv,   v_representation(cc) )
+#     rv = []
+#     for cc in P_LII_in_Dstate:
+#         rv = affineHull( rv,   v_representation(cc) )
 
-    return rv
+#     return rv
 
-# ptf is 2d numpy array, P is list of 2d numpy arrays
-def KarrAnalysisSingleptf (P, ptf):
-    rv = AffineHull_Precondition(P)
-    for i in range(n):
-        rv = affineHull(rv, [ transition(x, ptf) for x in rv ] )
+# # ptf is 2d numpy array, P is list of 2d numpy arrays
+# def KarrAnalysisSingleptf (P, ptf):
+#     rv = AffineHull_Precondition(P)
+#     for i in range(n):
+#         rv = affineHull(rv, [ transition(x, ptf) for x in rv ] )
 
-    return rv 
-
-
-#TO DO: Convert to H representation
-def VtoH_affinespace (cc):
-    return
+#     return rv 
 
 
-def KarrAnalysis (P, T):
-
-    rv = []
-    for tr in T:
-        for ptf in tr.tlist:
-            rv = affineHull(rv, KarrAnalysisSingleptf(P, ptf) )
+# #TO DO: Convert to H representation
+# def VtoH_affinespace (cc):
+#     return
 
 
-    return rv 
+# def KarrAnalysis (P, T):
+
+#     rv = []
+#     for tr in T:
+#         for ptf in tr.tlist:
+#             rv = affineHull(rv, KarrAnalysisSingleptf(P, ptf) )
+
+
+#     return rv 
 
 # print(  affineHull (fullaffineSpace(3) , fullaffineSpace(3)) )

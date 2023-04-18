@@ -117,27 +117,27 @@ def get_ICE0 (T):
     #     ICE0 = ICE0 + get_ICEfromBtr(Btr, n) 
     return ICE0
 
-# FINISH THIS FUNCTION - Removes redundancies from H representation!s
-# Assumes cc has LI predicates only, and not genLI predicates        
-def removeredundancies(cc):
-    def pred_to_matrixrow (p):
-        matrixrow = np.roll(p * -1, 1)[:-1]
-        matrixrow[0] = matrixrow[0] * -1
-        return matrixrow
+# # FINISH THIS FUNCTION - Removes redundancies from H representation!s
+# # Assumes cc has LI predicates only, and not genLI predicates        
+# def removeredundancies(cc):
+#     def pred_to_matrixrow (p):
+#         matrixrow = np.roll(p * -1, 1)[:-1]
+#         matrixrow[0] = matrixrow[0] * -1
+#         return matrixrow
 
-    mat = []
-    for p in cc:
-        mat.append(pred_to_matrixrow(p))
+#     mat = []
+#     for p in cc:
+#         mat.append(pred_to_matrixrow(p))
     
-    mat_cdd = cdd.Matrix( mat, number_type='float')
-    mat_cdd.rep_type = cdd.RepType.INEQUALITY
+#     mat_cdd = cdd.Matrix( mat, number_type='float')
+#     mat_cdd.rep_type = cdd.RepType.INEQUALITY
     
-    print(mat_cdd.canonicalize()) 
-    print(mat_cdd)
+#     print(mat_cdd.canonicalize()) 
+#     print(mat_cdd)
 
 
-S = np.array([[1,2,-1,1] , [2,1,-1,1]])
-removeredundancies(S)
+# S = np.array([[1,2,-1,1] , [2,1,-1,1]])
+# removeredundancies(S)
 
 
 
