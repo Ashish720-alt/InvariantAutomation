@@ -5,7 +5,7 @@ import random
 from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
 from configure import Configure as conf
-from math import inf, sqrt
+from math import inf, sqrt, floor
 from scipy.linalg import null_space, inv
 from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
@@ -75,28 +75,9 @@ def origin_fp(pred):
 
 
 def centre_of_rotation_projectedWalk(pred, filteredpoints):
-    # def centreofrotation_cost(newI, filteredpoints):
-    #     (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-    #     (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-    #     (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-    #     return pos_cost + neg_cost + ICE_cost
     coeff = pred[:-2]
     o_fp = origin_fp(pred)
     const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
-    # i = 0
-    # og_cost = centreofrotation_cost([np.array(coeff + [-1, const], ndmin = 2)], filteredpoints)  
-    # while ( i < conf.centre_walklength):
-    #     temp_cost1 = centreofrotation_cost([np.array(coeff + [-1, const + 1], ndmin = 2)], filteredpoints)        
-    #     temp_cost2 = centreofrotation_cost([np.array(coeff + [-1, const - 1], ndmin = 2)], filteredpoints)  
-    #     if (temp_cost1 < temp_cost2 and temp_cost1 < og_cost):    
-    #         const = const + 1
-    #         og_cost = temp_cost1
-    #     elif (temp_cost2 < temp_cost1 and temp_cost2 < og_cost):
-    #         const = const - 1
-    #         og_cost = temp_cost2 
-    #     else:
-    #         return const     
-    #     i = i + 1
     return const
 
 
@@ -269,20 +250,20 @@ def getrotationcentre_points(samplepoints, costlists, oldpred):
 
 
 
-def rotationtransition(oldpredicate, rotationneighbors, spin, k1, filteredpoints):
-    newcoefficient = list(randomlysamplelistoflists(rotationneighbors)) 
-    # centreofrotation = centre_of_rotation_new(oldpredicate, newcoefficient, spin, k1) #Uses the previously worked out math
-    # centreofrotation = centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient) # Uniformly/ Gaussian Randomly samples from the hyperplane
-    # centreofrotation = centre_of_rotation_walk(oldpredicate, filteredpoints) # Deterministic Random Walk of bounded length
-    # const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
-    const = centre_of_rotation_projectedWalk(oldpredicate, filteredpoints) #Projected Walk
-    return newcoefficient + [-1, const]
+def rotationtransition(oldpredicate, rotationneighbors, k1):
+    newcoeff = list(randomlysamplelistoflists(rotationneighbors)) 
+    oldcoeff = oldpredicate[:-2]
+    oldconst = oldpredicate[-1]
+
+    newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
+
+    return newcoeff + [-1, newconst]
 
 
 
 def translationtransition(predicate):
-    slope = np.dot(np.array(predicate[:-2]), np.array(predicate[:-2]))
-    translation_range = conf.translation_range * slope
+    slope = sqrt(np.dot(np.array(predicate[:-2]), np.array(predicate[:-2])))
+    translation_range = floor(conf.translation_range * slope)
     translation_indices = list(range(-translation_range, translation_range +1))
     translation_indices.remove(0)
     s = np.random.choice(translation_indices)

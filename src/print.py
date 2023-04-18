@@ -2,7 +2,7 @@ from configure import Configure as conf
 from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays, dnfTrue, dnfFalse
 from z3verifier import DNF_to_z3expr
 
-def decimaltruncate(number, digits = 4):
+def decimaltruncate(number, digits = 7):
     if (digits == -1):
         return number
     power = "{:e}".format(number).split('e')[1]
@@ -74,18 +74,18 @@ def initialized(A, B, Vars):
         else:
             print( '\n')
 
-def statistics(t, I, cost, mincost, descent, reject, costlist, acc, Vars):
+def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars):
     if (conf.PRINT_ITERATIONS == conf.ON):    
         if (reject):
             if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                 end_string = "[X]" 
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
+                    print("P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", ( decimaltruncate(mincost ), 
                             decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
                 else:
-                    print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                    print("P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(cost, a) = ", ( 
                             decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
@@ -94,12 +94,12 @@ def statistics(t, I, cost, mincost, descent, reject, costlist, acc, Vars):
         else:
             end_string = "(L)" if descent else "   "
             if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                print("t = ", t, "\t", I, "\t", "(f, cost, a) = ", (decimaltruncate(cost ), decimaltruncate(mincost ), 
+                print("P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", (decimaltruncate(mincost ), 
                         decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
             else:
-                print("t = ", t, "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(f, cost, a) = ", (decimaltruncate(cost ), 
+                print("P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(cost, a) = ", ( 
                         decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
