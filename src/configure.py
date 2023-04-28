@@ -8,7 +8,9 @@ class Configure:
     dspace_intmin = -1000000
     dspace_intmax = 1000000
 
-    num_processes = 2
+    num_processes = 3
+
+    maxSArun = 10000000
 
     k = 2
     r = 1
