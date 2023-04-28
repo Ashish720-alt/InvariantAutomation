@@ -49,7 +49,7 @@ class Repr:
 
         self.c = c
         self.d = d
-        self.tmax = 10000000
+        self.tmax = conf.maxSArun
 
         self.plus0 = get_plus0(self.P)
         self.minus0 = get_minus0(self.Q)
