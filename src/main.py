@@ -30,7 +30,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
             for i in range(conf.num_processes):
                 if return_value[i] != None:
-                    print("Process ", process_id, " exit early!")
+                    if (conf.PRINT_ITERATIONS == conf.ON):
+                        print("Process ", process_id, " exit early!")
                     I_list[process_id] = I
                     return
         if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
@@ -39,7 +40,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
                                          "Samplepoints Now", "\t")
         if (costI == 0):
             return_value[process_id] = (I, (0, 0, 0))
-            print("Process ", process_id, " found invariant!")
+            if (conf.PRINT_ITERATIONS == conf.ON):
+                print("Process ", process_id, " found invariant!")
             I_list[process_id] = I
             return
         index = get_index(repr.get_d(), repr.get_c())
@@ -86,7 +88,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
     total_iterations = total_iterations + t
 
     # Process 'process_id' Failed!
-    print("Process ", process_id, " failed!")
+    if (conf.PRINT_ITERATIONS == conf.ON):
+        print("Process ", process_id, " failed!")
     I_list[process_id] = I
     return 
 
