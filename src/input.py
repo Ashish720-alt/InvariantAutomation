@@ -638,6 +638,15 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 0, -2, 500000]]]) ), 
                                     ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 0, 1, 500000]]]) ) )
 
+    class linearArbitrarycompare:
+        
+        class temp_8:
+            Var =  ['x', 'y']
+            P = list3D_to_listof2Darrays([[[1, 0, 0, -50]]])
+            B = list3D_to_listof2Darrays([[[1, 0, -2, 0]]])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1,  2, 0]]]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)  )  )
+
     '''
     # Var = ( , )
     class standard_name:
