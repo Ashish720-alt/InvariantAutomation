@@ -5,10 +5,16 @@ import random
 from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
 from configure import Configure as conf
-from math import inf, sqrt, floor
+from math import inf, sqrt, floor, cos
 from scipy.linalg import null_space, inv
 from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
+
+def SAconstant(TS_size, k0, k1, n , c , d, diam_rotgraph):
+    r_upper = conf.beta * TS_size * max(conf.translation_range, 2 * k0 * conf.dspace_radius * n * cos( conf.rotation_degree / 2 ) )
+    L_upper = c * d * k1 * diam_rotgraph 
+    return 1
+
 
 def randomlysamplelistoflists(l):
     return l[np.random.choice( len(l))]
@@ -251,24 +257,31 @@ def getrotationcentre_points(samplepoints, costlists, oldpred):
 
 
 def rotationtransition(oldpredicate, rotationneighbors, k1):
-    newcoeff = list(randomlysamplelistoflists(rotationneighbors)) 
-    oldcoeff = oldpredicate[:-2]
-    oldconst = oldpredicate[-1]
-
-    newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
+    
+    n = len(oldpredicate) - 2
+    newcoeff = oldpredicate[:-2]
+    newconst = inf
+    
+    while (newconst > k1 or newconst < -1 * k1):
+        newcoeff = list(randomlysamplelistoflists(rotationneighbors)) 
+        oldcoeff = oldpredicate[:-2]
+        oldconst = oldpredicate[-1]
+        newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
 
     return newcoeff + [-1, newconst]
 
 
 
-def translationtransition(predicate):
+def translationtransition(predicate, k1):
     slope = sqrt(np.dot(np.array(predicate[:-2]), np.array(predicate[:-2])))
     translation_range = floor(conf.translation_range * slope)
     translation_indices = list(range(-translation_range, translation_range +1))
     translation_indices.remove(0)
-    s = np.random.choice(translation_indices)
+    s = inf
     rv = predicate.copy()
-    rv[-1] = rv[-1] + s
+    while (rv[-1] + s > k1 or rv[-1] + s < -1 * k1):
+        s = np.random.choice(translation_indices)
+        rv[-1] = rv[-1] + s
     return rv
 
 
