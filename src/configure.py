@@ -5,8 +5,9 @@ from math import pi, e
 
 class Configure:
     
-    dspace_intmin = -1000000
-    dspace_intmax = 1000000
+    dspace_radius = 1000000
+    dspace_intmin = -1 * dspace_radius
+    dspace_intmax = 1 * dspace_radius
 
     num_processes = 3
 
@@ -15,7 +16,8 @@ class Configure:
     k = 2
     r = 1
 
-    ICEBallRadius = 1
+    BoxesCountSmallSpace = 50
+    probenet_success = 0.8
 
     s = 5 #Number of cex Z3 generates
 
@@ -26,12 +28,12 @@ class Configure:
 
     gamma = e #Need floating point constant here
     beta0 = 100 #2^-20 ~ 10^(-7)
-    beta = 100
+    beta = 1
     # descent_prob = 0.5
 
     # d = 100
 
-    temp_C = 100.0 #Change this!!
+    temp_C = 1000000.0 #Change this!!
 
     # Operators
     OP = {
@@ -53,4 +55,5 @@ class Configure:
     PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
-    NUM_ROUND_CHECK_EARLY_EXIT = 1000
+    NUM_ROUND_CHECK_EARLY_EXIT = 100
+    PRINT_COLORED_THREADS = ON

@@ -1,6 +1,20 @@
 from configure import Configure as conf
 from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays, dnfTrue, dnfFalse
 from z3verifier import DNF_to_z3expr
+from colorama import Fore, Back, Style
+from math import floor
+
+def print_colorslist(t):
+    if (conf.PRINT_COLORED_THREADS == conf.ON):
+        temp = [Fore.RED, Fore.BLUE, Fore.LIGHTGREEN_EX,  Fore.YELLOW, Fore.BLACK,  Fore.CYAN, Fore.LIGHTBLACK_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,  Fore.LIGHTMAGENTA_EX, 
+            Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX, Fore.MAGENTA,  Fore.RESET, Fore.WHITE]
+    else:
+        temp = [Fore.WHITE]
+    templen = len(temp)
+    q = floor(t / templen)
+    r = t - (q * templen)
+    return temp * q + temp[:r]
+
 
 def decimaltruncate(number, digits = 7):
     if (digits == -1):
@@ -10,6 +24,11 @@ def decimaltruncate(number, digits = 7):
 
 def decimaltruncate_list(l, digits = 4):
     return [decimaltruncate(x, digits) for x in l ]
+
+def samplepoints_debugger(t, samplepoints):
+    if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
+        if (t % 1000 == 0):
+            prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t")    
 
 def prettyprint_samplepoints(samplepoints, header, indent):
     print(indent + header + ":")
@@ -57,8 +76,20 @@ def prettyprint_invariant(I, endstring , Vars):
     
     # print(DNF_to_z3expr(I, primed = 0))
 
+def SAsuccess(process_id, colorslist):
+    if (conf.PRINT_ITERATIONS == conf.ON):
+        print(colorslist[process_id] + "Process ", process_id, " found approximate invariant!")
+        print(Style.RESET_ALL)    
 
+def SAexit(process_id, colorslist):
+    if (conf.PRINT_ITERATIONS == conf.ON):
+        print(colorslist[process_id] + "Process ", process_id, " exit early!")
+        print(Style.RESET_ALL)    
 
+def SAfail(process_id, colorslist):
+    if (conf.PRINT_ITERATIONS == conf.ON):
+        print(colorslist[process_id] + "Process ", process_id, " failed!")
+        print(Style.RESET_ALL, end = '')    
 
 def initialized(A, B, Vars):
     if (conf.PRINT_ITERATIONS == conf.ON):
@@ -74,36 +105,39 @@ def initialized(A, B, Vars):
         else:
             print( '\n')
 
-def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars):
+def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslist):
     if (conf.PRINT_ITERATIONS == conf.ON):    
         if (reject):
             if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                 end_string = "[X]" 
                 if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print("P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", ( decimaltruncate(mincost ), 
+                    print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", ( decimaltruncate(mincost ), 
                             decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
                 else:
-                    print("P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(cost, a) = ", ( 
+                    print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(cost, a) = ", ( 
                             decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
+                print(Style.RESET_ALL, end = '')
             else:
                 return
         else:
             end_string = "(L)" if descent else "   "
             if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                print("P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", (decimaltruncate(mincost ), 
+                print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", (decimaltruncate(mincost ),  
                         decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
             else:
-                print("P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(cost, a) = ", ( 
+                print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(cost, a) = ", ( 
                         decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
                 if (conf.PRINT_COSTLIST == conf.ON):
                     print(decimaltruncate_list(costlist), "\n")
+            print(Style.RESET_ALL, end = '')
             return
+    return 
     
 
 def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout):
@@ -130,7 +164,7 @@ def invariantfound( NonIterativeI , Affine_I , I, Vars):
 def noInvariantFound (Z3calls):
     print("SA failed to converge after", Z3calls , "Z3 runs")
 
-def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount ):
+def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount, threads ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 
         print("\nTime Statistics:")
         print("\tTotal Initialization and Re-initialization Time: ", initialize_time)
@@ -138,3 +172,4 @@ def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_cal
         print("\tTotal Z3 Time: ", z3_time)
         print("\tTotal MCMC iterations: ", total_iterations)
         print("\tTotal Z3 calls: ", z3_callcount)
+        print("\tNumber of Threads: ", threads)

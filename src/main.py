@@ -2,26 +2,25 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationdegree, rotationtransition, translationtransition, get_index, isrotationchange, getrotationcentre_points
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
+from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 import ctypes
-from dnfs_and_transitions import RTI_to_LII, list3D_to_listof2Darrays, dnfconjunction
+from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction
 from timeit import default_timer as timer
-from math import isnan, log
+from math import log
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
-# from numba import jit
 
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
     I = I_list[process_id]
     tmax = repr.get_tmax()
-    mcmc_start = timer()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
     temp = conf.temp_C/log(2)
@@ -30,49 +29,32 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
             for i in range(conf.num_processes):
                 if return_value[i] != None:
-                    if (conf.PRINT_ITERATIONS == conf.ON):
-                        print("Process ", process_id, " exit early!")
+                    return_value[process_id] = (None, t)
+                    SAexit(process_id, repr.get_colorslist())
                     I_list[process_id] = I
                     return
-        if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
-            if (t % 1000 == 0):
-                prettyprint_samplepoints(samplepoints,
-                                         "Samplepoints Now", "\t")
+
+        samplepoints_debugger(t, samplepoints)        
+                
         if (costI == 0):
-            return_value[process_id] = (I, (0, 0, 0))
-            if (conf.PRINT_ITERATIONS == conf.ON):
-                print("Process ", process_id, " found invariant!")
+            return_value[process_id] = (I, t)
+            SAsuccess(process_id, repr.get_colorslist())
             I_list[process_id] = I
-            return
+            return()
+        
         index = get_index(repr.get_d(), repr.get_c())
         oldpredicate = I[index[0]][index[1]]
-        is_rotationchange = isrotationchange()
-        if (is_rotationchange):
+        if (isrotationchange()):
             rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
-            deg = rotationdegree(rotneighbors)
-            # Get required points from samplepoints and costlist
-            newpred = rotationtransition(oldpredicate, rotneighbors, repr.get_k1()) 
-            degnew = rotationdegree(repr.get_coeffneighbors(newpred[:-2]))
-            I[index[0]][index[1]] = newpred
+            I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, repr.get_k1()) 
         else:
-            newpred = translationtransition(oldpredicate) 
-            I[index[0]][index[1]] = newpred
-            (deg, degnew) = (conf.translation_range,conf.translation_range)
+            I[index[0]][index[1]] = translationtransition(oldpredicate, repr.get_k1()) 
+        
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
         temp = conf.temp_C/log(1.0 + t)
         a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
-        # if (costInew <= costI):
-        #     a = 1.0
-        # else:
-        #     if (fI == 0 or isnan(fI)):
-        #         if (fInew == 0 or isnan(fInew)): #Handle underflow!
-        #             a = 0.5                    
-        #         else:
-        #             a = 1.0
-        #     else:
-        #         a = min((fInew * deg) / (fI * degnew), 1.0) 
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0
@@ -81,15 +63,12 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
             reject = 1
             descent = 0
             I[index[0]][index[1]] = oldpredicate
-        statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var())
-
-    mcmc_end = timer()
-    mcmc_time = mcmc_time + (mcmc_end - mcmc_start)
-    total_iterations = total_iterations + t
+        
+        statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
     # Process 'process_id' Failed!
-    if (conf.PRINT_ITERATIONS == conf.ON):
-        print("Process ", process_id, " failed!")
+    SAfail(process_id, repr.get_colorslist())
+    return_value[process_id] = (None, t)
     I_list[process_id] = I
     return 
 
@@ -118,19 +97,21 @@ def main(repr: Repr):
         LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
         (costI, costlist) = cost(LII, samplepoints)  
         temp = conf.temp_C/log(2)
-        statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var() ) 
+        statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist() ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
     """ ===== Initialization ends. ===== """
 
+    mcmc_time = 0.0
+    mcmc_iterations = 0
     while (1):
         """ Searching Loop """
         process_list = []
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
-        # mcmc_time = 0.0
-        # mcmc_iterations = 0
+        mcmc_start = timer()
+        
         for i in range(conf.num_processes):
             process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value)))
             process_list[i].start()
@@ -139,9 +120,15 @@ def main(repr: Repr):
             process_list[i].join()
 
         for result in return_value:
-            if (result != None):
-                (I, (t, mcmc_time, total_iterations)) = result
-                break
+            if (result[0] != None):
+                (I, t) = result
+                mcmc_iterations = mcmc_iterations + t + 1
+            else:
+                ( _ , t) = result 
+                mcmc_iterations = mcmc_iterations + t + 1
+        
+        mcmc_end = timer()
+        mcmc_time = mcmc_time + (mcmc_end - mcmc_start)        
         
         # prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
         # input("Press Enter to continue...")
@@ -169,14 +156,14 @@ def main(repr: Repr):
         for i in range(conf.num_processes):
             LII = dnfconjunction( list3D_to_listof2Darrays(I_list[i]), repr.get_affineSubspace(), 0)
             (costI, costlist) = cost(LII, samplepoints)
-            statistics(i, 0, I_list[i], costI, 0, 0, [], -1 , repr.get_Var()) 
+            statistics(i, 0, I_list[i], costI, 0, 0, [], -1 , repr.get_Var(), repr.get_colorslist()) 
         
         
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 
     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
-    timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount )
+    timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
 
     return (LII, z3_callcount)
 

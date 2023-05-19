@@ -9,6 +9,7 @@ from configure import Configure as conf
 from coefficientgraph import getrotationgraph
 from math import sqrt, log
 from preprocessing import modifiedHoudini, getIterativeP, getnonIterativeP
+from print import print_colorslist
 '''
 The general single loop clause system is:
 P -> I
@@ -29,10 +30,7 @@ class Repr:
     def __init__(self, P, B, T, Q, Var, c, d):
          
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
-     
-
-           
-        
+         
         self.P = getIterativeP(P, B)
         self.P_noniters = getnonIterativeP(P, B, self.n)
         self.B = B.copy()
@@ -51,20 +49,21 @@ class Repr:
         self.d = d
         self.tmax = conf.maxSArun
 
-        self.plus0 = get_plus0(self.P)
-        self.minus0 = get_minus0(self.Q)
-        self.ICE0 = get_ICE0(self.T)        
+        self.plus0 = get_plus0(self.P, 0.5, conf.probenet_success)
+        self.minus0 = get_minus0(self.Q, 0.5, conf.probenet_success)
+        self.ICE0 = get_ICE0(self.T, 0.5, conf.probenet_success)        
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
         self.k0 = max(self.Dp[0]) if (max(self.Dp[0]) < 100) else 1
-        self.k1 = max(self.Dp[1])
+        self.k1 = conf.dspace_radius * self.n * self.k0
 
         self.rotationgraph = getrotationgraph(self.k0, self.n) 
 
         self.rotationgraphvertices = self.rotationgraph[0]
         self.rotationgraphedges = self.rotationgraph[1]
 
+        self.colorslist = print_colorslist(conf.num_processes)
 
     def get_n(self):
         return self.n
@@ -135,4 +134,5 @@ class Repr:
     def get_affineSubspace(self):
         return self.affineSubspace
 
-
+    def get_colorslist(self):
+        return self.colorslist
