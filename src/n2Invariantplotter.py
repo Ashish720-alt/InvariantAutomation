@@ -104,7 +104,7 @@ def plotDNF(DNF, dashstyle, boundarycolor, transparency):
 
 def do_plot(plotname, foldername, scale, I, P, N, B, samplepoints, show = False, resolution = conf.n2PLOTTER_LOW_RES, Ig = []):
     #Turn off Interactive Mode, otherwise each time you save, it shows plot.
-    # plt.ioff()
+    plt.ioff()
     plt.grid()
     takescale(scale)
     plotDNF(P, '-' , 'g', 0.4) 
