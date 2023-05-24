@@ -2,14 +2,14 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, SAconstant
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 import ctypes
-from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction
+from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
 from math import log
 import argparse
@@ -18,12 +18,12 @@ import multiprocessing as mp
 
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
+def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount ):
     I = I_list[process_id]
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
-    temp = conf.temp_C/log(2)
+    # temp = SA_Gamma /log(2)
 
     for t in range(1, tmax+1):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
@@ -34,7 +34,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
                     I_list[process_id] = I
                     return
 
-        samplepoints_debugger(t, samplepoints)        
+        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
                 
         if (costI == 0):
             return_value[process_id] = (I, t)
@@ -53,7 +53,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value ):
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = conf.temp_C/log(1.0 + t)
+        temp = SA_Gamma/log(1.0 + t)
         a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
         if (random.rand() <= a): 
             reject = 0
@@ -111,9 +111,10 @@ def main(repr: Repr):
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
         mcmc_start = timer()
+        SA_gamma = SAconstant( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), repr.get_k1(), repr.get_n(), repr.get_c(), repr.get_d() )
         
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value)))
+            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gamma, z3_callcount)))
             process_list[i].start()
         
         for i in range(conf.num_processes):
@@ -150,9 +151,8 @@ def main(repr: Repr):
             noInvariantFound(z3_callcount)
             return ("No Invariant Found", "-", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-         #samplepoints has changed, so cost and f changes for same invariant
-        temp = conf.temp_C/log(2)
         
+        #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):
             LII = dnfconjunction( list3D_to_listof2Darrays(I_list[i]), repr.get_affineSubspace(), 0)
             (costI, costlist) = cost(LII, samplepoints)

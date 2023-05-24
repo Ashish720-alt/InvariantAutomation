@@ -102,6 +102,9 @@ def dnfdisjunction (dnf1, dnf2, gLII):
     return deepcopy_DNF(ret)
 
 
+    
+    
+
 # x is a python list, ptf is a np array of dimension 2, and return type is a python list
 def transition ( x , ptf):
     xmatrix = np.concatenate((np.array(x), np.array([1])))

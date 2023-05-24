@@ -89,7 +89,7 @@ def randomlysamplepointsCC (CC, m):
         point = [0]*n
         for i in range(n):
             point[i] = random.randint(minpoints[i], maxpoints[i])
-        while (  not pointsatisfiescc(pt, cc) ):
+        while (  not pointsatisfiescc(point, cc) ):
             for i in range(n):
                 point[i] = random.randint(minpoints[i], maxpoints[i])                    
 

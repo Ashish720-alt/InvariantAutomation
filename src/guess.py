@@ -5,15 +5,18 @@ import random
 from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
 from configure import Configure as conf
-from math import inf, sqrt, floor, cos
+from math import inf, sqrt, floor, sin
 from scipy.linalg import null_space, inv
 from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
 
-def SAconstant(TS_size, k0, k1, n , c , d, diam_rotgraph):
-    r_upper = conf.beta * TS_size * max(conf.translation_range, 2 * k0 * conf.dspace_radius * n * cos( conf.rotation_degree / 2 ) )
-    L_upper = c * d * k1 * diam_rotgraph 
-    return 1
+
+def SAconstant(TS_size, k0, k1, n , c , d):
+    # return 100 #Error: How does cost function change so drastically?
+    L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_degree / 2 ) )
+    # If theta0 >= pi/4, then:
+    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
+    return L_upper * r_upper
 
 
 def randomlysamplelistoflists(l):

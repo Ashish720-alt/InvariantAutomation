@@ -3,11 +3,12 @@ from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darra
 from z3verifier import DNF_to_z3expr
 from colorama import Fore, Back, Style
 from math import floor
+from n2Invariantplotter import do_plot
 
 def print_colorslist(t):
     if (conf.PRINT_COLORED_THREADS == conf.ON):
-        temp = [Fore.RED, Fore.BLUE, Fore.LIGHTGREEN_EX,  Fore.YELLOW, Fore.BLACK,  Fore.CYAN, Fore.LIGHTBLACK_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,  Fore.LIGHTMAGENTA_EX, 
-            Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX, Fore.MAGENTA,  Fore.RESET, Fore.WHITE]
+        temp = [Fore.WHITE, Fore.RED, Fore.BLUE, Fore.LIGHTGREEN_EX,  Fore.YELLOW, Fore.BLACK,  Fore.CYAN, Fore.LIGHTBLACK_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,  Fore.LIGHTMAGENTA_EX, 
+            Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX, Fore.MAGENTA,  Fore.RESET]
     else:
         temp = [Fore.WHITE]
     templen = len(temp)
@@ -25,10 +26,17 @@ def decimaltruncate(number, digits = 7):
 def decimaltruncate_list(l, digits = 4):
     return [decimaltruncate(x, digits) for x in l ]
 
-def samplepoints_debugger(t, samplepoints):
+def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, P, N, B, colorslist):
     if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
         if (t % 1000 == 0):
-            prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t")    
+            if (n == 2):
+                print(colorslist[p] + 'P' + str(p) + ' plotting graph...')
+                do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(LargeScale)', 
+                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, P, N, B, samplepoints)
+                do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(SmallScale)', 
+                        '2DInvariantPlots', conf.n2PLOTTER_SMALLSCALE, I, P, N, B, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
+            else:    
+                prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t")    
 
 def prettyprint_samplepoints(samplepoints, header, indent):
     print(indent + header + ":")
