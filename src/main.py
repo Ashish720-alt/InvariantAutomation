@@ -15,10 +15,10 @@ from math import log
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
-
+from threading import Lock
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount ):
+def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, lock ):
     I = I_list[process_id]
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
@@ -34,7 +34,9 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     I_list[process_id] = I
                     return
 
+        lock.acquire()
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
+        lock.release()        
                 
         if (costI == 0):
             return_value[process_id] = (I, t)
@@ -113,8 +115,9 @@ def main(repr: Repr):
         mcmc_start = timer()
         SA_gamma = SAconstant( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), repr.get_k1(), repr.get_n(), repr.get_c(), repr.get_d() )
         
+        lock = Lock()
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gamma, z3_callcount)))
+            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gamma, z3_callcount, lock)))
             process_list[i].start()
         
         for i in range(conf.num_processes):

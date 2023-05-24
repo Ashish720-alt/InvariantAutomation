@@ -28,7 +28,7 @@ def decimaltruncate_list(l, digits = 4):
 
 def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, P, N, B, colorslist):
     if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
-        if (t % 1000 == 0):
+        if (t % conf.SAMPLEPOINTS_DEBUGGER_WINDOW == 0):
             if (n == 2):
                 print(colorslist[p] + 'P' + str(p) + ' plotting graph...')
                 do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(LargeScale)', 
