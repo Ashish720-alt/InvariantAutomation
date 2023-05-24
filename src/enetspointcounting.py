@@ -29,7 +29,7 @@ def failprob (m , d, e):
 def getpoints (d , e, p):
     # vc = d + 1 #balls
     vc = int((d**2 + 3*d )/ 2) #ellipsoids
-    print("\n", d, ": ", end = '')
+    # print("\n", d, ": ", end = '')
     m0 = math.ceil(8 / e)
     for i in range(m0, m0 + 10000000):
         if (failprob(i, vc, e) <= 1 - p):

@@ -9,7 +9,7 @@ class Configure:
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
 
-    num_processes = 3
+    num_processes = 1 #Number of threads
 
     maxSArun = 10000000
 
@@ -48,7 +48,7 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
-    SAMPLEPOINTS_DEBUGGER = OFF
+    SAMPLEPOINTS_DEBUGGER = ON
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
@@ -57,3 +57,14 @@ class Configure:
     PRINT_TIME_STATISTICS = ON
     NUM_ROUND_CHECK_EARLY_EXIT = 100
     PRINT_COLORED_THREADS = ON
+    
+
+    # n2Plotter hyperparameters
+    n2PLOTTER_LOW_RES = 300
+    n2PLOTTER_HIGH_RES = 1000
+    n2PLOTTER_LARGESCALE = 1
+    n2PLOTTER_LARGESCALEINTERVAL = [dspace_intmin - 250,dspace_intmax +250]
+    n2PLOTTER_SMALLSCALE = 0
+    n2PLOTTER_SMALLSCALEINTERVAL = [-50,50]
+    n2PLOTTER_CUSTOMIZEDSCALE = -1
+    n2PLOTTER_CUSTOMIZEDSCALEINTERVAL = [0, 0] #Insert Required Interval
