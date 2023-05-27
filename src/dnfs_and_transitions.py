@@ -151,6 +151,7 @@ def list3D_to_listof2Darrays (I):
     return A
 
 
+
 # # Testing
 # print(dnfTrue(2))
 # print(dnfFalse(2))

@@ -132,13 +132,14 @@ def get_minus0 (Q, e, p):
     return minus0
 
 
-def get_ICE0( T, e, p):
+def get_ICE0( T, P, Q, e, p):
     n = len(T[0].b[0][0]) - 2
     m = getpoints(n, e, p)[0]
     rv = []
-    def partialICE_enet (B , transitionlist, m, n):
+    def partialICE_enet (B , P, Q, transitionlist, m, n):
         rv = []
-        B_LII_in_Dstate = dnfconjunction( B , Dstate(n), 0)
+        #The space is B /\ Q /\ ~P (if you know class of region, don't sample from there.)
+        B_LII_in_Dstate = dnfconjunction(dnfconjunction(dnfconjunction( B , Dstate(n), 0), Q, 0), dnfnegation(P), 0) 
         for cc in B_LII_in_Dstate:
             ICE_hds = get_cc_pts (cc, m)
             for hd in ICE_hds:
@@ -147,7 +148,7 @@ def get_ICE0( T, e, p):
         return rv
 
     for rtf in T:
-        rv = rv + partialICE_enet (rtf.b , rtf.tlist, m, n)
+        rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n)
     
     return rv
 
