@@ -12,7 +12,7 @@ from cost_funcs import costplus, costminus, costICE
 
 
 def SAconstant(TS_size, k0, k1, n , c , d):
-    # return 100 #Error: How does cost function change so drastically?
+    # return 100 #Note: Drastic changes seem fine because even for gamma = 100 case, some points have cost values 10000
     L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_degree / 2 ) )
     # If theta0 >= pi/4, then:
     r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 

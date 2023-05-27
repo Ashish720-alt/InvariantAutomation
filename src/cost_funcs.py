@@ -33,16 +33,16 @@ def LIccptdistance(cc, pt):
 # Assumes cc has only <= operator.
 # Note that this ONLY gives the correct answer upto usually 12 decimal places, as approximation methods are used to solve ILP problems.
 # Way too slow -- not an option, about 1/2 second per iteration for MCMC for c = 2,d=1 and 2-3 seconds for GD.
-def LIccptdistance_ILP(cc, pt):
-        n = len(cc[0]) - 2
-        A = np.concatenate(
-            [cc[:, :n], cc[:, n+1:]], axis=1)
-        return float(minimize(  
-            lambda x, pt: np.linalg.norm(x - pt),
-            x0 = np.zeros(n),
-            args=(pt,),
-            constraints=[LinearConstraint(A[:, :-1], lb = -np.inf, ub = A[:, -1])],
-        ).fun)
+# def LIccptdistance_ILP(cc, pt):
+#         n = len(cc[0]) - 2
+#         A = np.concatenate(
+#             [cc[:, :n], cc[:, n+1:]], axis=1)
+#         return float(minimize(  
+#             lambda x, pt: np.linalg.norm(x - pt),
+#             x0 = np.zeros(n),
+#             args=(pt,),
+#             constraints=[LinearConstraint(A[:, :-1], lb = -np.inf, ub = A[:, -1])],
+#         ).fun)
         
 
 

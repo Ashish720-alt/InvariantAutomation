@@ -32,9 +32,9 @@ def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, P, N, B, colorslist
             if (n == 2):
                 print(colorslist[p] + 'P' + str(p) + ' plotting graph...')
                 do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(LargeScale)', 
-                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, P, N, B, samplepoints)
+                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, samplepoints)
                 do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(SmallScale)', 
-                        '2DInvariantPlots', conf.n2PLOTTER_SMALLSCALE, I, P, N, B, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
+                        '2DInvariantPlots', conf.n2PLOTTER_SMALLSCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
             else:    
                 prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t")    
 

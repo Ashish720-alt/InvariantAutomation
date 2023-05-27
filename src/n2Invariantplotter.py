@@ -102,14 +102,11 @@ def plotDNF(DNF, dashstyle, boundarycolor, transparency):
         plt.fill( [pt[0] for pt in S] , [pt[1] for pt in S], color = boundarycolor, alpha = transparency)
 
 
-def do_plot(plotname, foldername, scale, I, P, N, B, samplepoints, show = False, resolution = conf.n2PLOTTER_LOW_RES, Ig = []):
+def do_plot(plotname, foldername, scale, I, samplepoints, show = False, resolution = conf.n2PLOTTER_LOW_RES, Ig = []):
     #Turn off Interactive Mode, otherwise each time you save, it shows plot.
     plt.ioff()
     plt.grid()
     takescale(scale)
-    plotDNF(P, '-' , 'g', 0.4) 
-    plotDNF(N, '-' , 'r', 0.4)
-    plotDNF(B, '-' , 'b', 0.2)    
     if (Ig != []):
         plotDNF(Ig, '-' , 'm', 0.4)
     plotDNF(I, '-' , 'k', 0.4)

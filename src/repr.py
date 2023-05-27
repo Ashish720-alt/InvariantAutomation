@@ -51,7 +51,7 @@ class Repr:
 
         self.plus0 = get_plus0(self.P, 0.5, conf.probenet_success)
         self.minus0 = get_minus0(self.Q, 0.5, conf.probenet_success)
-        self.ICE0 = get_ICE0(self.T, 0.5, conf.probenet_success)        
+        self.ICE0 = get_ICE0(self.T, self.P, self.Q,  0.5, conf.probenet_success)        
                 
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
