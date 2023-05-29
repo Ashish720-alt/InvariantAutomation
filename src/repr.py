@@ -2,7 +2,7 @@
 """
 import numpy as np
 from dnfs_and_transitions import dnfconjunction
-from selection_points import get_plus0, get_minus0, get_ICE0
+from selection_points import Dstate, get_plus0, get_minus0, get_ICE0
 from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
@@ -40,9 +40,9 @@ class Repr:
         self.affineSubspace = modifiedHoudini(self.P, self.Q, self.T)
 
 
-        self.P_z3expr = DNF_to_z3expr(self.P, primed = 0)
-        self.B_z3expr = DNF_to_z3expr(self.B, primed = 0)
-        self.Q_z3expr = DNF_to_z3expr(self.Q, primed = 0)
+        self.P_z3expr = DNF_to_z3expr( dnfconjunction(self.P, Dstate(self.n), 1), primed = 0)
+        self.B_z3expr = DNF_to_z3expr(dnfconjunction(self.B, Dstate(self.n), 1), primed = 0)
+        self.Q_z3expr = DNF_to_z3expr(dnfconjunction(self.Q, Dstate(self.n), 1), primed = 0)
         self.T_z3expr = genTransitionRel_to_z3expr(self.T)
 
         self.c = c

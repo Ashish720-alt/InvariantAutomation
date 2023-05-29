@@ -11,16 +11,18 @@ from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
 
 def k1list(k0, n):
+    max_radius = conf.dspace_radius * k0 * n
+    
     if (conf.num_processes == 1):
-        radius_list = [conf.dspace_radius]
+        radius_list = [max_radius]
     elif (conf.num_processes == 2):
-        radius_list = [1000] + [conf.dspace_radius]
+        radius_list = [1000] + [max_radius]
     elif (conf.num_processes == 3):
-        radius_list = [100, 1000] + [conf.dspace_radius]
+        radius_list = [100, 1000] + [max_radius]
     else:
-        radius_list = [10, 100, 1000] + [conf.dspace_radius] * (conf.num_processes - 3)
+        radius_list = [10, 100, 1000] + [max_radius] * (conf.num_processes - 3)
         
-    return [R * k0 * n for R in radius_list]    
+    return radius_list   
 
 
 def SAconstantlist( TS, k0, n, c, d, k1_list):    
@@ -67,27 +69,27 @@ def listmultiplyconstant(c, l):
 def listadd(l1, l2):
     return [sum(p) for p in zip(l1, l2)]
 
-# Here, posed as an ILP!
-def centre_of_rotation_new(pred, newcoefficient, spin, k1):
-    # Need to convert the type of elements of this array to float?
-    coeff = pred[:-2]
-    const = pred[-1]
-    n = len(coeff)
-    sign = 1 if (spin >= 0) else -1
-    v = listadd(listmultiplyconstant( 1.0/ sqrt(np.dot(newcoefficient, newcoefficient)) , newcoefficient) ,listmultiplyconstant(-1.0/ sqrt(np.dot(coeff, coeff)), coeff))
+# # Here, posed as an ILP!
+# def centre_of_rotation_new(pred, newcoefficient, spin, k1):
+#     # Need to convert the type of elements of this array to float?
+#     coeff = pred[:-2]
+#     const = pred[-1]
+#     n = len(coeff)
+#     sign = 1 if (spin >= 0) else -1
+#     v = listadd(listmultiplyconstant( 1.0/ sqrt(np.dot(newcoefficient, newcoefficient)) , newcoefficient) ,listmultiplyconstant(-1.0/ sqrt(np.dot(coeff, coeff)), coeff))
     
-    # print(coeff, const, n, sign, v) #Debugging
+#     # print(coeff, const, n, sign, v) #Debugging
     
-    return minimize(
-        lambda x, v, spin: spin * np.dot(np.array(v), np.array(x)),
-        np.zeros(n), #This is the initial guess!
-        args=(v,spin),
-        bounds = Bounds(lb = np.full(n, conf.dspace_intmin), ub = np.full(n, conf.dspace_intmax) ),
-        # Without newconstant constraints
-        # constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) ]  ), np.array( [-np.inf, -np.inf] ), np.array( [const, -const] ) )],
-        # With new constant constraints
-        constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) , newcoefficient]  ), np.array( [-np.inf, -np.inf, -k1 - 1] ), np.array( [const, -const, k1] ) )], #Convert this to shape (1,n) instead of (n)?
-    ).x
+#     return minimize(
+#         lambda x, v, spin: spin * np.dot(np.array(v), np.array(x)),
+#         np.zeros(n), #This is the initial guess!
+#         args=(v,spin),
+#         bounds = Bounds(lb = np.full(n, conf.dspace_intmin), ub = np.full(n, conf.dspace_intmax) ),
+#         # Without newconstant constraints
+#         # constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) ]  ), np.array( [-np.inf, -np.inf] ), np.array( [const, -const] ) )],
+#         # With new constant constraints
+#         constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) , newcoefficient]  ), np.array( [-np.inf, -np.inf, -k1 - 1] ), np.array( [const, -const, k1] ) )], #Convert this to shape (1,n) instead of (n)?
+#     ).x
 
 # print(centre_of_rotation_new( [-1,2,-1,200] , [-1,1] , 1 ))
 
@@ -98,179 +100,179 @@ def origin_fp(pred):
     return [ (x * const * 1.0)/K for x in coeff ]
 
 
-def centre_of_rotation_projectedWalk(pred, filteredpoints):
-    coeff = pred[:-2]
-    o_fp = origin_fp(pred)
-    const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
-    return const
+# def centre_of_rotation_projectedWalk(pred, filteredpoints):
+#     coeff = pred[:-2]
+#     o_fp = origin_fp(pred)
+#     const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
+#     return const
 
 
-def centre_of_rotation_walk(pred, filteredpoints):
-    n = len(pred) - 2
-    coeff = pred[:-2]
-    A = np.array([ np.array(coeff) for i in range(n)])
-    ns_columnarray = null_space(A)
-    ns_array = np.transpose(ns_columnarray)
-    ns_list = [list(x) for x in ns_array] 
+# def centre_of_rotation_walk(pred, filteredpoints):
+#     n = len(pred) - 2
+#     coeff = pred[:-2]
+#     A = np.array([ np.array(coeff) for i in range(n)])
+#     ns_columnarray = null_space(A)
+#     ns_array = np.transpose(ns_columnarray)
+#     ns_list = [list(x) for x in ns_array] 
 
-    def coordinate_bounds(basis):
-        def coeffbounds(basisvector):
-            (maxvalue, minvalue) = (max(basisvector), min(basisvector))
-            (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
-            U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
-            L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
-            return (L,U)
-        return [coeffbounds(v) for v in basis]
+#     def coordinate_bounds(basis):
+#         def coeffbounds(basisvector):
+#             (maxvalue, minvalue) = (max(basisvector), min(basisvector))
+#             (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
+#             U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
+#             L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
+#             return (L,U)
+#         return [coeffbounds(v) for v in basis]
 
-    bounds = coordinate_bounds(ns_list)
-    K = pred[-1] / np.dot(np.array(coeff), np.array(coeff))
+#     bounds = coordinate_bounds(ns_list)
+#     K = pred[-1] / np.dot(np.array(coeff), np.array(coeff))
 
-    def coordinate_to_point(coordinates, basis_list, K): #ns_list is basis_list
-        rv = np.zeros(n, dtype = float)
-        for i in range(len(basis_list)):
-            rv = np.add(rv, coordinates[i]*np.array(basis_list[i]) )
-        rv = np.add(rv, K*np.array(coeff))
-        return list(rv)
+#     def coordinate_to_point(coordinates, basis_list, K): #ns_list is basis_list
+#         rv = np.zeros(n, dtype = float)
+#         for i in range(len(basis_list)):
+#             rv = np.add(rv, coordinates[i]*np.array(basis_list[i]) )
+#         rv = np.add(rv, K*np.array(coeff))
+#         return list(rv)
 
-    def centreofrotation_cost(newI, filteredpoints):
-        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-        return pos_cost + neg_cost + ICE_cost
+#     def centreofrotation_cost(newI, filteredpoints):
+#         (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+#         (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+#         (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+#         return pos_cost + neg_cost + ICE_cost
 
 
-    # x0 = origin_fp(pred)
-    # coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
-    k = len(ns_list)
-    coordinate_curr = [0] * k
-    point_curr = coordinate_to_point(coordinate_curr, ns_list, K)
-    curr_const = round(np.dot(np.array(coeff), np.array(point_curr)), 0) 
-    curr_cost = centreofrotation_cost([np.array(coeff + [-1, curr_const], ndmin = 2)], filteredpoints)
-    i = 1
-    while (i < conf.centre_walklength):
-        j = random.choice(list(range(k)))
-        change = random.choice([-1,1])
-        coordinate_temp = coordinate_curr.copy()
-        coordinate_temp[j] = coordinate_temp[j] + change
-        print(coordinate_curr, coordinate_temp) #Debug
-        point_temp = coordinate_to_point(coordinate_temp, ns_list, K)
-        temp_const = round(np.dot(np.array(coeff), np.array(point_temp)), 0) 
-        temp_cost = centreofrotation_cost([np.array(coeff + [-1, temp_const], ndmin = 2)], filteredpoints)
-        if (temp_cost < curr_cost):
-            print("Walk has moved!") #Debug
-            curr_cost = temp_cost
-            coordinate_curr = coordinate_temp
-            point_curr = point_temp
-        i = i + 1
-    return point_curr
+#     # x0 = origin_fp(pred)
+#     # coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
+#     k = len(ns_list)
+#     coordinate_curr = [0] * k
+#     point_curr = coordinate_to_point(coordinate_curr, ns_list, K)
+#     curr_const = round(np.dot(np.array(coeff), np.array(point_curr)), 0) 
+#     curr_cost = centreofrotation_cost([np.array(coeff + [-1, curr_const], ndmin = 2)], filteredpoints)
+#     i = 1
+#     while (i < conf.centre_walklength):
+#         j = random.choice(list(range(k)))
+#         change = random.choice([-1,1])
+#         coordinate_temp = coordinate_curr.copy()
+#         coordinate_temp[j] = coordinate_temp[j] + change
+#         print(coordinate_curr, coordinate_temp) #Debug
+#         point_temp = coordinate_to_point(coordinate_temp, ns_list, K)
+#         temp_const = round(np.dot(np.array(coeff), np.array(point_temp)), 0) 
+#         temp_cost = centreofrotation_cost([np.array(coeff + [-1, temp_const], ndmin = 2)], filteredpoints)
+#         if (temp_cost < curr_cost):
+#             print("Walk has moved!") #Debug
+#             curr_cost = temp_cost
+#             coordinate_curr = coordinate_temp
+#             point_curr = point_temp
+#         i = i + 1
+#     return point_curr
 
-# Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
-def centre_of_rotation(pred):
-    n = len(pred) - 2
-    coeff = pred[:-2]
-    A = np.array([ np.array(coeff) for i in range(n)])
-    ns_array = np.transpose(null_space(A))
-    ns_list = [list(x) for x in ns_array] 
+# # Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
+# def centre_of_rotation(pred):
+#     n = len(pred) - 2
+#     coeff = pred[:-2]
+#     A = np.array([ np.array(coeff) for i in range(n)])
+#     ns_array = np.transpose(null_space(A))
+#     ns_list = [list(x) for x in ns_array] 
 
-    def coordinate_bounds(basis):
-        def coeffbounds(basisvector):
-            (maxvalue, minvalue) = (max(basisvector), min(basisvector))
-            (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
-            U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
-            L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
-            return (L,U)
-        return [coeffbounds(v) for v in basis]
+#     def coordinate_bounds(basis):
+#         def coeffbounds(basisvector):
+#             (maxvalue, minvalue) = (max(basisvector), min(basisvector))
+#             (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
+#             U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
+#             L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
+#             return (L,U)
+#         return [coeffbounds(v) for v in basis]
 
-    bounds = coordinate_bounds(ns_list)
+#     bounds = coordinate_bounds(ns_list)
 
-    def samplepoint(basis, bounds, coeff, b):
-        def isvalidvector(pt):
-            return all([ ((val >= conf.dspace_intmin) and (val <= conf.dspace_intmax)) for val in pt ])
-        n = len(basis[0])
-        rv = [conf.dspace_intmax+1]*n
-        K = b / np.dot(np.array(coeff), np.array(coeff))
-        while( not isvalidvector(list(rv))):
-            coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
-            # coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
-            rv = np.zeros(n, dtype = float)
-            for i in range(len(basis)):
-                rv = np.add(rv, coordinates[i]*np.array(basis[i]) )
-            rv = np.add(rv, K*np.array(coeff))
-        return list(rv)
+#     def samplepoint(basis, bounds, coeff, b):
+#         def isvalidvector(pt):
+#             return all([ ((val >= conf.dspace_intmin) and (val <= conf.dspace_intmax)) for val in pt ])
+#         n = len(basis[0])
+#         rv = [conf.dspace_intmax+1]*n
+#         K = b / np.dot(np.array(coeff), np.array(coeff))
+#         while( not isvalidvector(list(rv))):
+#             coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
+#             # coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
+#             rv = np.zeros(n, dtype = float)
+#             for i in range(len(basis)):
+#                 rv = np.add(rv, coordinates[i]*np.array(basis[i]) )
+#             rv = np.add(rv, K*np.array(coeff))
+#         return list(rv)
     
-    return [ samplepoint(ns_list, bounds, coeff, pred[-1]) for x in range(conf.centres_sampled)]
+#     return [ samplepoint(ns_list, bounds, coeff, pred[-1]) for x in range(conf.centres_sampled)]
 
-def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
-    centreofrotation_list = centre_of_rotation(newcoefficient + [-1,0])
+# def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
+#     centreofrotation_list = centre_of_rotation(newcoefficient + [-1,0])
 
-    def centreofrotation_cost(newI, filteredpoints):
-        (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-        (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-        (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-        return pos_cost + neg_cost + ICE_cost
+#     def centreofrotation_cost(newI, filteredpoints):
+#         (pos_cost, _, _) = costplus(newI, filteredpoints[0])
+#         (neg_cost, _, _) = costminus(newI, filteredpoints[1])
+#         (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
+#         return pos_cost + neg_cost + ICE_cost
 
-    centreofrotation = centreofrotation_list[0]
-    const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
-    newpred = newcoefficient + [-1, const]
-    newI = [np.array( newpred, ndmin = 2)]
-    cost = centreofrotation_cost(newI, filteredpoints)
+#     centreofrotation = centreofrotation_list[0]
+#     const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
+#     newpred = newcoefficient + [-1, const]
+#     newI = [np.array( newpred, ndmin = 2)]
+#     cost = centreofrotation_cost(newI, filteredpoints)
 
-    i = 1
-    while (i < conf.centres_sampled):
-        curr_centreofrotation = centreofrotation_list[i]
-        curr_const = round(np.dot(np.array(newcoefficient), np.array(curr_centreofrotation)), 0) 
-        currpred = newcoefficient + [-1, curr_const]
-        currI = [np.array( currpred, ndmin = 2)]
-        curr_cost = centreofrotation_cost(currI, filteredpoints)
-        if (curr_cost < cost):
-            cost = curr_cost
-            centreofrotation = curr_centreofrotation
-        i = i+1
-    return centreofrotation
+#     i = 1
+#     while (i < conf.centres_sampled):
+#         curr_centreofrotation = centreofrotation_list[i]
+#         curr_const = round(np.dot(np.array(newcoefficient), np.array(curr_centreofrotation)), 0) 
+#         currpred = newcoefficient + [-1, curr_const]
+#         currI = [np.array( currpred, ndmin = 2)]
+#         curr_cost = centreofrotation_cost(currI, filteredpoints)
+#         if (curr_cost < cost):
+#             cost = curr_cost
+#             centreofrotation = curr_centreofrotation
+#         i = i+1
+#     return centreofrotation
 
-#samplepoints is a triple, costlist is a single list
-def getrotationcentre_points(samplepoints, costlists, oldpred):
-    pos_costlist = costlists[0: len(samplepoints[0])]
-    neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
-    ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
+# #samplepoints is a triple, costlist is a single list
+# def getrotationcentre_points(samplepoints, costlists, oldpred):
+#     pos_costlist = costlists[0: len(samplepoints[0])]
+#     neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
+#     ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
 
-    neg_oldpred = [-1*x for x in oldpred]  
-    neg_oldpred[-2] = -1
-    neg_oldpred[-1] = neg_oldpred[-1] - 1
+#     neg_oldpred = [-1*x for x in oldpred]  
+#     neg_oldpred[-2] = -1
+#     neg_oldpred[-1] = neg_oldpred[-1] - 1
 
-    positivepts = samplepoints[0]
-    negativepts = samplepoints[1]
-    ICEpts = samplepoints[2]
+#     positivepts = samplepoints[0]
+#     negativepts = samplepoints[1]
+#     ICEpts = samplepoints[2]
 
-    filtered_pos = []
-    filtered_neg = []
-    filtered_ICE = []
+#     filtered_pos = []
+#     filtered_neg = []
+#     filtered_ICE = []
 
-    def pt_linedistance(pred, pt):
-        magnitude = sqrt(sum(i*i for i in pred[:-2]))
-        s = 0
-        for i in range(len(pt)):
-            s = pred[i]*pt[i]
-        s = s - pred[-1]    
-        return  s/magnitude
+#     def pt_linedistance(pred, pt):
+#         magnitude = sqrt(sum(i*i for i in pred[:-2]))
+#         s = 0
+#         for i in range(len(pt)):
+#             s = pred[i]*pt[i]
+#         s = s - pred[-1]    
+#         return  s/magnitude
 
-    for i,pos in enumerate(positivepts):
-        dist = pt_linedistance(oldpred, pos)
-        if ( dist > 0 and dist <= conf.d and pos_costlist[i] > 0):
-            filtered_pos.append(pos)
+#     for i,pos in enumerate(positivepts):
+#         dist = pt_linedistance(oldpred, pos)
+#         if ( dist > 0 and dist <= conf.d and pos_costlist[i] > 0):
+#             filtered_pos.append(pos)
 
-    for i,neg in enumerate(negativepts):
-        dist = pt_linedistance(neg_oldpred, neg)
-        if ( dist > 0 and dist <= conf.d and neg_costlist[i] > 0):
-            filtered_neg.append(neg)
+#     for i,neg in enumerate(negativepts):
+#         dist = pt_linedistance(neg_oldpred, neg)
+#         if ( dist > 0 and dist <= conf.d and neg_costlist[i] > 0):
+#             filtered_neg.append(neg)
 
-    for i,ICE in enumerate(ICEpts):
-        dist1 = pt_linedistance(neg_oldpred, ICE[0])
-        dist2 = pt_linedistance(oldpred, ICE[1])
-        if ( dist1 <= 0 and dist2 > 0 and min(-dist1, dist2) <= conf.d and ICE_costlist[i] > 0):
-            filtered_ICE.append(ICE)
+#     for i,ICE in enumerate(ICEpts):
+#         dist1 = pt_linedistance(neg_oldpred, ICE[0])
+#         dist2 = pt_linedistance(oldpred, ICE[1])
+#         if ( dist1 <= 0 and dist2 > 0 and min(-dist1, dist2) <= conf.d and ICE_costlist[i] > 0):
+#             filtered_ICE.append(ICE)
 
-    return (filtered_pos, filtered_neg, filtered_ICE )
+#     return (filtered_pos, filtered_neg, filtered_ICE )
 
 
 

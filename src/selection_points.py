@@ -7,6 +7,7 @@ from math import floor, ceil
 import random
 from scipy.spatial import ConvexHull
 from enetspointcounting import getpoints
+from cost_funcs import LIDNFptdistance
 
 def Dstate(n):
     cc = np.empty(shape=(0,n+2), dtype = int)
@@ -109,6 +110,79 @@ def get_cc_pts (cc, m):
     else:
         return v_repr
 
+def filter_ICEtails(n, tl_list):
+    rv = []
+    for tl in tl_list:
+        if ( LIDNFptdistance(Dstate(n), tl) == 0):
+            rv.append(tl)
+    return rv
+
+
+#CC is 2d numpy array; unbounded polytopes allowed
+def randomlysampleCC_ICEpairs (CC, m, transitions):
+    n  = len(CC[0]) - 2
+    cc = dnfconjunction([CC], Dstate(n), 0)[0]
+
+    endpoints = v_representation(cc)
+    minpoints = [ conf.dspace_intmax] * n
+    maxpoints = [ conf.dspace_intmin] * n
+    for pt in endpoints:
+        for i in range(n):
+            A = floor(pt[i])
+            B = ceil(pt[i])
+            if( B < minpoints[i]):
+                minpoints[i] = B
+            if( A > maxpoints[i]):
+                maxpoints[i] = A
+
+
+    rv = []
+    
+    #ICE star outputted
+    def randomlysampleICEstar (n, minpoints, maxpoints, transitions):
+        def pointsatisfiescc (pt, cc):
+            for p in cc:
+                sat = sum(p[:-2]* pt) - p[-1]
+                if (sat > 0):
+                    return False
+            return True
+        
+        point = [0]*n
+        for i in range(n):
+            point[i] = random.randint(minpoints[i], maxpoints[i])
+        
+
+        tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])
+        
+        while (  not pointsatisfiescc(point, cc) or tls == [] ):
+            for i in range(n):
+                point[i] = random.randint(minpoints[i], maxpoints[i])  
+            tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
+
+        return [ (point, tl) for tl in tls]
+    
+    for i in range(m):
+        rv = rv + randomlysampleICEstar(n, minpoints, maxpoints, transitions)
+        
+    return rv
+
+def get_cc_ICEheads (cc, m, transitions):
+    n = len(cc[0]) - 2
+    v_repr = v_representation(cc)
+    vol = getvolume(v_repr, n)
+    if (vol > conf.BoxesCountSmallSpace):
+        return randomlysampleCC_ICEpairs(cc, m, transitions)
+    else:
+        rv = []
+        for hd in v_repr:
+            tls = filter_ICEtails(n, [ transition(hd, ptf) for ptf in transitions])
+            if (tls == []):
+                continue
+            for tl in tls:
+               rv.append( (hd, tl)) 
+        return rv
+
+
 def get_plus0 (P, e, p):
     n = len(P[0][0]) - 2
     m = getpoints(n, e, p)[0]
@@ -141,10 +215,7 @@ def get_ICE0( T, P, Q, e, p):
         #The space is B /\ Q /\ ~P (if you know class of region, don't sample from there.)
         B_LII_in_Dstate = dnfconjunction(dnfconjunction(dnfconjunction( B , Dstate(n), 0), Q, 0), dnfnegation(P), 0) 
         for cc in B_LII_in_Dstate:
-            ICE_hds = get_cc_pts (cc, m)
-            for hd in ICE_hds:
-                for ptf in transitionlist:
-                    rv.append( (hd, transition(hd, ptf)) )
+            rv = rv + get_cc_ICEheads(cc, m, transitionlist)
         return rv
 
     for rtf in T:

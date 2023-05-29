@@ -9,7 +9,7 @@ class Configure:
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
 
-    num_processes = 4 #Number of threads
+    num_processes = 3 #Number of threads
 
     maxSArun = 10000000
 
@@ -48,7 +48,7 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
-    SAMPLEPOINTS_DEBUGGER = OFF
+    SAMPLEPOINTS_DEBUGGER = ON
     SAMPLEPOINTS_DEBUGGER_WINDOW = 1000
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
