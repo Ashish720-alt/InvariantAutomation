@@ -11,11 +11,23 @@ from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
 
 
-def SAconstant(TS_size, k0, k1, n , c , d):
+def SAconstantlist( TS, k0, k1, n, c, d):
+    if (conf.num_processes == 1):
+        const_dist = [conf.translation_range]
+    elif (conf.num_processes == 2):
+        const_dist = [1000] + [conf.translation_range]
+    elif (conf.num_processes == 3):
+        const_dist = [100, 1000] + [conf.translation_range]
+    else:
+        const_dist = [10, 100, 1000] + [conf.translation_range] * (conf.num_processes - 3)
+    
+    return [SAconstant( TS, k0, k1, n, c, d, const ) for const in const_dist]  
+
+def SAconstant(TS_size, k0, k1, n , c , d, R):
     # return 100 #Note: Drastic changes seem fine because even for gamma = 100 case, some points have cost values 10000
     L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_degree / 2 ) )
     # If theta0 >= pi/4, then:
-    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
+    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * R ) 
     return L_upper * r_upper
 
 

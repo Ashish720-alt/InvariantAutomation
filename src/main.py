@@ -2,13 +2,12 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, SAconstant
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, SAconstant, SAconstantlist
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
-import ctypes
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
 from math import log
@@ -113,11 +112,13 @@ def main(repr: Repr):
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
         mcmc_start = timer()
-        SA_gamma = SAconstant( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), repr.get_k1(), repr.get_n(), repr.get_c(), repr.get_d() )
         
         lock = Lock()
+        SA_gammalist = SAconstantlist( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), 
+                            repr.get_k1(), repr.get_n(), repr.get_c(), repr.get_d())
+        
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gamma, z3_callcount, lock)))
+            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, lock)))
             process_list[i].start()
         
         for i in range(conf.num_processes):
