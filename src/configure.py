@@ -9,7 +9,7 @@ class Configure:
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
 
-    num_processes = 1 #Number of threads
+    num_processes = 4 #Number of threads
 
     maxSArun = 10000000
 
