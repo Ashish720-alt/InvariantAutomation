@@ -14,7 +14,6 @@ from math import log
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
-from threading import Lock
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
@@ -79,7 +78,6 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 def main(repr: Repr):
     """ ===== Initialization starts. ===== """
     mcmc_time = 0
-    total_iterations = 0
     z3_time = 0
     initialize_time = 0
     z3_callcount = 0

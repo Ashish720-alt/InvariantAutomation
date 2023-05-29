@@ -1,6 +1,8 @@
 from z3 import *
 import numpy as np
 from configure import Configure as conf
+from dnfs_and_transitions import dnfconjunction
+from selection_points import Dstate
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
@@ -17,8 +19,8 @@ def DNF_to_z3expr(I, primed):
 def genTransitionRel_to_z3expr(T):
     def ptf_to_z3expr(ptf):
         n = len(ptf) - 1
-        return simplify(And([Int("x%sp" % i) == Sum([ int(ptf[i][j]) * Int("x%s" % j) for j in 
-            range(n) ]) + int(ptf[i][n]) for i in range(n) ]))
+        return simplify(And(And([Int("x%sp" % i) == Sum([ int(ptf[i][j]) * Int("x%s" % j) for j in 
+            range(n) ]) + int(ptf[i][n]) for i in range(n) ]) , DNF_to_z3expr( Dstate(n) , primed = 1) ))
 
     def Btr_to_z3expr(Btr):
         return Implies( DNF_to_z3expr(Btr.b, primed = 0) , simplify(Or([ptf_to_z3expr(ptf) for ptf in Btr.tlist])) )  
@@ -75,7 +77,8 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) ## converting here is wrong!!
     
     n = len(I[0][0]) - 2
-    (I_z3, Ip_z3) = (DNF_to_z3expr(I, primed = 0), DNF_to_z3expr(I, primed = 1))
+    I_bounded = dnfconjunction(I, Dstate(n), 1)
+    (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I_z3, n) ,__get_cex_minus(I_z3, Q_z3, n) ,__get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n))
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , (cex_plus, cex_minus, cex_ICE) )
