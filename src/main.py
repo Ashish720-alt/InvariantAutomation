@@ -2,7 +2,7 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, SAconstant, SAconstantlist
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
@@ -17,7 +17,7 @@ import multiprocessing as mp
 from threading import Lock
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, lock ):
+def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
     I = I_list[process_id]
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
@@ -33,23 +33,22 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     I_list[process_id] = I
                     return
 
-        lock.acquire()
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
-        lock.release()        
+       
                 
         if (costI == 0):
             return_value[process_id] = (I, t)
             SAsuccess(process_id, repr.get_colorslist())
             I_list[process_id] = I
-            return()
+            return
         
         index = get_index(repr.get_d(), repr.get_c())
         oldpredicate = I[index[0]][index[1]]
         if (isrotationchange()):
             rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
-            I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, repr.get_k1()) 
+            I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
         else:
-            I[index[0]][index[1]] = translationtransition(oldpredicate, repr.get_k1()) 
+            I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
         
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
@@ -113,12 +112,12 @@ def main(repr: Repr):
         return_value.extend([None for i in range(conf.num_processes)])
         mcmc_start = timer()
         
-        lock = Lock()
+        k1_list = k1list(repr.get_k0(), repr.get_n())
         SA_gammalist = SAconstantlist( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), 
-                            repr.get_k1(), repr.get_n(), repr.get_c(), repr.get_d())
+                            repr.get_n(), repr.get_c(), repr.get_d(), k1_list)
         
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, lock)))
+            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, k1_list[i])))
             process_list[i].start()
         
         for i in range(conf.num_processes):

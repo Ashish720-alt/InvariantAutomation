@@ -10,24 +10,27 @@ from scipy.linalg import null_space, inv
 from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
 
-
-def SAconstantlist( TS, k0, k1, n, c, d):
+def k1list(k0, n):
     if (conf.num_processes == 1):
-        const_dist = [conf.translation_range]
+        radius_list = [conf.dspace_radius]
     elif (conf.num_processes == 2):
-        const_dist = [1000] + [conf.translation_range]
+        radius_list = [1000] + [conf.dspace_radius]
     elif (conf.num_processes == 3):
-        const_dist = [100, 1000] + [conf.translation_range]
+        radius_list = [100, 1000] + [conf.dspace_radius]
     else:
-        const_dist = [10, 100, 1000] + [conf.translation_range] * (conf.num_processes - 3)
-    
-    return [SAconstant( TS, k0, k1, n, c, d, const ) for const in const_dist]  
+        radius_list = [10, 100, 1000] + [conf.dspace_radius] * (conf.num_processes - 3)
+        
+    return [R * k0 * n for R in radius_list]    
 
-def SAconstant(TS_size, k0, k1, n , c , d, R):
+
+def SAconstantlist( TS, k0, n, c, d, k1_list):    
+    return [SAconstant( TS, k0, k1 , n, c, d ) for k1 in k1_list]  
+
+def SAconstant(TS_size, k0, k1, n , c , d):
     # return 100 #Note: Drastic changes seem fine because even for gamma = 100 case, some points have cost values 10000
     L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_degree / 2 ) )
     # If theta0 >= pi/4, then:
-    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * R ) 
+    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
     return L_upper * r_upper
 
 
