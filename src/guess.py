@@ -11,6 +11,7 @@ from scipy.optimize import minimize, LinearConstraint, Bounds
 from cost_funcs import costplus, costminus, costICE
 
 def k1list(k0, n):
+    # return [10]
     max_radius = conf.dspace_radius * k0 * n
     
     if (conf.num_processes == 1):
@@ -275,17 +276,17 @@ def origin_fp(pred):
 #     return (filtered_pos, filtered_neg, filtered_ICE )
 
 
-
+# whether rotation is possible or not i.e. if while loop is not an infinite loop is handled in isrotationchange(.. , .. , ..) function
 def rotationtransition(oldpredicate, rotationneighbors, k1):
     
-    n = len(oldpredicate) - 2
+    # n = len(oldpredicate) - 2
+    oldcoeff = oldpredicate[:-2]
+    oldconst = oldpredicate[-1]    
     newcoeff = oldpredicate[:-2]
     newconst = inf
     
     while (newconst > k1 or newconst < -1 * k1):
         newcoeff = list(randomlysamplelistoflists(rotationneighbors)) 
-        oldcoeff = oldpredicate[:-2]
-        oldconst = oldpredicate[-1]
         newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
 
     return newcoeff + [-1, newconst]
@@ -301,15 +302,27 @@ def translationtransition(predicate, k1):
     rv = predicate.copy()
     while (rv[-1] + s > k1 or rv[-1] + s < -1 * k1):
         s = np.random.choice(translation_indices)
-        rv[-1] = rv[-1] + s
+    rv[-1] = rv[-1] + s
     return rv
 
 
 def get_index(d, c):
     return (np.random.choice( list(range(d)) ), np.random.choice( list(range(c)) ))
 
-def isrotationchange():
-    return (np.random.rand() <= conf.p_rot )
+def isrotationchange(oldpredicate, rotationneighbors, k1):
+    def isrotationpossible(oldpredicate, rotationneighbors, k1):
+        oldcoeff = oldpredicate[:-2]
+        oldconst = oldpredicate[-1]   
+        i = 0
+        for newcoeff in rotationneighbors:
+            newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
+            if (not (newconst > k1 or newconst < -1 * k1)):
+                return True
+            i = i + 1
+        if (i == len(rotationneighbors)):
+            return False     
+    
+    return isrotationpossible(oldpredicate, rotationneighbors, k1) and (np.random.rand() <= conf.p_rot )
 
 
 

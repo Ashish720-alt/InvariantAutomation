@@ -54,7 +54,7 @@ def v_representation (cc):
 
 # Assumes it is a convex polytope and generators is a list of lists.
 def getvolume (generators, n):
-    if (len(generators) < 3):
+    if (len(generators) < n+1):
         return 0
     A = np.asarray(generators)
     return ConvexHull(A).volume
