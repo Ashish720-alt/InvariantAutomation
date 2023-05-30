@@ -34,6 +34,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
        
+
+
                 
         if (costI == 0):
             return_value[process_id] = (I, t)
@@ -43,8 +45,9 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         
         index = get_index(repr.get_d(), repr.get_c())
         oldpredicate = I[index[0]][index[1]]
-        if (isrotationchange()):
-            rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
+        rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
+        
+        if (isrotationchange(oldpredicate, rotneighbors, k1)):
             I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
         else:
             I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
@@ -62,6 +65,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             reject = 1
             descent = 0
             I[index[0]][index[1]] = oldpredicate
+
+
         
         statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
