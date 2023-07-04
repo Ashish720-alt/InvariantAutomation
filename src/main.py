@@ -14,6 +14,7 @@ from math import log
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
+from invariantspaceplotter import plotinvariantspace
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
@@ -32,7 +33,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     I_list[process_id] = I
                     return
 
-        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
+        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
        
 
 
@@ -80,7 +81,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 """ Main function. """
 
 
-def main(repr: Repr):
+def main(inputname, repr: Repr):
     """ ===== Initialization starts. ===== """
     mcmc_time = 0
     z3_time = 0
@@ -93,13 +94,15 @@ def main(repr: Repr):
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
     print("\n")
 
+    if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
+        plotinvariantspace(3, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), 0)
+
     manager = mp.Manager()
     I_list = manager.list()
     for i in range(conf.num_processes):
         I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
         LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
         (costI, costlist) = cost(LII, samplepoints)  
-        temp = conf.temp_C/log(2)
         statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist() ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
@@ -157,6 +160,9 @@ def main(repr: Repr):
             noInvariantFound(z3_callcount)
             return ("No Invariant Found", "-", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
+
+        if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
+            plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
         
         #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):
@@ -200,4 +206,4 @@ if __name__ == "__main__":
                 if subfolder == first_name:
                     for inp in getattr(Inputs, subfolder).__dict__:
                         if inp == last_name:
-                            main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+                            main(first_name + "-" + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))

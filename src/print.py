@@ -26,13 +26,13 @@ def decimaltruncate(number, digits = 7):
 def decimaltruncate_list(l, digits = 4):
     return [decimaltruncate(x, digits) for x in l ]
 
-def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, P, N, B, colorslist):
+def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, colorslist):
     if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
         if (t % conf.SAMPLEPOINTS_DEBUGGER_WINDOW == 0):
             if (n == 2):
                 print(colorslist[p] + 'P' + str(p) + ' plotting graph...')
                 do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(LargeScale)', 
-                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, samplepoints)
+                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)
                 do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(SmallScale)', 
                         '2DInvariantPlots', conf.n2PLOTTER_SMALLSCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
             else:    
