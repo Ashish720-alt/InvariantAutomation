@@ -16,6 +16,8 @@ def isAffinePredicateInductive ( p, T  ):
             newCoeffList.append(  np.dot( ptf[: , i] , w)  )
 
         nonZeroIndex = next((i for i, x in enumerate(newCoeffList) if x), None)
+        if (nonZeroIndex == None): #All indices 0 means predicate is true, is True, so just ignore it
+            return False
 
         ratio = (w[nonZeroIndex] * 1.0) / newCoeffList[nonZeroIndex]
 

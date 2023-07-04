@@ -52,6 +52,21 @@ def v_representation (cc):
 
     return list_of_list_generators
 
+def getmaxradius (generators):
+    def twoptdistance(list1, list2):
+        squares = [(p-q) ** 2 for p, q in zip(list1, list2)]
+        return sum(squares) ** .5
+
+    listsum = [sum(x) for x in zip(*generators)]
+    m = len(generators) * 1.0
+    if (m == 0):
+        return 0
+    centroid = [x / m for x in listsum]
+    
+    distances = [ twoptdistance(centroid, x) for x in generators ]
+        
+    return max (distances)
+
 # Assumes it is a convex polytope and generators is a list of lists.
 def getvolume (generators, n):
     if (len(generators) < n+1):
@@ -89,10 +104,11 @@ def randomlysamplepointsCC (CC, m):
         
         point = [0]*n
         for i in range(n):
-            point[i] = random.randint(minpoints[i], maxpoints[i])
+            point[i] = random.randint(minpoints[i], maxpoints[i] + 1)
         while (  not pointsatisfiescc(point, cc) ):
+            # print("Am I stuck here?") # Sampling efficiency for affine spaces is too low.
             for i in range(n):
-                point[i] = random.randint(minpoints[i], maxpoints[i])                    
+                point[i] = random.randint(minpoints[i], maxpoints[i] + 1)                    
 
         return point
     
@@ -104,8 +120,9 @@ def randomlysamplepointsCC (CC, m):
 def get_cc_pts (cc, m):
     n = len(cc[0]) - 2
     v_repr = v_representation(cc)
-    vol = getvolume(v_repr, n)
-    if (vol > conf.BoxesCountSmallSpace):
+    # vol = getvolume(v_repr, n)
+    r = getmaxradius (v_repr)
+    if (r > conf.SmallRadius):
         return randomlysamplepointsCC(cc, m)
     else:
         return v_repr
@@ -149,14 +166,14 @@ def randomlysampleCC_ICEpairs (CC, m, transitions):
         
         point = [0]*n
         for i in range(n):
-            point[i] = random.randint(minpoints[i], maxpoints[i])
+            point[i] = random.randint(minpoints[i], maxpoints[i] + 1)
         
 
         tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])
         
         while (  not pointsatisfiescc(point, cc) or tls == [] ):
             for i in range(n):
-                point[i] = random.randint(minpoints[i], maxpoints[i])  
+                point[i] = random.randint(minpoints[i], maxpoints[i] + 1)  
             tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
 
         return [ (point, tl) for tl in tls]
@@ -169,8 +186,9 @@ def randomlysampleCC_ICEpairs (CC, m, transitions):
 def get_cc_ICEheads (cc, m, transitions):
     n = len(cc[0]) - 2
     v_repr = v_representation(cc)
-    vol = getvolume(v_repr, n)
-    if (vol > conf.BoxesCountSmallSpace):
+    # vol = getvolume(v_repr, n)
+    r = getmaxradius (v_repr)
+    if (r > conf.SmallRadius):
         return randomlysampleCC_ICEpairs(cc, m, transitions)
     else:
         rv = []
