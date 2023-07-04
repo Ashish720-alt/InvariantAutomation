@@ -2,7 +2,7 @@
 """
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
@@ -44,15 +44,33 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             I_list[process_id] = I
             return
         
-        index = get_index(repr.get_d(), repr.get_c())
+        neighbors = []
+        for i in range(repr.get_d()):
+            for j in range(repr.get_c()):
+                oldcoeff = I[i][j][:-2]
+                oldconst = I[i][j][-1]
+                rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                for r in rotneighbors:
+                    constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
+                    for c in constlist:
+                        neighbors.append( ( i, j, r + [-1,c]) )
+                transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
+                for c in transconslist:
+                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
+        deg = len(neighbors)
+        P = neighbors[random.choice(range(deg))]
+        oldpredicate = I[P[0]][P[1]] 
+        I[P[0]][P[1]] = P[2]
+                    
+        # index = get_index(repr.get_d(), repr.get_c())
         
-        oldpredicate = I[index[0]][index[1]]
-        rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
+        # oldpredicate = I[index[0]][index[1]]
+        # rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
         
-        if (isrotationchange(oldpredicate, rotneighbors, k1)):
-            I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
-        else:
-            I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
+        # if (isrotationchange(oldpredicate, rotneighbors, k1)):
+        #     I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
+        # else:
+        #     I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
         
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
@@ -66,7 +84,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         else:
             reject = 1
             descent = 0
-            I[index[0]][index[1]] = oldpredicate
+            I[P[0]][P[1]] = oldpredicate
 
 
         
