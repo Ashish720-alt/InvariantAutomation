@@ -11,7 +11,7 @@ class Configure:
 
     num_processes = 4 #Number of threads
 
-    maxSArun = 10000000
+    maxSArun = 100000
 
     k = 2
     r = 1

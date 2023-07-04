@@ -45,6 +45,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             return
         
         index = get_index(repr.get_d(), repr.get_c())
+        
         oldpredicate = I[index[0]][index[1]]
         rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
         
