@@ -57,7 +57,12 @@ def getvolume (generators, n):
     if (len(generators) < n+1):
         return 0
     A = np.asarray(generators)
-    return ConvexHull(A).volume
+    try:
+        ret = ConvexHull(A).volume
+        return ret
+    except:
+        return 0 
+        
 
 #CC is 2d numpy array; unbounded polytopes allowed
 def randomlysamplepointsCC (CC, m):
