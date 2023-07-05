@@ -11,12 +11,12 @@ class Configure:
 
     num_processes = 4 #Number of threads
 
-    maxSArun = 10000000
+    maxSArun = 150000
 
     k = 2
     r = 1
 
-    BoxesCountSmallSpace = 50
+    SmallRadius = 50
     probenet_success = 0.8
 
     s = 5 #Number of cex Z3 generates
@@ -48,6 +48,7 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
+    INVARIANTSPACE_PLOTTER = OFF
     SAMPLEPOINTS_DEBUGGER = OFF
     SAMPLEPOINTS_DEBUGGER_WINDOW = 1000
     PRINT_ITERATIONS = ON
@@ -69,3 +70,7 @@ class Configure:
     n2PLOTTER_SMALLSCALEINTERVAL = [-50,50]
     n2PLOTTER_CUSTOMIZEDSCALE = -1
     n2PLOTTER_CUSTOMIZEDSCALEINTERVAL = [0, 0] #Insert Required Interval
+    
+    #OPTIMIZATIONS
+    NONITERATIVE_PRECONDITION = OFF
+    AFFINE_SPACES = OFF

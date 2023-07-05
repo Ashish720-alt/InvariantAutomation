@@ -5,10 +5,8 @@ import random
 from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
 import copy
 from configure import Configure as conf
-from math import inf, sqrt, floor, sin
-from scipy.linalg import null_space, inv
-from scipy.optimize import minimize, LinearConstraint, Bounds
-from cost_funcs import costplus, costminus, costICE
+from math import inf, sqrt, floor, sin, ceil
+
 
 def k1list(k0, n):
     # return [10]
@@ -291,6 +289,20 @@ def rotationtransition(oldpredicate, rotationneighbors, k1):
 
     return newcoeff + [-1, newconst]
 
+def getNewRotConstant(oldcoeff, oldconst, newcoeff, k1):
+    symconsts = []
+    dotproduct = 1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff))
+    oldnorm = 1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff))
+    newnorm = 1.0 * np.dot(np.array(newcoeff), np.array(newcoeff)) 
+    asymconst = floor( oldconst * dotproduct/ oldnorm  )
+    symconstmin = max(ceil(oldconst * newnorm / dotproduct), -1* k1)
+    symconstmax = min(ceil( (oldconst + 1) * newnorm / dotproduct), k1)
+    symconsts = list(range(symconstmin, symconstmax + 1))
+    if asymconst not in symconsts and asymconst <= k1 and asymconst >= -k1:
+        symconsts.append(asymconst)
+    return symconsts
+    
+    
 
 
 def translationtransition(predicate, k1):
@@ -304,6 +316,15 @@ def translationtransition(predicate, k1):
         s = np.random.choice(translation_indices)
     rv[-1] = rv[-1] + s
     return rv
+
+def getNewTranslationConstant(oldcoeff, oldconst, k1):
+    slope = sqrt(np.dot(np.array(oldcoeff), np.array(oldcoeff)))
+    translation_range = floor(conf.translation_range * slope)
+    max_pos_dev = min(k1 - oldconst, translation_range)
+    max_neg_dev = max(-k1 - oldconst, -translation_range )
+    translation_indices = list(range(oldconst + max_neg_dev, oldconst + max_pos_dev +1))
+    translation_indices.remove(oldconst)
+    return translation_indices
 
 
 def get_index(d, c):
@@ -324,6 +345,9 @@ def isrotationchange(oldpredicate, rotationneighbors, k1):
     
     return isrotationpossible(oldpredicate, rotationneighbors, k1) and (np.random.rand() <= conf.p_rot )
 
+
+
+    
 
 
 

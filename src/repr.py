@@ -31,13 +31,21 @@ class Repr:
          
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
          
-        self.P = getIterativeP(P, B)
-        self.P_noniters = getnonIterativeP(P, B, self.n)
+        if (conf.NONITERATIVE_PRECONDITION == conf.ON):
+            self.P = getIterativeP(P, B)
+            self.P_noniters = getnonIterativeP(P, B, self.n)
+        else:
+            self.P = P
+            self.P_noniters = []         
         self.B = B.copy()
         self.Q = Q.copy()
         self.T = T.copy()
         self.Var = Var.copy()
-        self.affineSubspace = modifiedHoudini(self.P, self.Q, self.T)
+        
+        if (conf.AFFINE_SPACES == conf.ON):
+            self.affineSubspace = modifiedHoudini(self.P, self.Q, self.T)
+        else:
+            self.affineSubspace = []
 
 
         self.P_z3expr = DNF_to_z3expr( dnfconjunction(self.P, Dstate(self.n), 1), primed = 0)
@@ -130,6 +138,9 @@ class Repr:
 
     def get_coeffneighbors(self, coeff):
         return self.rotationgraphedges[tuple(coeff)]
+
+    def get_coeffedges(self):
+        return self.rotationgraphedges
 
     def get_affineSubspace(self):
         return self.affineSubspace
