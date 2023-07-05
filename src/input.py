@@ -815,6 +815,10 @@ class Inputs:
 
 
 def input_to_repr(obj, c, d):
+    if c is None:
+        c = obj.c
+    if d is None:
+        d = obj.d
     return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d)
 
 ''''''''''''''''''''''''''''''''''''''

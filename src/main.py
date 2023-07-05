@@ -1,5 +1,6 @@
 """ Imports.
 """
+import sys
 from configure import Configure as conf
 from cost_funcs import cost
 from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant
@@ -196,6 +197,16 @@ def main(inputname, repr: Repr):
     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
 
+    # print the same thing again to the end of "output/{inputname}.txt"
+    with open("output/" + inputname + ".txt", "a") as f:
+        ori_stdout = sys.stdout
+        sys.stdout = f
+        invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
+        timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
+        print("-------------------\n")
+        sys.stdout = ori_stdout
+        
+
     return (LII, z3_callcount)
 
 
@@ -225,4 +236,4 @@ if __name__ == "__main__":
                 if subfolder == first_name:
                     for inp in getattr(Inputs, subfolder).__dict__:
                         if inp == last_name:
-                            main(first_name + "-" + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
