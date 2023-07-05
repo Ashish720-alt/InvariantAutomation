@@ -6,7 +6,9 @@ from selection_points import Dstate
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
-    if np.size(I) == 0:
+    # FIXME: I don't know if we can do this. Is possible to have np.size(I[0]) == 0 but np.size(I) != 0?
+    #        But np.size(I) == 0 will throw an error if I = [array(...), array(...), ...]
+    if len(I) == 0 or np.size(I[0]) == 0:
         return True
 
     d = len(I)
