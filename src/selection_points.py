@@ -125,9 +125,9 @@ def randomlysamplepointsCC (CC, m):
 def get_cc_pts (cc, m):
     n = len(cc[0]) - 2
     v_repr = v_representation(cc)
-    # vol = getvolume(v_repr, n)
-    r = getmaxradius (v_repr)
-    if (r > conf.SmallRadius):
+    vol = getvolume(v_repr, n)
+    # r = getmaxradius (v_repr)
+    if (vol > conf.SmallVolume):
         return randomlysamplepointsCC(cc, m)
     else:
         return v_repr
