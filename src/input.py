@@ -214,8 +214,8 @@ class Inputs:
         class benchmark01_conjunctive:
             Var = [ 'x' , 'y' ]
             P = list3D_to_listof2Darrays([[[1, 0, 0, 1], [0, 1, 0, 1]]])
-            B = list3D_to_listof2Darrays([])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1, 1, 1]]]) , B , 1)
+            B = dnfTrue(2)
+            Q = list3D_to_listof2Darrays([[[0, 1, 1, 1]]]) 
             T = genLItransitionrel(B, ( [ np.array( [[1, 1, 0], [1, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
@@ -815,6 +815,10 @@ class Inputs:
 
 
 def input_to_repr(obj, c, d):
+    if c is None:
+        c = obj.c
+    if d is None:
+        d = obj.d
     return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d)
 
 ''''''''''''''''''''''''''''''''''''''

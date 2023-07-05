@@ -3,7 +3,7 @@ DNF is represented as matrices.
 """
 
 import numpy as np
-from configure import Configure as conf
+import copy
 from z3 import *
 from itertools import product
 
@@ -30,7 +30,7 @@ def genLII_to_LII (genLII):
     for gencc in genLII:
         cc = np.empty(shape=(0, n + 2 ), dtype = int)
         for genp in gencc:
-            p = genp.copy()
+            p = copy.deepcopy(genp)
             if (p[n] == -2):
                 p[n] = -1
                 p[n+1] = p[n+1] - 1
@@ -125,7 +125,7 @@ def deepcopy_DNF(I):
     for cc in I:
         cc_new = np.empty( shape=(0, n + 2), dtype = int )
         for p in cc:
-            cc_new = np.concatenate((cc_new, np.array([np.copy(p)], ndmin=2)))
+            cc_new = np.concatenate((cc_new, np.array([copy.deepcopy(p)], ndmin=2)))
         I_new.append(cc_new)
     return I_new
 

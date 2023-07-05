@@ -1,8 +1,9 @@
 """ Imports.
 """
+import sys
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist
+from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
@@ -14,6 +15,7 @@ from math import log
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
+from invariantspaceplotter import plotinvariantspace
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
@@ -32,7 +34,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     I_list[process_id] = I
                     return
 
-        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_P(), dnfnegation(repr.get_Q()), repr.get_B(), repr.get_colorslist())        
+        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
        
 
 
@@ -43,14 +45,33 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             I_list[process_id] = I
             return
         
-        index = get_index(repr.get_d(), repr.get_c())
-        oldpredicate = I[index[0]][index[1]]
-        rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
+        neighbors = []
+        for i in range(repr.get_d()):
+            for j in range(repr.get_c()):
+                oldcoeff = I[i][j][:-2]
+                oldconst = I[i][j][-1]
+                rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                for r in rotneighbors:
+                    constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
+                    for c in constlist:
+                        neighbors.append( ( i, j, r + [-1,c]) )
+                transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
+                for c in transconslist:
+                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
+        deg = len(neighbors)
+        P = neighbors[random.choice(range(deg))]
+        oldpredicate = I[P[0]][P[1]] 
+        I[P[0]][P[1]] = P[2]
+                    
+        # index = get_index(repr.get_d(), repr.get_c())
         
-        if (isrotationchange(oldpredicate, rotneighbors, k1)):
-            I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
-        else:
-            I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
+        # oldpredicate = I[index[0]][index[1]]
+        # rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
+        
+        # if (isrotationchange(oldpredicate, rotneighbors, k1)):
+        #     I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
+        # else:
+        #     I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
         
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
@@ -64,7 +85,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         else:
             reject = 1
             descent = 0
-            I[index[0]][index[1]] = oldpredicate
+            I[P[0]][P[1]] = oldpredicate
 
 
         
@@ -80,7 +101,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 """ Main function. """
 
 
-def main(repr: Repr):
+def main(inputname, repr: Repr):
     """ ===== Initialization starts. ===== """
     mcmc_time = 0
     z3_time = 0
@@ -93,13 +114,15 @@ def main(repr: Repr):
     prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
     print("\n")
 
+    if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
+        plotinvariantspace(3, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), 0)
+
     manager = mp.Manager()
     I_list = manager.list()
     for i in range(conf.num_processes):
         I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
         LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
         (costI, costlist) = cost(LII, samplepoints)  
-        temp = conf.temp_C/log(2)
         statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist() ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
@@ -157,6 +180,9 @@ def main(repr: Repr):
             noInvariantFound(z3_callcount)
             return ("No Invariant Found", "-", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
+
+        if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
+            plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
         
         #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):
@@ -170,6 +196,16 @@ def main(repr: Repr):
 
     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
+
+    # print the same thing again to the end of "output/{inputname}.txt"
+    with open("output/" + inputname + ".txt", "a") as f:
+        ori_stdout = sys.stdout
+        sys.stdout = f
+        invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
+        timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
+        print("-------------------\n")
+        sys.stdout = ori_stdout
+        
 
     return (LII, z3_callcount)
 
@@ -200,4 +236,4 @@ if __name__ == "__main__":
                 if subfolder == first_name:
                     for inp in getattr(Inputs, subfolder).__dict__:
                         if inp == last_name:
-                            main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))

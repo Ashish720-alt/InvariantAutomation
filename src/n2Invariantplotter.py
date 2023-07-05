@@ -116,7 +116,7 @@ def do_plot(plotname, foldername, scale, I, samplepoints, show = False, resoluti
     plt.title(plotname)
     plt.xlabel('x', color='#1C2833')
     plt.ylabel('y', color='#1C2833')
-    plt.savefig(foldername + '/' + plotname,  dpi=1000)
+    plt.savefig(foldername + '/' + plotname,  dpi= resolution)
     if (not show):
         plt.close()
     return
