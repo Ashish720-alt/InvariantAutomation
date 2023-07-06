@@ -52,20 +52,20 @@ def v_representation (cc):
 
     return list_of_list_generators
 
-def getmaxradius (generators):
-    def twoptdistance(list1, list2):
-        squares = [(p-q) ** 2 for p, q in zip(list1, list2)]
-        return sum(squares) ** .5
+# def getmaxradius (generators):
+#     def twoptdistance(list1, list2):
+#         squares = [(p-q) ** 2 for p, q in zip(list1, list2)]
+#         return sum(squares) ** .5
 
-    listsum = [sum(x) for x in zip(*generators)]
-    m = len(generators) * 1.0
-    if (m == 0):
-        return 0
-    centroid = [x / m for x in listsum]
+#     listsum = [sum(x) for x in zip(*generators)]
+#     m = len(generators) * 1.0
+#     if (m == 0):
+#         return 0
+#     centroid = [x / m for x in listsum]
     
-    distances = [ twoptdistance(centroid, x) for x in generators ]
+#     distances = [ twoptdistance(centroid, x) for x in generators ]
         
-    return max (distances)
+#     return max (distances)
 
 # Assumes it is a convex polytope and generators is a list of lists.
 def getvolume (generators, n):
@@ -78,6 +78,13 @@ def getvolume (generators, n):
     except:
         return 0 
         
+# cc has only <=
+def pointsatisfiescc (pt, cc):
+    for p in cc:
+        sat = sum(p[:-2]* pt) - p[-1]
+        if (sat > 0):
+            return False
+    return True
 
 #CC is 2d numpy array; unbounded polytopes allowed
 def randomlysamplepointsCC (CC, m):
@@ -96,16 +103,8 @@ def randomlysamplepointsCC (CC, m):
             if( A > maxpoints[i]):
                 maxpoints[i] = A
 
-
     rv = []
-    
     def randomlysamplepoint (n, minpoints, maxpoints):
-        def pointsatisfiescc (pt, cc):
-            for p in cc:
-                sat = sum(p[:-2]* pt) - p[-1]
-                if (sat > 0):
-                    return False
-            return True
         
         point = [0]*n
         for i in range(n):
@@ -122,6 +121,38 @@ def randomlysamplepointsCC (CC, m):
         
     return rv
 
+def ExtremeLatticePoints( v_repr, cc, n):
+    def nonintegralcoordinates( pt):
+        rv = []
+        for i in range(n):
+            if not isinstance(pt[i], int):
+                rv.append(i)
+        return rv
+
+    def binarylist(n, size):
+        binaryNumber = [int(x) for x in bin(n)[2:]]
+        paddedSize = size - len(binaryNumber)
+        return [0] * paddedSize + binaryNumber
+
+    rv = []
+    for pt in v_repr:
+        nonIntegerCoordinates = nonintegralcoordinates(pt)
+        if (len(nonIntegerCoordinates) == 0):
+            rv.append(pt)
+        else:
+            d = len(nonIntegerCoordinates)
+            for i in range(1, 2**d + 1):
+                pt_new = pt.copy()
+                binaryList = binarylist(i, d)
+                for i in range(d):
+                    if (binaryList[i] == 0):
+                        pt_new[nonIntegerCoordinates[i]] = floor(pt_new[nonIntegerCoordinates[i]])
+                    else:
+                        pt_new[nonIntegerCoordinates[i]] = ceil(pt_new[nonIntegerCoordinates[i]])    
+                if (pointsatisfiescc(pt_new, cc)):
+                    rv.append(pt_new)
+    return rv            
+
 def get_cc_pts (cc, m):
     n = len(cc[0]) - 2
     v_repr = v_representation(cc)
@@ -130,7 +161,7 @@ def get_cc_pts (cc, m):
     if (vol > conf.SmallVolume):
         return randomlysamplepointsCC(cc, m)
     else:
-        return v_repr
+        return ExtremeLatticePoints(v_repr, cc, n)
 
 def filter_ICEtails(n, tl_list):
     rv = []
@@ -191,13 +222,14 @@ def randomlysampleCC_ICEpairs (CC, m, transitions):
 def get_cc_ICEheads (cc, m, transitions):
     n = len(cc[0]) - 2
     v_repr = v_representation(cc)
-    # vol = getvolume(v_repr, n)
-    r = getmaxradius (v_repr)
-    if (r > conf.SmallRadius):
+    vol = getvolume(v_repr, n)
+    # r = getmaxradius (v_repr)
+    if (vol > conf.SmallVolume):
         return randomlysampleCC_ICEpairs(cc, m, transitions)
     else:
         rv = []
-        for hd in v_repr:
+        latticeVrepr = ExtremeLatticePoints(v_repr, cc, n)
+        for hd in latticeVrepr:
             tls = filter_ICEtails(n, [ transition(hd, ptf) for ptf in transitions])
             if (tls == []):
                 continue
