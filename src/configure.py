@@ -17,6 +17,7 @@ class Configure:
     r = 1
 
     SmallRadius = 50
+    SmallVolume = 50
     probenet_success = 0.8
 
     s = 5 #Number of cex Z3 generates
