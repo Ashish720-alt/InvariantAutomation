@@ -689,6 +689,7 @@ class Inputs:
             c = 1
             d = 1
             
+        # FIXME: this will be stuck at z3_verfier.__get_cex() but it produces the correct answer if skip by ctrl+C
         class benchmark49_linear:
             Var =  ['i', 'j', 'r']
             P = list3D_to_listof2Darrays([[[-1, -1, 1, 2, 0]]])

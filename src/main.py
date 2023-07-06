@@ -28,7 +28,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     for t in range(1, tmax+1):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
             for i in range(conf.num_processes):
-                if return_value[i] != None:
+                if return_value[i] != None and return_value[i][0] != None:
                     return_value[process_id] = (None, t)
                     SAexit(process_id, repr.get_colorslist())
                     I_list[process_id] = I
@@ -152,16 +152,16 @@ def main(inputname, repr: Repr):
         for result in return_value:
             if (result[0] != None):
                 (I, t) = result
-                mcmc_iterations = mcmc_iterations + t + 1
+                mcmc_iterations = mcmc_iterations + t + 1 # FIXME: do we need to count all threads' iterations?
             else:
-                ( _ , t) = result 
+                (_, t) = result 
                 mcmc_iterations = mcmc_iterations + t + 1
         
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)        
-        
-        # prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
-        # input("Press Enter to continue...")
+
+        if I is None:
+            print("All thread time out!")
             
         """ Z3 validation """
         z3_callcount = z3_callcount + 1
