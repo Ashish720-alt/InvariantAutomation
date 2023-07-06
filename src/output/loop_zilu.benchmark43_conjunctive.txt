@@ -22,3 +22,15 @@ Time Statistics:
 	Number of Threads:  4
 -------------------
 
+Invariant Found:	((0*x + 1*y <= 100) /\ (1*x + 0*y <= 100))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  0.9551211999496445
+	Total MCMC time:  1582.3058938999893
+	Total Z3 Time:  0.7616211001295596
+	Total MCMC iterations:  145153
+	Total Z3 calls:  10
+	Number of Threads:  4
+-------------------
+
