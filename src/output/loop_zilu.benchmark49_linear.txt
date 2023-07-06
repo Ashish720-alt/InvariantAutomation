@@ -1,0 +1,34 @@
+Invariant Found:	((1*i + 1*j + -1*r <= -1))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  1.0459310000005644
+	Total MCMC time:  24.070627800001603
+	Total Z3 Time:  7120.869505299997
+	Total MCMC iterations:  1890
+	Total Z3 calls:  7
+	Number of Threads:  4
+-------------------
+
+Invariant Found:	((1*i + 1*j + -1*r <= -1))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  0.7233882000000449
+	Total MCMC time:  18.07788160000564
+	Total Z3 Time:  1661.7950494999895
+	Total MCMC iterations:  1579
+	Total Z3 calls:  6
+	Number of Threads:  4
+-------------------
+
+Invariant Found:	((1*i + 1*j + -1*r <= -1))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  0.8302288999984739
+	Total MCMC time:  19.970460000000458
+	Total Z3 Time:  485.0028170000005
+	Total MCMC iterations:  1374
+	Total Z3 calls:  5
+	Number of Threads:  4
