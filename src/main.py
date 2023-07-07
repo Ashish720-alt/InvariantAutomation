@@ -149,9 +149,12 @@ def main(inputname, repr: Repr):
         for i in range(conf.num_processes):
             process_list[i].join()
 
+        I = None
         for result in return_value:
             if (result[0] != None):
-                (I, t) = result
+                if I is None:
+                    I = result[0]
+                (_, t) = result
                 mcmc_iterations = mcmc_iterations + t + 1 # FIXME: do we need to count all threads' iterations?
             else:
                 (_, t) = result 

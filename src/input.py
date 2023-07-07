@@ -445,7 +445,7 @@ class Inputs:
             B = list3D_to_listof2Darrays([[[1, 0, -1, -2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 2, -1, 1, -1]]]) , B , 1)
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 2], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
-            c = 3
+            c = 2
             d = 1
 
         class benchmark25_linear:
