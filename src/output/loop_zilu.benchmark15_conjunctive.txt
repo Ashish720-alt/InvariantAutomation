@@ -1,0 +1,12 @@
+Invariant Found:	((-1*low + -2*mid + 1*high <= 0) /\ (1*low + 2*mid + -1*high <= 0) /\ (2*low + -1*mid + -2*high <= 4))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  5.3824814999243245
+	Total MCMC time:  20066.38003479992
+	Total Z3 Time:  0.5631975999567658
+	Total MCMC iterations:  276512
+	Total Z3 calls:  5
+	Number of Threads:  4
+-------------------
+
