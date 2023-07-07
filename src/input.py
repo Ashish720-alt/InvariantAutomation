@@ -305,7 +305,7 @@ class Inputs:
             B = list3D_to_listof2Darrays([[[0, 1, -2, 0]], [[0, 1, 2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1, 0, 0]]]) , B , 1)
             T = genLItransitionrel(B, ( [ np.array([[1, 0, -1], [0, 1, -1], [0, 0, 1]]) ] , dnfTrue(2)) )
-            c = 2
+            c = 1
             d = 1
 
         class benchmark10_conjunctive:
@@ -427,7 +427,7 @@ class Inputs:
             B = dnfTrue(2)
             Q = list3D_to_listof2Darrays([[[1, -1, 1, 0]]]) 
             T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
-            c = 2
+            c = 3
             d = 1
 
         class benchmark23_conjunctive:
