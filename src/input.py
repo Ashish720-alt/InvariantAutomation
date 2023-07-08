@@ -71,7 +71,7 @@ class Inputs:
             Q = [np.array([[0, 1, 2, 0]]), np.array([[1, 0, -2, 0]])]
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )    
             c = 1
-            d = 3
+            d = 2
 
         class css2003:
             Var = ['i', 'j', 'k']
@@ -142,7 +142,7 @@ class Inputs:
             Q = dnfdisjunction(list3D_to_listof2Darrays([[[-1, -1, 1, 0, 0, 0]]]) , B , 1)
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]] ) ] , dnfTrue(4)) )    
             c = 3
-            d = 3
+            d = 1
 
         class jm2006:
             Var = ['i', 'j', 'x', 'y']
