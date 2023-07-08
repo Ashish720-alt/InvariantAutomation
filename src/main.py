@@ -165,6 +165,14 @@ def main(inputname, repr: Repr):
 
         if I is None:
             print("All thread time out!")
+            # print the same thing again to the end of "output/{inputname}.txt"
+            with open("output/" + inputname + ".txt", "a") as f:
+                ori_stdout = sys.stdout
+                sys.stdout = f
+                print("All thread time out!")
+                print("-------------------\n")
+                sys.stdout = ori_stdout
+            return ("All thread time out", z3_callcount)
             
         """ Z3 validation """
         z3_callcount = z3_callcount + 1
