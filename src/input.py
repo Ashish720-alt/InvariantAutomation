@@ -33,8 +33,8 @@ class Inputs:
             B = [np.array([[0, 1, -2, 1000]])]
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
-            c = 2
-            d = 1
+            c = 1
+            d = 2
 
         class bhmr2007:
             Var = [ 'a', 'b' ,'i' , 'n' ]
@@ -150,8 +150,8 @@ class Inputs:
             B = list3D_to_listof2Darrays([[[0, 0, 1, 0, 2, 0]], [[0, 0, 1, 0, -2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays( [[[1, -1, 0, 0, -2, 0]] , [[1, -1, 0, 0, 2, 0]], [[0, 0, 0, 1, 0, 0]] ] ) , B , 1)
             T = genLItransitionrel(B, ( [ np.array( [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, -1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]] ) ] , dnfTrue(4)) )
-            c = 3
-            d = 3
+            c = 2
+            d = 1
 
         class jm2006_variant:
             Var = ['i', 'j', 'x', 'y', 'z']
