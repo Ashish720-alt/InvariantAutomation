@@ -33,8 +33,8 @@ class Inputs:
             B = [np.array([[0, 1, -2, 1000]])]
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
-            c = 1
-            d = 2
+            c = 3
+            d = 1
 
         class bhmr2007:
             Var = [ 'a', 'b' ,'i' , 'n' ]
