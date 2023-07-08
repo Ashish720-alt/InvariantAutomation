@@ -181,7 +181,14 @@ def main(inputname, repr: Repr):
             break      
         elif ((not z3_correct) and (t == tmax)):
             noInvariantFound(z3_callcount)
-            return ("No Invariant Found", "-", z3_callcount)
+            # print the same thing again to the end of "output/{inputname}.txt"
+            with open("output/" + inputname + ".txt", "a") as f:
+                ori_stdout = sys.stdout
+                sys.stdout = f
+                noInvariantFound(z3_callcount) 
+                print("-------------------\n")
+                sys.stdout = ori_stdout
+            return ("No Invariant Found", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
 
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
