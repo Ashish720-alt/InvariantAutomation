@@ -3,7 +3,7 @@ from dnfs_and_transitions import dnfTrue, list3D_to_listof2Darrays, dnfdisjuncti
 import numpy as np
 from repr import genLItransitionrel, Repr
 
-
+# -2: <, 2: >, 0: ==, -1: <=, 1: >=
 #IMP: Remember Q is Q \/ B for standard CHC
 # LARGE INT is 1000000
 class Inputs:
@@ -477,7 +477,8 @@ class Inputs:
 
         class benchmark28_linear:
             Var =  ['i', 'j']
-            P = list3D_to_listof2Darrays([[[1, -1, 2, 0], [1, 1, -2, 0]]])
+            P = dnfdisjunction(list3D_to_listof2Darrays([[[1, -1, -2, 0], [1, 1, 2, 0], [0, 1, 1, 0]]]),
+                               list3D_to_listof2Darrays([[[1, -1, 2, 0], [1, 1, -2, 0], [0, 1, 1, 0]]]), 1)
             B = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays([[[-1, 1, 0, 0]]]) , B , 1)
             T = genLItransitionrel(B, ( [ np.array([[-1, 1, 0], [1, 0, 0], [0, 0, 1]] ) ] , list3D_to_listof2Darrays( [[[-2, 1, -2, 0]]] ) ) , 
@@ -606,7 +607,7 @@ class Inputs:
             B = dnfTrue(3)
             Q = list3D_to_listof2Darrays([[[1, -1, 0, 0, 0], [1, 0, 0, 1, 0], [1, 1, 1, 0, 0]]]) 
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, -2], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
-            c = 1
+            c = 5
             d = 1
             
         class benchmark42_conjunctive:
