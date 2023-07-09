@@ -22,3 +22,15 @@ Time Statistics:
 	Number of Threads:  1
 -------------------
 
+Invariant Found:	((0*x + 1*y + -1*n <= 0) /\ (1*x + -1*y + 0*n <= 0))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  2.00801390002016
+	Total MCMC time:  1869.9605601999938
+	Total Z3 Time:  1193.725601500002
+	Total MCMC iterations:  39342
+	Total Z3 calls:  4
+	Number of Threads:  4
+-------------------
+
