@@ -121,8 +121,8 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array( [[1, 0, 1], [0, 1, 0], [0, 0, 1]] )  ] , list3D_to_listof2Darrays([[[1, 0, -2, 50]]]) ), 
                                     ( [ np.array( [[1, 0, 1], [0, 1, 1], [0, 0, 1]] )  ] , list3D_to_listof2Darrays([[[1, 0, 1, 50]]]) )
                                 )
-            c = 5
-            d = 3
+            c = 2
+            d = 1
 
         class gr2006:
             Var = ['x', 'y']
