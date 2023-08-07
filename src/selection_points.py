@@ -238,9 +238,8 @@ def get_cc_ICEheads (cc, m, transitions):
         return rv
 
 
-def get_plus0 (P, e, p):
+def get_plus0 (P, m):
     n = len(P[0][0]) - 2
-    m = getpoints(n, e, p)[0]
     P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)    
 
     plus0 = []
@@ -249,9 +248,8 @@ def get_plus0 (P, e, p):
 
     return plus0  
 
-def get_minus0 (Q, e, p):
+def get_minus0 (Q, m):
     n = len(Q[0][0]) - 2
-    m = getpoints(n, e, p)[0]
     negQ_LII_in_Dstate = dnfconjunction( dnfnegation(Q) , Dstate(n), 0) 
 
     minus0 = []
@@ -261,14 +259,13 @@ def get_minus0 (Q, e, p):
     return minus0
 
 
-def get_ICE0( T, P, Q, e, p):
+def get_ICE0( T, P, Q, m):
     n = len(T[0].b[0][0]) - 2
-    m = getpoints(n, e, p)[0]
     rv = []
     def partialICE_enet (B , P, Q, transitionlist, m, n):
         rv = []
-        #The space is B /\ Q /\ ~P (if you know class of region, don't sample from there.)
-        B_LII_in_Dstate = dnfconjunction(dnfconjunction(dnfconjunction( B , Dstate(n), 0), Q, 0), dnfnegation(P), 0) 
+        #The space is B 
+        B_LII_in_Dstate = dnfconjunction( B , Dstate(n), 0) 
         for cc in B_LII_in_Dstate:
             rv = rv + get_cc_ICEheads(cc, m, transitionlist)
         return rv

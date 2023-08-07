@@ -26,11 +26,11 @@ def failprob (m , d, e):
 #     return math.ceil(2 * (n + 1) * vc * math.log2(3 * vc))
 
 # p is probability of success
-def getpoints (d , e, p):
+def getpoints (d , e, p, start):
     # vc = d + 1 #balls
     vc = int((d**2 + 3*d )/ 2) #ellipsoids
     # print("\n", d, ": ", end = '')
-    m0 = math.ceil(8 / e)
+    m0 = max(start, math.ceil(8 / e))
     for i in range(m0, m0 + 10000000):
         if (failprob(i, vc, e) <= 1 - p):
             return (i , failprob(i, vc, e ) )

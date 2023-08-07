@@ -18,7 +18,12 @@ class Configure:
 
     SmallRadius = 50
     SmallVolume = 50
+    
+    
+    #e-net parameters:
+    e0 = 0.5
     probenet_success = 0.8
+    z3_stepwindow = 10
 
     s = 5 #Number of cex Z3 generates
 

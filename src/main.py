@@ -180,6 +180,11 @@ def main(inputname, repr: Repr):
             noInvariantFound(z3_callcount)
             return ("No Invariant Found", "-", z3_callcount)
         samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
+        # Constricting e-net
+        if (z3_callcount % conf.z3_stepwindow == 0 ):
+            i = z3_callcount / conf.z3_stepwindow
+            e = conf.e0 / (2**i)
+            samplepoints = repr.update_enet(e, samplepoints)
 
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
             plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
