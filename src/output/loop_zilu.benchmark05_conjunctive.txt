@@ -1,0 +1,36 @@
+Invariant Found:	((0*x + 1*y + -1*n <= 0) /\ (1*x + -1*y + 0*n <= 0))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  1.6120394000026863
+	Total MCMC time:  3149.6333757999964
+	Total Z3 Time:  1910.4435389999999
+	Total MCMC iterations:  28596
+	Total Z3 calls:  11
+	Number of Threads:  1
+-------------------
+
+Invariant Found:	((0*x + 1*y + -1*n <= 0) /\ (1*x + -1*y + 0*n <= 0))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  1.1447325999906752
+	Total MCMC time:  1507.7448655000335
+	Total Z3 Time:  7578.625069499991
+	Total MCMC iterations:  13452
+	Total Z3 calls:  7
+	Number of Threads:  1
+-------------------
+
+Invariant Found:	((0*x + 1*y + -1*n <= 0) /\ (1*x + -1*y + 0*n <= 0))
+
+
+Time Statistics:
+	Total Initialization and Re-initialization Time:  2.00801390002016
+	Total MCMC time:  1869.9605601999938
+	Total Z3 Time:  1193.725601500002
+	Total MCMC iterations:  39342
+	Total Z3 calls:  4
+	Number of Threads:  4
+-------------------
+
