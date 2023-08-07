@@ -10,6 +10,7 @@ from coefficientgraph import getrotationgraph
 from math import sqrt, log
 from preprocessing import modifiedHoudini, getIterativeP, getnonIterativeP
 from print import print_colorslist
+from enetspointcounting import getpoints
 '''
 The general single loop clause system is:
 P -> I
@@ -57,10 +58,14 @@ class Repr:
         self.d = d
         self.tmax = conf.maxSArun
 
-        self.plus0 = get_plus0(self.P, 0.5, conf.probenet_success)
-        self.minus0 = get_minus0(self.Q, 0.5, conf.probenet_success)
-        self.ICE0 = get_ICE0(self.T, self.P, self.Q,  0.5, conf.probenet_success)        
+        self.curr_enet_Size = getpoints(self.n, conf.e0, conf.probenet_success, 0)[0]
+        
+        self.plus0 = get_plus0(self.P, self.curr_enet_Size)
+        self.minus0 = get_minus0(self.Q, self.curr_enet_Size)
+        self.ICE0 = get_ICE0(self.T, self.P, self.Q, self.curr_enet_Size)        
                 
+        
+        
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
         self.k0 = max(2, max(self.Dp[0])) if (max(self.Dp[0]) < 100) else 2
@@ -147,3 +152,12 @@ class Repr:
 
     def get_colorslist(self):
         return self.colorslist
+    
+    def update_enet(self, e, samplepoints):
+        required_enetSize = getpoints(self.n, e, conf.probenet_success, self.curr_enet_Size)[0]
+        (plus, minus, Implpair) = (samplepoints[0], samplepoints[1], samplepoints[2])
+        plus = plus + get_plus0(self.P, required_enetSize - self.curr_enet_Size)
+        minus = minus + get_minus0(self.Q, required_enetSize - self.curr_enet_Size)
+        Implpair = Implpair + get_ICE0(self.T, self.P, self.Q, required_enetSize - self.curr_enet_Size)  
+        self.curr_enet_Size = required_enetSize           
+        return (plus, minus, Implpair)
