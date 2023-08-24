@@ -6,6 +6,8 @@ import math
 import numpy as np
 from sklearn.tree import DecisionTreeRegressor, export_graphviz  
 
+
+
 def find_subclasses(module): 
     return [ (name,cls) for name, cls in inspect.getmembers(module) if inspect.isclass(cls) and name != '__class__' ]
 
@@ -113,9 +115,9 @@ def getlist(C, name):
     (minextder, maxextder) = exteriorDerivative_T(C.T)
     maxcoeff_T = maxcoeff(C.T)
     A = max(dim(C.P, len(C.Var))) 
-    # return [name, len(C.Var), len(C.P), getc(C.P), maxabsconst (C.P),  len(C.Q), getc(C.Q), maxabsconst (C.Q), len(C.B), getc(C.B), maxabsconst (C.B), 
-    #         len(C.T), getTr_max(C.T), maxcoeff_T, maxintder, minintder, minextder, maxextder, C.d, C.c  ]
-    return [name, len(C.Var), getc(C.P), A , maxintder, minintder, minextder, maxextder, C.c  ]
+    return [name, len(C.Var), len(C.P), getc(C.P), maxabsconst (C.P),  len(C.Q), getc(C.Q), maxabsconst (C.Q), len(C.B), getc(C.B), maxabsconst (C.B), 
+            len(C.T), getTr_max(C.T), maxcoeff_T, maxintder, minintder, minextder, maxextder, C.c, C.d  ] #V1
+    # return [name, len(C.Var), getc(C.P), A , maxintder, minintder, minextder, maxextder, C.c, C.d  ] #V2
     
 
 
@@ -125,25 +127,26 @@ def getAllLists(module, rv):
         files = find_subclasses(dir[1])
         for file in files:
             rv.append(getlist( file[1], dir[0] + '.' + file[0] ))
-    
     return 
         
 # interior and exterior derviatives are analogs of curl and gradient of 3D vector fields, curl f
 # But exterior, interior and geometrical are linked
-# headers = ['Filename', 'n', 'P.d' , 'P.c' , 'P.maxabs', 'Q.d', 'Q.c', 'Q.maxabs', 'B.d', 'B.c', 'B.maxabs', 'T.d', 'T.r_max', 'T.coeffmax', 'T.interiorderivative_max', 'T.interiorderivative_min', 
-#                 'T.exteriorderivative_max', 'T.exteriorderivative_min', 'I.d', 'I.c']
+headers = ['Filename', 'n', 'P.d' , 'P.c' , 'P.maxabs', 'Q.d', 'Q.c', 'Q.maxabs', 'B.d', 'B.c', 'B.maxabs', 'T.d', 'T.r_max', 'T.coeffmax', 'T.interiorderivative_max', 'T.interiorderivative_min', 
+                'T.exteriorderivative_max', 'T.exteriorderivative_min', 'I.c', 'I.d'] #V1
 
-headers = ['Filename', 'n', 'P.c' , 'P.dim', 'T.interiorderivative_max', 'T.interiorderivative_min', 'T.exteriorderivative_max', 
-           'T.exteriorderivative_min', 'I.c']
+# headers = ['Filename', 'n', 'P.c' , 'P.dim', 'T.interiorderivative_max', 'T.interiorderivative_min', 'T.exteriorderivative_max', 
+#            'T.exteriorderivative_min', 'I.c', 'I.d' ] #V2
 
 entrycount = len(headers) 
 printlist = [ headers]
 getAllLists(input.Inputs, printlist)
 dataset = np.array(printlist)
 X = dataset[1:, 1:(entrycount - 2)].astype(float) 
-y_d = dataset[1:, (entrycount - 2)].astype(float) 
-y_c = dataset[1:, (entrycount - 1)].astype(float) 
+y_d = dataset[1:, (entrycount - 1)].astype(float) 
+y_c = dataset[1:, (entrycount - 2)].astype(float) 
 
+
+# Decision Trees.
 
 regressor_d = DecisionTreeRegressor(random_state = 0) 
 regressor_c = DecisionTreeRegressor(random_state = 0) 
@@ -152,14 +155,21 @@ regressor_d.fit(X, y_d)
 
 I_d_pred = ['I.d_predicted']
 I_c_pred = ['I.c_predicted']
+I_c_change = ['I.c_change']
+I_d_change = ['I.d_change']
 
-for data in X:
-    I_d_pred.append( math.ceil(regressor_d.predict([data])) )
-    I_c_pred.append( math.ceil(regressor_d.predict([data])) )
+for (i,data) in enumerate(X):
+    dpred = math.ceil(regressor_d.predict([data]))
+    cpred = float(regressor_c.predict([data]))
+    I_d_pred.append( dpred )
+    I_c_pred.append( cpred )
+    I_c_change.append(cpred - float(y_c[i]))
+    I_d_change.append(dpred - float(y_d[i]))
+    
 
 finaldata = []
 for i in range(len(printlist) - 1):
-    finaldata.append(printlist[i] + [I_d_pred[i], I_c_pred[i]])
+    finaldata.append(printlist[i][:-2] + [printlist[i][-2], I_c_pred[i], I_c_change[i], printlist[i][-1], I_d_pred[i], I_d_change[i]])
     
 # print(printlist , '\n')
 # print(I_d_pred, '\n', I_c_pred)
@@ -169,5 +179,53 @@ for i in range(len(printlist) - 1):
 dataexcel = OrderedDict()
 dataexcel.update({"Sheet 1": finaldata})
 save_data("cdData1.ods", dataexcel)
-export_graphviz(regressor_d, out_file ='d_tree1.dot', feature_names =(finaldata[0])[1:-4]) 
-export_graphviz(regressor_c, out_file ='c_tree1.dot', feature_names =(finaldata[0])[1:-4]) 
+export_graphviz(regressor_d, out_file ='d_tree1.dot', feature_names =(finaldata[0])[1:-6]) 
+export_graphviz(regressor_c, out_file ='c_tree1.dot', feature_names =(finaldata[0])[1:-6]) 
+
+#Neural networks
+from keras.models import Sequential
+from keras.layers import Dense
+
+# split into input (X) and output (Y) variables
+X = X.tolist()
+Y = [ [y_d[i], y_c[i]] for i in range(len(y_d))  ]
+# create model
+model = Sequential()
+# Create Hidden Layers
+model.add(Dense(units=12, input_dim=len(X[0]), activation='relu'))
+# model.add(Dense(8, init='uniform', activation='relu'))
+model.add(Dense(units=2, activation='sigmoid'))
+# Compile model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# Fit the model
+model.fit(X, Y, epochs=1000, batch_size=4)
+
+NN_I_d_pred = ['I.d_predicted']
+NN_I_c_pred = ['I.c_predicted']
+NN_I_c_change = ['I.c_change']
+NN_I_d_change = ['I.d_change']
+
+outputs = model.predict(X)
+for (i,data) in enumerate(X):
+    output = outputs[i]
+    dpred = float(output[0])
+    cpred = float(output[1])
+    NN_I_d_pred.append( dpred )
+    NN_I_c_pred.append( cpred )
+    NN_I_c_change.append(cpred - float(y_c[i]))
+    NN_I_d_change.append(dpred - float(y_d[i]))
+    
+
+finaldata = []
+for i in range(len(printlist) - 1):
+    finaldata.append(printlist[i][:-2] + [printlist[i][-2], NN_I_c_pred[i], NN_I_c_change[i], printlist[i][-1], NN_I_d_pred[i], NN_I_d_change[i]])
+    
+# print(printlist , '\n')
+# print(I_d_pred, '\n', I_c_pred)
+
+# print(finaldata)
+
+dataexcel = OrderedDict()
+dataexcel.update({"Sheet 1": finaldata})
+save_data("cdData1_NN.ods", dataexcel)
+

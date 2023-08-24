@@ -51,16 +51,17 @@ def getangle(coeff1, coeff2):
     vec2 = np.asarray( coeff2)
     return acos( np.dot(vec1, vec2) / sqrt( np.dot(vec1, vec1) * np.dot(vec2, vec2) ) )    
 
-def getminangleofvector(coeff, coeffdomain):
-    mintheta = pi
-    for ithcoeff in coeffdomain:
-        if (ithcoeff == coeff):
-            continue
-        mintheta = min(mintheta, getangle(coeff, ithcoeff))
-    return mintheta
+
 
 # Returns angle in radians
 def gettheta_0(coeffdomain):
+    def getminangleofvector(coeff, coeffdomain):
+        mintheta = pi
+        for ithcoeff in coeffdomain:
+            if (ithcoeff == coeff):
+                continue
+            mintheta = min(mintheta, getangle(coeff, ithcoeff))
+        return mintheta
     theta_0 = 0
     for t in coeffdomain:
         theta_0 = max(theta_0, getminangleofvector(t, coeffdomain))
@@ -69,7 +70,7 @@ def gettheta_0(coeffdomain):
 def isneighbor(coeff1, coeff2, theta_0):
     return ( getangle(coeff1, coeff2) <= theta_0 )
 
-
+# Change here for rotation neighbors
 def getneighborsofvector(coeff, coeffdomain, theta_0):    
     rv = []
     for i,ithcoeff in enumerate(coeffdomain):
