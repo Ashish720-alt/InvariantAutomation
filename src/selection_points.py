@@ -3,11 +3,12 @@ import numpy as np
 import cdd
 from configure import Configure as conf
 from dnfs_and_transitions import dnfconjunction, dnfnegation, dnfdisjunction, dnfTrue, dnfFalse, genLII_to_LII, transition
-from math import floor, ceil
+from math import floor, ceil, inf
 import random
 from scipy.spatial import ConvexHull
 from enetspointcounting import getpoints
 from cost_funcs import LIDNFptdistance
+from sympy import * 
 
 def Dstate(n):
     cc = np.empty(shape=(0,n+2), dtype = int)
@@ -86,175 +87,371 @@ def pointsatisfiescc (pt, cc):
             return False
     return True
 
-#CC is 2d numpy array; unbounded polytopes allowed
-def randomlysamplepointsCC (CC, m):
-    n  = len(CC[0]) - 2
-    cc = dnfconjunction([CC], Dstate(n), 0)[0]
-
-    endpoints = v_representation(cc)
-    minpoints = [ conf.dspace_intmax] * n
-    maxpoints = [ conf.dspace_intmin] * n
-    for pt in endpoints:
-        for i in range(n):
-            A = floor(pt[i])
-            B = ceil(pt[i])
-            if( B < minpoints[i]):
-                minpoints[i] = B
-            if( A > maxpoints[i]):
-                maxpoints[i] = A
-
-    rv = []
-    def randomlysamplepoint (n, minpoints, maxpoints):
+# # Affine space is AX = B, and other inequalities are given by cc ineq
+def linearDiophantineSolution(A, b_t):
+    def unimodularrowreduction(A, E):
+        def step3(A, i, j, k):
+            A[i] = A[i] - (A[j] * k)
+            return   
         
-        point = [0]*n
-        for i in range(n):
-            point[i] = random.randint(minpoints[i], maxpoints[i] + 1)
-        while (  not pointsatisfiescc(point, cc) ):
-            # print("Am I stuck here?") # Sampling efficiency for affine spaces is too low.
-            for i in range(n):
-                point[i] = random.randint(minpoints[i], maxpoints[i] + 1)                    
+        def swaprows(A, i, j):
+            temp = A[i].copy()
+            A[i] = A[j]
+            A[j] = temp
+            return
+            
+        def changeSign(A, i):
+            A[j] = A[j] * -1
+            
+        (rows,columns) = A.shape
+        # print(A)
+        leadingcoeffIndex = 0
+        for t in range(columns):
+            while (1):
+                j = -1
+                curr_val = inf
+                for i in range(leadingcoeffIndex, rows):
+                    if (A[i][t] == 0):
+                        continue
+                    if (abs(A[i][t]) < curr_val):
+                        curr_val = abs(A[i][t])
+                        j = i
+                if (j == -1):
+                    break
 
-        return point
-    
-    for i in range(m):
-        rv.append(randomlysamplepoint(n, minpoints, maxpoints))
+                flag = 0
+                for i in range(leadingcoeffIndex, rows):
+                    if (i == j or A[i][t] == 0):
+                        continue
+                    flag = 1
+                    k = floor(abs(A[i][t]) / abs(A[j][t]))
+                    if (A[i][t] * A[j][t] < 0):
+                        k = -k
+                    step3(A, i, j, k)
+                    step3(E, i, j, k)
+                    # print(A)
+                if (flag == 0):
+                    swaprows(A, j, leadingcoeffIndex)
+                    swaprows(E, j, leadingcoeffIndex)
+                    if (A[leadingcoeffIndex][t] < 0):
+                        changeSign(A, leadingcoeffIndex)
+                        changeSign(E, leadingcoeffIndex)
+                    leadingcoeffIndex = leadingcoeffIndex + 1
+                    # print(A)
+                    break 
+                
+                
+        return (A, E)
+
+    (A_row, A_column) = A.shape
+    (R, T) = unimodularrowreduction( np.transpose(A), np.identity(A_column, dtype = int))
+    R_t = np.transpose(R)
+    knownVars = []
+    for i in range(A_row):
+        col = R_t[i]    
+        nonZeroEntryCount = len(col)
+        for j in range(len(knownVars), len(col)): #Not first zero element of column, but first zero element starting from index for new element.
+            if (col[j] == 0):
+                nonZeroEntryCount = j 
+                break
         
-    return rv
-
-def ExtremeLatticePoints( v_repr, cc, n):
-    def nonintegralcoordinates( pt):
-        rv = []
-        for i in range(n):
-            if not isinstance(pt[i], int):
-                rv.append(i)
-        return rv
-
-    def binarylist(n, size):
-        binaryNumber = [int(x) for x in bin(n)[2:]]
-        paddedSize = size - len(binaryNumber)
-        return [0] * paddedSize + binaryNumber
-
-    rv = []
-    for pt in v_repr:
-        nonIntegerCoordinates = nonintegralcoordinates(pt)
-        if (len(nonIntegerCoordinates) == 0):
-            rv.append(pt)
-        else:
-            d = len(nonIntegerCoordinates)
-            for i in range(1, 2**d + 1):
-                pt_new = pt.copy()
-                binaryList = binarylist(i, d)
-                for i in range(d):
-                    if (binaryList[i] == 0):
-                        pt_new[nonIntegerCoordinates[i]] = floor(pt_new[nonIntegerCoordinates[i]])
-                    else:
-                        pt_new[nonIntegerCoordinates[i]] = ceil(pt_new[nonIntegerCoordinates[i]])    
-                if (pointsatisfiescc(pt_new, cc)):
-                    rv.append(pt_new)
-    return rv            
-
-def get_cc_pts (cc, m):
-    n = len(cc[0]) - 2
-    v_repr = v_representation(cc)
-    vol = getvolume(v_repr, n)
-    # r = getmaxradius (v_repr)
-    if (vol > conf.SmallVolume):
-        return randomlysamplepointsCC(cc, m)
-    else:
-        return ExtremeLatticePoints(v_repr, cc, n)
-
-def filter_ICEtails(n, tl_list):
-    rv = []
-    for tl in tl_list:
-        if ( LIDNFptdistance(Dstate(n), tl) == 0):
-            rv.append(tl)
-    return rv
-
-
-#CC is 2d numpy array; unbounded polytopes allowed
-def randomlysampleCC_ICEpairs (CC, m, transitions):
-    n  = len(CC[0]) - 2
-    cc = dnfconjunction([CC], Dstate(n), 0)[0]
-
-    endpoints = v_representation(cc)
-    minpoints = [ conf.dspace_intmax] * n
-    maxpoints = [ conf.dspace_intmin] * n
-    for pt in endpoints:
-        for i in range(n):
-            A = floor(pt[i])
-            B = ceil(pt[i])
-            if( B < minpoints[i]):
-                minpoints[i] = B
-            if( A > maxpoints[i]):
-                maxpoints[i] = A
-
-
-    rv = []
-    
-    #ICE star outputted
-    def randomlysampleICEstar (n, minpoints, maxpoints, transitions):
-        def pointsatisfiescc (pt, cc):
-            for p in cc:
-                sat = sum(p[:-2]* pt) - p[-1]
-                if (sat > 0):
-                    return False
-            return True
-        
-        point = [0]*n
-        for i in range(n):
-            point[i] = random.randint(minpoints[i], maxpoints[i] + 1)
-        
-
-        tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])
-        
-        while (  not pointsatisfiescc(point, cc) or tls == [] ):
-            for i in range(n):
-                point[i] = random.randint(minpoints[i], maxpoints[i] + 1)  
-            tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
-
-        return [ (point, tl) for tl in tls]
-    
-    for i in range(m):
-        rv = rv + randomlysampleICEstar(n, minpoints, maxpoints, transitions)
-        
-    return rv
-
-def get_cc_ICEheads (cc, m, transitions):
-    n = len(cc[0]) - 2
-    v_repr = v_representation(cc)
-    vol = getvolume(v_repr, n)
-    # r = getmaxradius (v_repr)
-    if (vol > conf.SmallVolume):
-        return randomlysampleCC_ICEpairs(cc, m, transitions)
-    else:
-        rv = []
-        latticeVrepr = ExtremeLatticePoints(v_repr, cc, n)
-        for hd in latticeVrepr:
-            tls = filter_ICEtails(n, [ transition(hd, ptf) for ptf in transitions])
-            if (tls == []):
+        if (nonZeroEntryCount > len(knownVars)): #Get Value of a variable
+            Nr = b_t[i] - int(np.dot(np.array(knownVars), col[:nonZeroEntryCount - 1]))
+            Dr = int(col[nonZeroEntryCount - 1])
+            if (Nr % Dr == 0):
+                knownVars.append( Nr // Dr  )
+            else:
+                # print("No integer solution to b^T = k^TR")
+                return ([], [])
+        else:  #Check Stage
+            if (int(np.dot(np.array(knownVars), col[:nonZeroEntryCount])) == b_t[i]):
                 continue
-            for tl in tls:
-               rv.append( (hd, tl)) 
+            else:
+                # print("No solution to b^T = k^TR")
+                return ([], [])
+    
+
+    
+    knownValue = [0] * (A_column)
+    for j in range(len(knownVars)):
+        knownValue = knownValue + knownVars[j] * T[j]
+    colvectors = []
+    for j in range(len(knownVars), A_column):
+        colvectors.append(T[j].tolist())
+    
+    return (knownValue.tolist(), colvectors)
+
+# print(linearDiophantineSolution( np.array( [[5, 6, 8], [6, -11, 7] ] , ndmin = 2 ), np.array( [1, 9] ) ))
+
+def isAffine(cc):
+    for p in cc:
+        if (p[-2] == 0):
+            return True
+    
+    return False
+
+def getAffine(cc):
+    n = len(cc[0]) - 2
+    ccList = cc.tolist()
+    affinepreds = []
+    NonAffinepreds = []
+    for p in ccList:
+        if (p[-2] == 0):
+            affinepreds.append(p)
+        else:
+            NonAffinepreds.append(p)
+    if NonAffinepreds == []:
+        NonAffinepreds = Dstate(n)[0].tolist()
+    else:
+        NonAffinepreds = dnfconjunction([np.array(NonAffinepreds, ndmin = 2)], Dstate(n) , 0)[0].tolist()
+    
+    A = []
+    b = []
+    for p in affinepreds:
+        A.append(p[:-2])
+        b.append(p[-1])
+    nonA = []
+    nonb = []
+    for p in NonAffinepreds:
+        nonA.append(p[:-2])
+        nonb.append(p[-1])
+    return (np.array(A, ndmin = 2, dtype = int), np.array(b, ndmin = 1, dtype = int), np.array(nonA, ndmin = 2, dtype = int), np.array(nonb, ndmin = 1, dtype = int))
+        
+            
+
+
+#CC is 2d numpy array; unbounded polytopes allowed
+# Remove conversion from gLII to LII before
+def randomlysamplepointsCC (cc, m):
+    def randomlysamplepoints(endpoints, cc):
+        n = len(endpoints[0])
+        minpoints = [ conf.dspace_intmax] * n
+        maxpoints = [ conf.dspace_intmin] * n
+        for pt in endpoints:
+            for i in range(n):
+                A = floor(pt[i])
+                B = ceil(pt[i])
+                if( B < minpoints[i]):
+                    minpoints[i] = B
+                if( A > maxpoints[i]):
+                    maxpoints[i] = A
+
+        points = []
+        for i in range(m):
+            point = [0]*n
+            for i in range(n):
+                point[i] = random.randint(minpoints[i], maxpoints[i] + 1)
+            while (  not pointsatisfiescc(point, cc) ):
+                # print("Am I stuck here?") # Sampling efficiency for affine spaces is too low.
+                for i in range(n):
+                    point[i] = random.randint(minpoints[i], maxpoints[i] + 1)     
+            points.append(point) 
+        return points      
+    
+    n  = len(cc[0]) - 2
+    if (isAffine(cc)):
+        (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
+        (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
+        if (basevector == []):
+            return []
+        S = np.transpose(np.array(colvectors, ndmin = 2))
+        if (colvectors == []): 
+            return [basevector]
+        A2 = np.matmul(nonA, S)
+        b2 = nonb - np.matmul(nonA, basevector)
+        lambda_cc = []
+        (A2_rows, _) = A2.shape
+        for i in range(A2_rows):
+            lambda_cc.append( [int(A2[i]), -1, b2[i]])   
+        endpoints = v_representation(np.array(lambda_cc, ndmin = 2, dtype = int))
+        
+        
+        lambdapoints = randomlysamplepoints( endpoints, np.array(lambda_cc, ndmin = 2, dtype = int))
+                    
+        return [ (basevector + np.matmul(S, v)).tolist() for v in lambdapoints]
+    else:
+        endpoints = v_representation(dnfconjunction([cc], Dstate(n), 0)[0])
+        return randomlysamplepoints(endpoints, dnfconjunction([cc], Dstate(n), 0)[0])
+
+
+
+
+
+
+
+# Don't need this any more!
+# def ExtremeLatticePoints( v_repr, cc, n):
+#     def nonintegralcoordinates( pt):
+#         rv = []
+#         for i in range(n):
+#             if not isinstance(pt[i], int):
+#                 rv.append(i)
+#         return rv
+
+#     def binarylist(n, size):
+#         binaryNumber = [int(x) for x in bin(n)[2:]]
+#         paddedSize = size - len(binaryNumber)
+#         return [0] * paddedSize + binaryNumber
+
+#     rv = []
+#     for pt in v_repr:
+#         nonIntegerCoordinates = nonintegralcoordinates(pt)
+#         if (len(nonIntegerCoordinates) == 0):
+#             rv.append(pt)
+#         else:
+#             d = len(nonIntegerCoordinates)
+#             for i in range(1, 2**d + 1):
+#                 pt_new = pt.copy()
+#                 binaryList = binarylist(i, d)
+#                 for i in range(d):
+#                     if (binaryList[i] == 0):
+#                         pt_new[nonIntegerCoordinates[i]] = floor(pt_new[nonIntegerCoordinates[i]])
+#                     else:
+#                         pt_new[nonIntegerCoordinates[i]] = ceil(pt_new[nonIntegerCoordinates[i]])    
+#                 if (pointsatisfiescc(pt_new, cc)):
+#                     rv.append(pt_new)
+#     return rv            
+
+# def get_cc_pts (cc, m):
+#     n = len(cc[0]) - 2
+#     v_repr = v_representation(cc)
+#     vol = getvolume(v_repr, n)
+#     # r = getmaxradius (v_repr)
+#     if (vol > conf.SmallVolume):
+#         return randomlysamplepointsCC(cc, m)
+#     else:
+#         return ExtremeLatticePoints(v_repr, cc, n)
+
+
+
+
+#CC is 2d numpy array; unbounded polytopes allowed
+def randomlysampleCC_ICEpairs (cc, m, transitions):
+    def pointsatisfiescc (pt, cc):
+        for p in cc:
+            sat = sum(p[:-2]* pt) - p[-1]
+            if (sat > 0):
+                return False
+        return True
+    
+    def filter_ICEtails(n, tl_list):
+        rv = []
+        for tl in tl_list:
+            if ( LIDNFptdistance(Dstate(n), tl) == 0):
+                rv.append(tl)
         return rv
+
+    n  = len(cc[0]) - 2
+    if (isAffine(cc)):
+        (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
+        (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
+        if (basevector == []): #No solution
+            return []
+        if (colvectors == []):
+            tls = filter_ICEtails(n, [ transition(basevector, ptf) for ptf in transitions])  
+            return [ (basevector, tl) for tl in tls] 
+        S = np.transpose(np.array(colvectors, ndmin = 2))
+        A2 = np.matmul(nonA, S)
+        b2 = nonb - np.matmul(nonA, basevector)
+        lambda_cc = []
+        (A2_rows, A2_columns) = A2.shape
+        for i in range(A2_rows):
+            lambda_cc.append( [int(A2[i]), -1, b2[i]])  
+        
+        
+        
+        endpoints = v_representation(np.array(lambda_cc, ndmin = 2, dtype = int))
+        minpoints = [ conf.dspace_intmax] * A2_columns
+        maxpoints = [ conf.dspace_intmin] * A2_columns
+        for pt in endpoints:
+            for i in range(A2_columns):
+                A = floor(pt[i])
+                B = ceil(pt[i])
+                if( B < minpoints[i]):
+                    minpoints[i] = B
+                if( A > maxpoints[i]):
+                    maxpoints[i] = A
+        
+        rv = []
+        #ICE star outputted
+        for i in range(m):
+            samplepoint = [conf.dspace_intmin - 2]*A2_columns
+            tls = []
+            while ( tls == [] ):
+                # print(basevector, S , samplepoint) #Debugging
+                point = (basevector + np.matmul(S, samplepoint)).tolist()
+                while (  not pointsatisfiescc(point, np.array(lambda_cc, ndmin = 2, dtype = int)) ):
+                    for i in range(A2_columns):
+                        samplepoint[i] = random.randint(minpoints[i], maxpoints[i] + 1)     
+                    point = (basevector + np.matmul(S, samplepoint)).tolist()
+                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
+            rv = rv + [ (point, tl) for tl in tls]            
+        return rv
+    else:
+        n  = len(cc[0]) - 2
+        endpoints = v_representation(dnfconjunction([cc], Dstate(n), 0)[0])
+        minpoints = [ conf.dspace_intmax] * n
+        maxpoints = [ conf.dspace_intmin] * n
+        for pt in endpoints:
+            for i in range(n):
+                A = floor(pt[i])
+                B = ceil(pt[i])
+                if( B < minpoints[i]):
+                    minpoints[i] = B
+                if( A > maxpoints[i]):
+                    maxpoints[i] = A
+
+        rv = []
+        #ICE star outputted
+        for i in range(m):
+            point = [0]*n
+            tls = []
+            while ( tls == [] ):
+                for i in range(n):
+                    point[i] = random.randint(minpoints[i], maxpoints[i] + 1)  
+                if (not pointsatisfiescc(point, cc)):
+                    continue
+                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
+            rv = rv + [ (point, tl) for tl in tls]
+        return rv
+
+
+
+# def get_cc_ICEheads (cc, m, transitions):
+#     n = len(cc[0]) - 2
+#     v_repr = v_representation(cc)
+#     vol = getvolume(v_repr, n)
+#     # r = getmaxradius (v_repr)
+#     if (vol > conf.SmallVolume):
+#         return randomlysampleCC_ICEpairs(cc, m, transitions)
+#     else:
+#         rv = []
+#         latticeVrepr = ExtremeLatticePoints(v_repr, cc, n)
+#         for hd in latticeVrepr:
+#             tls = filter_ICEtails(n, [ transition(hd, ptf) for ptf in transitions])
+#             if (tls == []):
+#                 continue
+#             for tl in tls:
+#                rv.append( (hd, tl)) 
+#         return rv
 
 
 def get_plus0 (P, m):
-    n = len(P[0][0]) - 2
-    P_LII_in_Dstate = dnfconjunction( P , Dstate(n), 0)    
+    n = len(P[0][0]) - 2  
 
     plus0 = []
-    for cc in P_LII_in_Dstate:
-        plus0 = plus0 + get_cc_pts(cc, m)
+    for cc in P:
+        plus0 = plus0 + randomlysamplepointsCC(cc, m)
 
     return plus0  
 
 def get_minus0 (Q, m):
     n = len(Q[0][0]) - 2
-    negQ_LII_in_Dstate = dnfconjunction( dnfnegation(Q) , Dstate(n), 0) 
+    negQ = dnfnegation(Q) 
 
     minus0 = []
-    for cc in negQ_LII_in_Dstate:
-        minus0 = minus0 + get_cc_pts(cc, m)
+    for cc in negQ:
+        minus0 = minus0 + randomlysamplepointsCC(cc, m)
 
     return minus0
 
@@ -265,9 +462,8 @@ def get_ICE0( T, P, Q, m):
     def partialICE_enet (B , P, Q, transitionlist, m, n):
         rv = []
         #The space is B 
-        B_LII_in_Dstate = dnfconjunction( B , Dstate(n), 0) 
-        for cc in B_LII_in_Dstate:
-            rv = rv + get_cc_ICEheads(cc, m, transitionlist)
+        for cc in B:
+            rv = rv + randomlysampleCC_ICEpairs(cc, m, transitionlist)
         return rv
 
     for rtf in T:
