@@ -96,7 +96,68 @@ def computeRotationGraph(K, n):
     # print(180*theta_0/pi)   
     return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
 
+def optimizedRotationGraph(K, n):
+    if (n == 1):
+        return ([ [-1 ], [1] ],  { (-1) : [[1]] , (1) : [[-1]] })
+    possibledomain = list(product( list(range(-K, K+1, 1)) , repeat=n)) #possibledomain is list of tuples
+    possibledomain.remove( tuple([0]*n) )
+    
+    optimizedomain = list(product( list(range(0, K+1, 1)) , repeat=n))
+    optimizedomain.remove( tuple([0]*n) )
+    
+    coeffdomain = []
+    adjList = {}
+    
+    for coeff in optimizedomain:
+        if (reduce(gcd, list(coeff)) > 1):
+            continue
+        neighbors = []
+        for ithcoeff in possibledomain:
+            if (reduce(gcd, list(ithcoeff)) > 1 or ithcoeff == coeff):
+                continue
+            if (isneighbor(coeff, ithcoeff, conf.rotation_degree)):
+                neighbors.append( list(ithcoeff))
+        
+        coeffdomain.append(list(coeff))
+        adjList.update({ coeff : neighbors })
+        
+        for reflectionNumeral in range(1, 2**n):
+            reflectionBinary = [int(x) for x in bin(reflectionNumeral)[2:]]
+            reflectionIndices = [i for i in range(len(reflectionBinary)) if reflectionBinary[i] == 1]
+            
+            reflectedcoeff = list(coeff).copy()
+            for j in reflectionIndices: 
+                reflectedcoeff[j] = reflectedcoeff[j] * -1
+            reflectedcoeff = tuple(reflectedcoeff)
+            
+            if (reflectedcoeff == coeff):
+                continue
+            
+            reflectedneighbors = []
+            for neighbor in neighbors:
+                reflectedneighbor = neighbor.copy()
+                for j in reflectionIndices:
+                    reflectedneighbor[j] = reflectedneighbor[j] * -1
+                reflectedneighbors.append(reflectedneighbor)
+            
+            coeffdomain.append(list(reflectedcoeff))
+            adjList.update({reflectedcoeff : reflectedneighbors})
+            
+        
+    return (coeffdomain, adjList)
+
+
+print(optimizedRotationGraph(12, 5)[1])
+
 def getrotationgraph(K, n):
+    def getK(n, theta0):
+        for k in range(1, 10000):
+            if (acos(k / sqrt(k**2 + max(1.0, (n-1)/4))) <= theta0):
+                return k
+        return k
+        
+    theta0 = conf.rotation_degree
+    print(getK(n, theta0)) #debugging
 
     filename = "n" + str(n) + "K" + str(K)
 
@@ -114,3 +175,4 @@ def getrotationgraph(K, n):
 
     return ( list(E.keys()), E)
 
+# print(getrotationgraph(11, 5))

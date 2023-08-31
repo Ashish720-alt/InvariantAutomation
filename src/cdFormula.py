@@ -194,9 +194,9 @@ model = Sequential()
 # Create Hidden Layers
 model.add(Dense(units=12, input_dim=len(X[0]), activation='relu'))
 # model.add(Dense(8, init='uniform', activation='relu'))
-model.add(Dense(units=2, activation='sigmoid'))
+model.add(Dense(units=2, activation='sigmoid')) #1 NN per output!!
 # Compile model
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='mean_squared_error', optimizer='adam') # Try define custom loss function, to get positive change not as bad as negative change
 # Fit the model
 model.fit(X, Y, epochs=1000, batch_size=4)
 

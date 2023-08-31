@@ -28,7 +28,7 @@ class Configure:
     s = 5 #Number of cex Z3 generates
 
     translation_range = 10
-    rotation_degree = pi/4 
+    rotation_degree = 10 * (pi/180) 
 
     p_rot = 0.5
 
