@@ -11,6 +11,7 @@ class Configure:
 
     num_processes = 4 #Number of threads
 
+    Gamma0 = 2
     maxSArun = 150000
 
     k = 2
@@ -59,7 +60,7 @@ class Configure:
     SAMPLEPOINTS_DEBUGGER_WINDOW = 1000
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = OFF
+    PRINT_REJECT_ITERATIONS = ON
     PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON

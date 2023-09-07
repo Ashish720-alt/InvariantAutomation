@@ -147,7 +147,7 @@ def optimizedRotationGraph(K, n):
     return (coeffdomain, adjList)
 
 
-print(optimizedRotationGraph(12, 5)[1])
+# print(optimizedRotationGraph(12, 5)[1])
 
 def getrotationgraph(K, n):
     def getK(n, theta0):

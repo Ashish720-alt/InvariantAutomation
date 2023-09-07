@@ -76,20 +76,23 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = SA_Gamma/log(1.0 + t)
+        temp = SA_Gamma/log(conf.Gamma0 + t)
         a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0
             costI = costInew
+            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
         else:
             reject = 1
             descent = 0
+            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist()) #Print rejected value
             I[P[0]][P[1]] = oldpredicate
+            
 
 
         
-        statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
+        # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
     # Process 'process_id' Failed!
     SAfail(process_id, repr.get_colorslist())
