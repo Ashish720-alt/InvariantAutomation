@@ -182,39 +182,92 @@ save_data("cdData1.ods", dataexcel)
 export_graphviz(regressor_d, out_file ='d_tree1.dot', feature_names =(finaldata[0])[1:-6]) 
 export_graphviz(regressor_c, out_file ='c_tree1.dot', feature_names =(finaldata[0])[1:-6]) 
 
+
+
+
+
+
 #Neural networks
 from keras.models import Sequential
 from keras.layers import Dense
+import tensorflow as tf
+
+
+# def custom_loss(y_true, y_pred):
+#     # Define weights
+#     false_positive_weight = 1.0
+#     false_negative_weight = 10.0
+
+#     # Calculate binary cross entropy
+#     bce = tf.keras.losses.BinaryCrossentropy()
+
+#     # Calculate loss
+#     loss = bce(y_true, y_pred)
+
+#     # Calculate weighted loss
+#     weighted_loss = tf.where(tf.greater(y_true, y_pred), false_negative_weight * loss, false_positive_weight * loss)
+
+#     return tf.reduce_mean(weighted_loss)
+
+def custom_loss(y_true, y_pred):
+    loss = tf.maximum(y_pred - y_true, 0) * 1 + tf.maximum(y_true - y_pred, 0) * 100
+    return tf.reduce_mean(loss)
+
 
 # split into input (X) and output (Y) variables
 X = X.tolist()
-Y = [ [y_d[i], y_c[i]] for i in range(len(y_d))  ]
-# create model
-model = Sequential()
-# Create Hidden Layers
-model.add(Dense(units=12, input_dim=len(X[0]), activation='relu'))
-# model.add(Dense(8, init='uniform', activation='relu'))
-model.add(Dense(units=2, activation='sigmoid')) #1 NN per output!!
-# Compile model
-model.compile(loss='mean_squared_error', optimizer='adam') # Try define custom loss function, to get positive change not as bad as negative change
-# Fit the model
-model.fit(X, Y, epochs=1000, batch_size=4)
+# Y = [ [y_d[i], y_c[i]] for i in range(len(y_d))  ]
+Y1 = [ [y_d[i]] for i in range(len(y_d))  ]
+Y2 = [ [y_c[i]] for i in range(len(y_c))  ]
 
 NN_I_d_pred = ['I.d_predicted']
 NN_I_c_pred = ['I.c_predicted']
 NN_I_c_change = ['I.c_change']
 NN_I_d_change = ['I.d_change']
 
-outputs = model.predict(X)
+
+# create model for d
+model1 = Sequential()
+# Create Hidden Layers
+model1.add(Dense(units=50, input_dim=len(X[0]), activation='relu'))
+# model1.add(Dense(8, init='uniform', activation='relu'))
+model1.add(Dense(units=1, activation='sigmoid')) 
+# Compile model
+model1.compile(loss=custom_loss, optimizer='adam') # Define custom loss function, previously loss='mean_squared_error'
+# Fit the model
+model1.fit(X, Y1, epochs=10000, batch_size=25)
+
+outputs1 = model1.predict(X)
 for (i,data) in enumerate(X):
-    output = outputs[i]
-    dpred = float(output[0])
-    cpred = float(output[1])
+    output1 = outputs1[i]
+    dpred = float(output1[0])
+    # cpred = float(output1[1])
     NN_I_d_pred.append( dpred )
+    # NN_I_c_pred.append( cpred )
+    # NN_I_c_change.append(cpred - float(y_c[i]))
+    NN_I_d_change.append(dpred - float(y_d[i]))
+
+# create new model for c
+model2 = Sequential()
+# Create Hidden Layers
+model2.add(Dense(units=50, input_dim=len(X[0]), activation='relu'))
+# model1.add(Dense(8, init='uniform', activation='relu'))
+model2.add(Dense(units=1, activation='sigmoid'))
+# Compile model
+model2.compile(loss=custom_loss, optimizer='adam') # Define custom loss function, previously loss='mean_squared_error'
+# Fit the model
+model2.fit(X, Y2, epochs=10000, batch_size=25)
+
+outputs2 = model1.predict(X)
+for (i,data) in enumerate(X):
+    output2 = outputs2[i]
+    # dpred = float(output2[0])
+    cpred = float(output2[0])
+    # NN_I_d_pred.append( dpred )
     NN_I_c_pred.append( cpred )
     NN_I_c_change.append(cpred - float(y_c[i]))
-    NN_I_d_change.append(dpred - float(y_d[i]))
-    
+    # NN_I_d_change.append(dpred - float(y_d[i]))
+
 
 finaldata = []
 for i in range(len(printlist) - 1):
