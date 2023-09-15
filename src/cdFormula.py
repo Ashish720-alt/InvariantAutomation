@@ -188,6 +188,7 @@ export_graphviz(regressor_c, out_file ='c_tree1.dot', feature_names =(finaldata[
 
 
 #Neural networks
+import keras
 from keras.models import Sequential
 from keras.layers import Dense
 import tensorflow as tf
@@ -233,7 +234,8 @@ model1.add(Dense(units=50, input_dim=len(X[0]), activation='relu'))
 # model1.add(Dense(8, init='uniform', activation='relu'))
 model1.add(Dense(units=1, activation='sigmoid')) 
 # Compile model
-model1.compile(loss=custom_loss, optimizer='adam') # Define custom loss function, previously loss='mean_squared_error'
+optimizer = keras.optimizers.Adam(lr=10.00)
+model1.compile(loss=custom_loss, optimizer=optimizer) # Define custom loss function, previously loss='mean_squared_error'
 # Fit the model
 model1.fit(X, Y1, epochs=10000, batch_size=25)
 
@@ -254,7 +256,7 @@ model2.add(Dense(units=50, input_dim=len(X[0]), activation='relu'))
 # model1.add(Dense(8, init='uniform', activation='relu'))
 model2.add(Dense(units=1, activation='sigmoid'))
 # Compile model
-model2.compile(loss=custom_loss, optimizer='adam') # Define custom loss function, previously loss='mean_squared_error'
+model2.compile(loss=custom_loss, optimizer=optimizer) # Define custom loss function, previously loss='mean_squared_error'
 # Fit the model
 model2.fit(X, Y2, epochs=10000, batch_size=25)
 
