@@ -59,6 +59,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                 for c in transconslist:
                     neighbors.append( ( i, j, oldcoeff + [-1,c]) )
         deg = len(neighbors)
+        
+        
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
         I[P[0]][P[1]] = P[2]

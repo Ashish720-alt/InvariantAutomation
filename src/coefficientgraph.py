@@ -92,7 +92,7 @@ def computeRotationGraph(K, n):
     coeffdomain = enumeratecoeffdomain(K, n)
     # theta_0 = gettheta_0(coeffdomain)
     # Does large rotation angles work? We need large rotation angles
-    theta_0 = conf.rotation_degree
+    theta_0 = conf.rotation_rad
     # print(180*theta_0/pi)   
     return (coeffdomain, getadjacencylist( coeffdomain, theta_0))
 
@@ -115,7 +115,7 @@ def optimizedRotationGraph(K, n):
         for ithcoeff in possibledomain:
             if (reduce(gcd, list(ithcoeff)) > 1 or ithcoeff == coeff):
                 continue
-            if (isneighbor(coeff, ithcoeff, conf.rotation_degree)):
+            if (isneighbor(coeff, ithcoeff, conf.rotation_rad)):
                 neighbors.append( list(ithcoeff))
         
         coeffdomain.append(list(coeff))
@@ -123,11 +123,14 @@ def optimizedRotationGraph(K, n):
         
         for reflectionNumeral in range(1, 2**n):
             reflectionBinary = [int(x) for x in bin(reflectionNumeral)[2:]]
+            if (len(reflectionBinary) < n):
+                s = n - len(reflectionBinary)
+                reflectionBinary = [0]*s + reflectionBinary
             reflectionIndices = [i for i in range(len(reflectionBinary)) if reflectionBinary[i] == 1]
             
             reflectedcoeff = list(coeff).copy()
             for j in reflectionIndices: 
-                reflectedcoeff[j] = reflectedcoeff[j] * -1
+                reflectedcoeff[j] = -1 * reflectedcoeff[j] 
             reflectedcoeff = tuple(reflectedcoeff)
             
             if (reflectedcoeff == coeff):
@@ -142,12 +145,21 @@ def optimizedRotationGraph(K, n):
             
             coeffdomain.append(list(reflectedcoeff))
             adjList.update({reflectedcoeff : reflectedneighbors})
-            
+    
+    G = (coeffdomain, adjList)
+    
+    filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
+    
+    original_stdout = sys.stdout
+    with open(filename, 'w') as f:
+        sys.stdout = f # Change the standard output to the file we created.
+        pprint.pprint(G[1], f)
+        sys.stdout = original_stdout # Reset the standard output to its original value            
         
-    return (coeffdomain, adjList)
+    return G
 
 
-# print(optimizedRotationGraph(12, 5)[1])
+# pprint.pprint(optimizedRotationGraph(12, 3)[1] , sys.stdout)
 
 def getrotationgraph(K, n):
     def getK(n, theta0):
@@ -156,13 +168,20 @@ def getrotationgraph(K, n):
                 return k
         return k
         
-    theta0 = conf.rotation_degree
-    print(getK(n, theta0)) #debugging
+    theta0 = conf.rotation_rad
+    K = getK(n, theta0) #debugging
 
-    filename = "n" + str(n) + "K" + str(K)
+    # filename = "n" + str(n) + "K" + str(K)
+
+    #New Experiments
+    filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
 
     if (not path.isfile(filename)):
-            G = computeRotationGraph(K,n)
+            
+            # G = computeRotationGraph(K,n)
+            
+            G = optimizedRotationGraph(K, n) #New Experiments
+            
             original_stdout = sys.stdout
             with open(filename, 'w') as f:
                 sys.stdout = f # Change the standard output to the file we created.
