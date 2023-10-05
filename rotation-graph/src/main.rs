@@ -6,15 +6,12 @@ use std::io::Write;
 use std::sync::Arc;
 use std::{thread, vec};
 
-/// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
     #[arg(short, long)]
     n: usize,
 
-    /// Number of times to greet
     #[arg(short, long)]
     k: i64,
 
@@ -24,14 +21,14 @@ struct Args {
     #[arg(short, long, default_value_t = 1)]
     p: usize,
 
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "result.json")]
     file_name: String,
 }
 
 // generate all vectors in the n-dimensional space with absolute value of each element <= m
-fn generate_vectors(n: usize, k: i64) -> Vec<Vec<i64>> {
+fn generate_vectors(n: usize, k: i64, base:i64) -> Vec<Vec<i64>> {
     let mut vectors = Vec::new();
-    let mut vector = vec![-k; n];
+    let mut vector = vec![base; n];
     let mut i;
 
     loop {
@@ -49,7 +46,7 @@ fn generate_vectors(n: usize, k: i64) -> Vec<Vec<i64>> {
         }
         i = 0;
         while i < n && vector[i] == k {
-            vector[i] = -k;
+            vector[i] = base;
             i += 1;
         }
         if i == n {
@@ -121,16 +118,21 @@ fn output_to_file(v: &Vec<(usize, usize)>, file_path: &String) {
 }
 
 // output to a file in dict format
-fn output_to_file_readable(v: &Vec<(usize, usize)>, vector: &Vec<Vec<i64>>, file_path: &String) {
+fn output_to_file_readable(
+    v: &Vec<(usize, usize)>,
+    vectors: &Vec<Vec<i64>>,
+    snd_vectors: &Vec<Vec<i64>>,
+    file_path: &str,
+) {
     let hashmap = vec_to_map(v);
     let hashmap: HashMap<String, Vec<Vec<i64>>> = hashmap
         .iter()
         .map(|(key, value)| {
             (
-                format!("{:?}", index_to_vec(vector, *key)),
+                format!("{:?}", index_to_vec(vectors, *key)),
                 value
                     .iter()
-                    .map(|x| index_to_vec(vector, *x))
+                    .map(|x| index_to_vec(snd_vectors, *x))
                     .collect::<Vec<_>>(),
             )
         })
@@ -141,20 +143,17 @@ fn output_to_file_readable(v: &Vec<(usize, usize)>, vector: &Vec<Vec<i64>>, file
     file.write_all(serialized.as_bytes()).expect("Write failed");
 }
 
+
 fn main() {
     let args = Args::parse();
-    let (n, k, p, t, file_name) = (args.n, args.k, args.p, args.t, args.file_name);
-    let pb = Arc::new(ProgressBar::new(p as u64));
-    pb.set_style(
-        ProgressStyle::default_bar()
-            .template("[{elapsed_precise}] [{bar:40}] {pos}/{len} (ETA {eta})")
-            .unwrap()
-            .progress_chars("=> "),
-    );
-    let vectors = generate_vectors(n, k);
+    let (n, k, p, t) = (args.n, args.k, args.p, args.t);
+
+    let vectors = generate_vectors(n, k, 0);
     let vectors = Arc::new(vectors);
     let split_rows = split_half_matrix(vectors.len() as usize, p as usize);
     let split_rows = Arc::new(split_rows);
+    let snd_vectors = generate_vectors(n, k, -k);
+    let snd_vectors = Arc::new(snd_vectors);
     // Now t is in angle, convert it to radian, then compute the cosine
     let t = t.to_radians().cos();
     println!("t = {}", t);
@@ -162,25 +161,34 @@ fn main() {
     let mut receivers = vec![];
     for tid in 0..p {
         let (sender, receiver) = std::sync::mpsc::channel();
-        let pb = pb.clone();
         let split_indexes = split_rows.clone();
         let vectors = vectors.clone();
+        let snd_vectors = snd_vectors.clone();
 
         let _ = thread::spawn(move || {
+            let len_pb = (split_indexes[tid + 1] - split_indexes[tid]) * snd_vectors.len();
+            let pb = ProgressBar::new(len_pb as u64);
+            pb.set_style(
+                ProgressStyle::default_bar()
+                    .template("[{elapsed_precise}] [{bar:40}] {pos}/{len} (ETA {eta})")
+                    .unwrap()
+                    .progress_chars("=> "),
+            );
+
             let mut result = Vec::new();
             for i in split_indexes[tid]..split_indexes[tid + 1] {
-                for j in 0..vectors.len() {
-                    if j < i {
-                        continue;
-                    }
+                for j in 0..snd_vectors.len() {
+                    // if j < i {
+                    // continue;
+                    // }
                     // compute the angle between vectors[i] and vectors[j]
                     let mut dot_product = 0;
                     let mut norm1 = 0;
                     let mut norm2 = 0;
                     for k in 0..n {
-                        dot_product += vectors[i][k] * vectors[j][k];
+                        dot_product += vectors[i][k] * snd_vectors[j][k];
                         norm1 += vectors[i][k] * vectors[i][k];
-                        norm2 += vectors[j][k] * vectors[j][k];
+                        norm2 += snd_vectors[j][k] * snd_vectors[j][k];
                     }
                     let angle = dot_product as f64 / (norm1 as f64 * norm2 as f64).sqrt();
                     if angle >= t {
@@ -191,6 +199,7 @@ fn main() {
                 }
             }
             sender.send(result).unwrap();
+            pb.finish();
         });
 
         receivers.push(receiver);
@@ -200,10 +209,10 @@ fn main() {
     for r in receivers {
         result.append(&mut r.recv().unwrap());
     }
-    pb.finish();
 
-    output_to_file_readable(&result, &vectors, &file_name);
+    output_to_file_readable(&result, &vectors, &snd_vectors, "result.txt");
 }
+
 
 mod test {
     #[test]
