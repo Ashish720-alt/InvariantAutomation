@@ -146,7 +146,7 @@ fn output_to_file_readable(
 
 fn main() {
     let args = Args::parse();
-    let (n, k, p, t) = (args.n, args.k, args.p, args.t);
+    let (n, k, p, t, filename) = (args.n, args.k, args.p, args.t, args.file_name);
 
     let vectors = generate_vectors(n, k, 0);
     let vectors = Arc::new(vectors);
@@ -210,7 +210,7 @@ fn main() {
         result.append(&mut r.recv().unwrap());
     }
 
-    output_to_file_readable(&result, &vectors, &snd_vectors, "result.txt");
+    output_to_file_readable(&result, &vectors, &snd_vectors, &filename);
 }
 
 
