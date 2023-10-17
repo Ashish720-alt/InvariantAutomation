@@ -26,7 +26,7 @@ struct Args {
 }
 
 // generate all vectors in the n-dimensional space with absolute value of each element <= m
-fn generate_vectors(n: usize, k: i64, base:i64) -> Vec<Vec<i64>> {
+fn generate_vectors(n: usize, k: i64, base: i64) -> Vec<Vec<i64>> {
     let mut vectors = Vec::new();
     let mut vector = vec![base; n];
     let mut i;
@@ -90,7 +90,7 @@ fn split_half_matrix(n: usize, p: usize) -> Vec<usize> {
         indexes.push(n);
     }
     indexes
-} 
+}
 
 // helper function, convert a vector of tuples to a hashmap
 fn vec_to_map(v: &Vec<(usize, usize)>) -> HashMap<usize, HashSet<usize>> {
@@ -143,7 +143,6 @@ fn output_to_file_readable(
     file.write_all(serialized.as_bytes()).expect("Write failed");
 }
 
-
 fn main() {
     let args = Args::parse();
     let (n, k, p, t, filename) = (args.n, args.k, args.p, args.t, args.file_name);
@@ -158,29 +157,30 @@ fn main() {
     let t = t.to_radians().cos();
     println!("t = {}", t);
 
+    // Progress bar
+    let len_pb = vectors.len();// * snd_vectors.len();
+    let pb = ProgressBar::new(len_pb as u64);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] [{bar:40}] {pos}/{len} (ETA {eta})")
+            .unwrap()
+            .progress_chars("=> "),
+    );
+    let pb = Arc::new(pb);
+
     let mut receivers = vec![];
+    let mut handlers = vec![];
     for tid in 0..p {
         let (sender, receiver) = std::sync::mpsc::channel();
         let split_indexes = split_rows.clone();
         let vectors = vectors.clone();
         let snd_vectors = snd_vectors.clone();
+        let pb = pb.clone();
 
-        let _ = thread::spawn(move || {
-            let len_pb = (split_indexes[tid + 1] - split_indexes[tid]) * snd_vectors.len();
-            let pb = ProgressBar::new(len_pb as u64);
-            pb.set_style(
-                ProgressStyle::default_bar()
-                    .template("[{elapsed_precise}] [{bar:40}] {pos}/{len} (ETA {eta})")
-                    .unwrap()
-                    .progress_chars("=> "),
-            );
-
+        let handler = thread::spawn(move || {
             let mut result = Vec::new();
             for i in split_indexes[tid]..split_indexes[tid + 1] {
                 for j in 0..snd_vectors.len() {
-                    // if j < i {
-                    // continue;
-                    // }
                     // compute the angle between vectors[i] and vectors[j]
                     let mut dot_product = 0;
                     let mut norm1 = 0;
@@ -195,24 +195,28 @@ fn main() {
                         // println!("{:?} {:?}", index_to_vec(&vectors, i), index_to_vec(&vectors, j));
                         result.push((i, j));
                     }
-                    pb.inc(1);
+                    // println!("thread: {}, number {} {}", tid, i, j);
                 }
+                pb.inc(1);
             }
             sender.send(result).unwrap();
-            pb.finish();
         });
-
+        
         receivers.push(receiver);
+        handlers.push(handler);
     }
-
+    
+    for handler in handlers {
+        handler.join().unwrap();
+    }
     let mut result = Vec::new();
     for r in receivers {
         result.append(&mut r.recv().unwrap());
     }
-
+    pb.finish();
+    
     output_to_file_readable(&result, &vectors, &snd_vectors, &filename);
 }
-
 
 mod test {
     #[test]
