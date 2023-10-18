@@ -46,13 +46,27 @@ def convert_op(op: int) -> str:
             raise Exception("Unknown operator " + str(op))
 
 
+def convert_sum(sum: np.ndarray, var: list) -> str:
+    output = []
+    for i in range(len(sum)):
+        if sum[i] == 1:
+            output.append(var[i])
+        if sum[i] < 0:
+            output.append("(" + str(sum[i]) + "*" + var[i] + ")")
+        if sum[i] != 0:
+            output.append(str(sum[i]) + "*" + var[i])
+    if output == []:
+        return ["0"]
+    return output
+
+
 # cond is of shape (disjunctive, conjunctive, var_n + 2)
 def convert_cond(cond: np.ndarray, var: list) -> str:
     var_n = len(var)
     assert len(cond.shape) == 3 and cond.shape[-1] == var_n + 2
 
     def convert_pred(pred: np.ndarray) -> str:
-        lhs = "+".join(["(" + var[i] + "*" + str(pred[i]) + ")" for i in range(var_n)])
+        lhs = "+".join(convert_sum(pred, var))
         return lhs + convert_op(pred[-2]) + str(pred[-1])
 
     def convert_conj(conj: np.ndarray) -> str:
@@ -74,7 +88,7 @@ def convert_trans(trans: np.ndarray, var: list) -> str:
             [
                 var[i]
                 + " := "
-                + "+".join([str(trans[i][j]) + "*" + var[j] for j in range(var_n)])
+                + "+".join(convert_sum(trans[i], var))
                 + "+"
                 + str(trans[i][var_n])
                 for i in range(var_n)
