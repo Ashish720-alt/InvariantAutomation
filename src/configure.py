@@ -19,6 +19,17 @@ class Configure:
 
     SmallRadius = 50
     SmallVolume = 50
+
+    #Initial Invariant Samples.
+    I0_samples = 30
+
+
+    #Experimental T0 parameters
+    S_Maxcost = 2000
+    S_changecostmax = 0.1
+    T0_X0 = 0.75
+    T0_e = 0.001
+    T0_S = 2
     
     
     #e-net parameters:
@@ -26,9 +37,11 @@ class Configure:
     probenet_success = 0.8
     z3_stepwindow = 10
 
-    s = 5 #Number of cex Z3 generates
+    #z3 parameters
+    s = 5 
+    cexdistanceList = [100, 0]
 
-    translation_range = 10
+    translation_range = 5
     rotation_degree = 5
     rotation_rad = rotation_degree * (pi/180) 
 
@@ -36,7 +49,7 @@ class Configure:
 
     gamma = e #Need floating point constant here
     beta0 = 100 #2^-20 ~ 10^(-7)
-    beta = 1
+    beta = 4 #Change this!!
     # descent_prob = 0.5
 
     # d = 100

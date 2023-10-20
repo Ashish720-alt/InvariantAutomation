@@ -169,7 +169,7 @@ def getrotationgraph(K, n):
         return k
         
     theta0 = conf.rotation_rad
-    K = getK(n, theta0) #debugging
+    K = getK(n, theta0) 
 
     # filename = "n" + str(n) + "K" + str(K)
 

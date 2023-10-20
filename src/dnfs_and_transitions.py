@@ -150,7 +150,21 @@ def list3D_to_listof2Darrays (I):
     A = [cclist_to_ccarray(cc) for cc in I ]
     return A
 
+# def removestateduplicates (l):
+#     temp = list({tuple(x) for x in l})
+#     return [list(x) for x in temp]
+    
+# def removeICEpairduplicates (l):
+#     if (len(l) == 0):
+#         return []
+#     n = len(l[0][0])
+#     temp = list({tuple(x[0] + x[1]) for x in l})
+#     temp2 = [list(x) for x in temp]
+#     return [ (x[0:n] , x[n:]  ) for x in temp2  ]
+    
 
+# print( removestateduplicates( [ [1,2] , [3,4] , [5,6] , [7,8] , [8,9] , [1,2]  ]) )
+# print( removeICEpairduplicates( [ ([1,2] , [3,4]) , ([5,6] , [7,8]) , ([8,9] , [1,2]) , ([8,9] , [1,2])  ]) )
 
 # # Testing
 # print(dnfTrue(2))

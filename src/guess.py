@@ -1,39 +1,45 @@
 """ Guessing a new invriant.
 """
 import numpy as np
-import random
-from dnfs_and_transitions import deepcopy_DNF, RTI_to_LII
-import copy
 from configure import Configure as conf
-from math import inf, sqrt, floor, sin, ceil
-
+from math import inf, sqrt, floor, sin, ceil, log , e
+from cost_funcs import cost
+from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction
 
 def k1list(k0, n):
     # return [10]
     max_radius = conf.dspace_radius * k0 * n
     
-    if (conf.num_processes == 1):
-        radius_list = [max_radius]
-    elif (conf.num_processes == 2):
-        radius_list = [1000] + [max_radius]
-    elif (conf.num_processes == 3):
-        radius_list = [100, 1000] + [max_radius]
-    else:
-        radius_list = [10, 100, 1000] + [max_radius] * (conf.num_processes - 3)
+    n = floor(conf.num_processes/2)
+    radius_list = [1000] * n + [max_radius] * (conf.num_processes - n)
         
     return radius_list   
 
 
 def SAconstantlist( TS, k0, n, c, d, k1_list):    
+    def SAconstant(TS_size, k0, k1, n , c , d):
+        L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_rad / 2 ) )
+        r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
+        return L_upper * r_upper
+
     return [SAconstant( TS, k0, k1 , n, c, d ) for k1 in k1_list]  
 
-def SAconstant(TS_size, k0, k1, n , c , d):
-    # return 100 #Note: Drastic changes seem fine because even for gamma = 100 case, some points have cost values 10000
-    L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_rad / 2 ) )
-    # If theta0 >= pi/4, then:
-    r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
-    return L_upper * r_upper
 
+def experimentalSAconstantlist():
+    S = []
+    n =  conf.S_changecostmax
+    for Emin in range(conf.S_Maxcost):
+        deltamax = floor(Emin * n)
+        for delta in range(1, deltamax + 1):
+            S.append([Emin,Emin + delta])
+    
+    T = sum( [ i[1] - i[0] for i in S ] ) / (log(conf.T0_X0) * len(S))
+    X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
+    while (  abs(X_T - conf.T0_X0) > conf.T0_e ):
+        T = T * (log(X_T)/ log(conf.T0_X0))
+        X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
+    
+    return [T for _ in range(conf.num_processes)]
 
 def randomlysamplelistoflists(l):
     return l[np.random.choice( len(l))]
@@ -48,6 +54,20 @@ def uniformlysample_I( rotation_vertices, k1, c, d, n):
             return list(coeff) + [-1,const]
         return  [ uniformlysample_p(rotation_vertices, k1, n) for i in range(c)  ]
     return [ uniformlysample_cc(rotation_vertices, k1, n, c) for i in range(d)  ]
+
+
+def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace):
+    I = []
+    costI = inf
+    for _ in range(conf.I0_samples):
+        Inew = uniformlysample_I( rotation_vertices, k1, c, d, n)
+        LII = dnfconjunction( list3D_to_listof2Darrays(Inew), affinespace , 0)
+        (costInew, _ ) = cost(LII, samplepoints)
+        if (costInew < costI):
+            I = Inew
+            costI = costInew
+    
+    return (I, costI)
 
 def rotationdegree(rotationneighbors):
     return len(rotationneighbors)

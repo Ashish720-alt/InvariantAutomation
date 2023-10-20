@@ -49,7 +49,7 @@ def LIccptdistance(cc, pt):
 def LIDNFptdistance(dnf, pt):
     rv = inf
     for cc in dnf:
-        rv = conf.beta * min(rv, LIccptdistance(cc, pt)) #Average of individual distances Variant
+        rv = conf.beta *  min(rv, LIccptdistance(cc, pt)) #Sum of individual distances Variant
         # rv = min(rv, LIccptdistance_ILP(cc, pt)) #ILP Variant
     return rv
 

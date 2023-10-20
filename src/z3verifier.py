@@ -2,7 +2,7 @@ from z3 import *
 import numpy as np
 from configure import Configure as conf
 from dnfs_and_transitions import dnfconjunction
-from selection_points import Dstate
+from selection_points import Dstate, removeduplicatesICEpair, removeduplicates
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
@@ -57,7 +57,8 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 c = d()
                 if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
                     raise Z3Exception("arrays and uninterpreted sorts are not supported")
-                block.append(c != m[d])
+                # block.append(c != m[d])
+                block.append( Or(c - m[d] > 100 , c - m[d] < -100) ) #Change to use ILP solver?!?         
             s.add(Or(block))
         else:
             if len(result) < conf.s and s.check() != unsat: 
@@ -72,18 +73,18 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n):
         A = __get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3))
-        return convert_cexlist(A, 1, n) ## converting here is wrong!!
+        return convert_cexlist(A, 1, n) 
 
     # I -> Q
     def __get_cex_minus(I_z3, Q_z3, n):
-        return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) ## converting here is wrong!!
+        return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
     
     n = len(I[0][0]) - 2
     I_bounded = dnfconjunction(I, Dstate(n), 1)
     (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I_z3, n) ,__get_cex_minus(I_z3, Q_z3, n) ,__get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n))
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
-    return ( correct , (cex_plus, cex_minus, cex_ICE) )
+    return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )
 
     
 # Testing:
