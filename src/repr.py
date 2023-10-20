@@ -22,7 +22,7 @@ I -> Q
 class B_LItransitionrel:
     def __init__(self, transition_matrix_list, DNF, B):
         self.tlist = transition_matrix_list
-        self.b = dnfconjunction(DNF, B, gLII = 1)
+        self.b = dnfconjunction(DNF, B, gLII = 0)
 
 def genLItransitionrel(B, *args):
     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
@@ -156,8 +156,8 @@ class Repr:
     def update_enet(self, e, samplepoints):
         required_enetSize = getpoints(self.n, e, conf.probenet_success, self.curr_enet_Size)[0]
         (plus, minus, Implpair) = (samplepoints[0], samplepoints[1], samplepoints[2])
-        plus = plus + get_plus0(self.P, required_enetSize - self.curr_enet_Size)
-        minus = minus + get_minus0(self.Q, required_enetSize - self.curr_enet_Size)
-        Implpair = Implpair + get_ICE0(self.T, self.P, self.Q, required_enetSize - self.curr_enet_Size)  
+        plus = get_plus0(self.P, required_enetSize - self.curr_enet_Size)
+        minus = get_minus0(self.Q, required_enetSize - self.curr_enet_Size)
+        Implpair = get_ICE0(self.T, self.P, self.Q, required_enetSize - self.curr_enet_Size)  
         self.curr_enet_Size = required_enetSize           
         return (plus, minus, Implpair)

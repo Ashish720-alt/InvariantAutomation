@@ -3,7 +3,7 @@
 import sys
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import uniformlysample_I, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant
+from guess import initialInvariant, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant, experimentalSAconstantlist
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
@@ -11,14 +11,20 @@ from print import initialized, statistics, z3statistics, invariantfound, timesta
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
-from math import log
+from math import log, floor
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
 from invariantspaceplotter import plotinvariantspace
+from selection_points import removeduplicates, removeduplicatesICEpair
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
+    
+    #Important for truly random processes.
+    random.seed()
+    
+    
     I = I_list[process_id]
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
@@ -35,9 +41,6 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     return
 
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
-       
-
-
                 
         if (costI == 0):
             return_value[process_id] = (I, t)
@@ -124,10 +127,12 @@ def main(inputname, repr: Repr):
 
     manager = mp.Manager()
     I_list = manager.list()
+    
+    
+    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), repr.get_affineSubspace())
+    LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
+    (costI, costlist) = cost(LII, samplepoints)  
     for i in range(conf.num_processes):
-        I_guess = uniformlysample_I( repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n())
-        LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
-        (costI, costlist) = cost(LII, samplepoints)  
         statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist() ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
@@ -141,12 +146,11 @@ def main(inputname, repr: Repr):
         process_list = []
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
+        
         mcmc_start = timer()
         
         k1_list = k1list(repr.get_k0(), repr.get_n())
-        SA_gammalist = SAconstantlist( len(samplepoints[0]) + len(samplepoints[1]) + len(samplepoints[2]), repr.get_k0(), 
-                            repr.get_n(), repr.get_c(), repr.get_d(), k1_list)
-        
+        SA_gammalist = experimentalSAconstantlist()       
         for i in range(conf.num_processes):
             process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, k1_list[i])))
             process_list[i].start()
@@ -154,60 +158,68 @@ def main(inputname, repr: Repr):
         for i in range(conf.num_processes):
             process_list[i].join()
 
-        I = None
-        for result in return_value:
-            if (result[0] != None):
-                if I is None:
-                    I = result[0]
-                (_, t) = result
-                mcmc_iterations = mcmc_iterations + t + 1 # FIXME: do we need to count all threads' iterations?
-            else:
-                (_, t) = result 
-                mcmc_iterations = mcmc_iterations + t + 1
-        
         mcmc_end = timer()
-        mcmc_time = mcmc_time + (mcmc_end - mcmc_start)        
-
-        if I is None:
-            print("All thread time out!")
-            # print the same thing again to the end of "output/{inputname}.txt"
-            with open("output/" + inputname + ".txt", "a") as f:
-                ori_stdout = sys.stdout
-                sys.stdout = f
-                print("All thread time out!")
-                print("-------------------\n")
-                sys.stdout = ori_stdout
-            return ("All thread time out", z3_callcount)
+        mcmc_time = mcmc_time + (mcmc_end - mcmc_start)     
             
         """ Z3 validation """
-        z3_callcount = z3_callcount + 1
         z3_start = timer()
-        LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
-        (z3_correct, cex) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), LII )           
+        
+        z3_callcount = z3_callcount + 1
+        foundI = False
+        cex = ([], [], [])
+        for result in return_value:
+            (I, t) = result    
+            foundI = foundI or (I != None)
+            mcmc_iterations = mcmc_iterations + t + 1            
+            if (I != None):
+                LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
+                (z3_correct, cex_thread) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), LII )           
+                if (z3_correct):
+                    break
+                cex = (cex[0] + cex_thread[0] , cex[1] + cex_thread[1] , cex[2] + cex_thread[2] )
+
+        # Print the same thing again to the end of "output/{inputname}.txt"
+        #     with open("output/" + inputname + ".txt", "a") as f:
+        #         ori_stdout = sys.stdout
+        #         sys.stdout = f
+        #         noInvariantFound(z3_callcount) 
+        #         print("-------------------\n")
+        #         sys.stdout = ori_stdout
+        if (z3_correct):
+            z3_end = timer()
+            z3_time = z3_time + (z3_end - z3_start)
+            break   
+        elif foundI == False:
+            noInvariantFound(z3_callcount)
+            z3_end = timer()
+            z3_time = z3_time + (z3_end - z3_start)
+            return ("All thread time out", z3_callcount)
+        
+        new_enet = (z3_callcount % conf.z3_stepwindow == 0)
+        i = floor(1.0 * z3_callcount / conf.z3_stepwindow)
+        e = conf.e0 / (2**i)
+        
+        # Constricting e-net
+        eNetPoints = ([], [], [])
+        if (new_enet):
+            eNetPoints = repr.update_enet(e, samplepoints)
+
         z3_end = timer()
         z3_time = z3_time + (z3_end - z3_start)
-        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax))
+
+        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints)
 
         """ Collect counterexamples """
         initialize_start = timer()
-        if (z3_correct):
-            break      
-        elif ((not z3_correct) and (t == tmax)):
-            noInvariantFound(z3_callcount)
-            # print the same thing again to the end of "output/{inputname}.txt"
-            with open("output/" + inputname + ".txt", "a") as f:
-                ori_stdout = sys.stdout
-                sys.stdout = f
-                noInvariantFound(z3_callcount) 
-                print("-------------------\n")
-                sys.stdout = ori_stdout
-            return ("No Invariant Found", z3_callcount)
-        samplepoints = (samplepoints[0] + cex[0] , samplepoints[1] + cex[1], samplepoints[2] + cex[2])
-        # Constricting e-net
-        if (z3_callcount % conf.z3_stepwindow == 0 ):
-            i = z3_callcount / conf.z3_stepwindow
-            e = conf.e0 / (2**i)
-            samplepoints = repr.update_enet(e, samplepoints)
+        
+        if (new_enet):
+            samplepoints = ( removeduplicates( samplepoints[0] + eNetPoints[0] + cex[0]), 
+                            removeduplicates( samplepoints[1] + eNetPoints[1] + cex[1] ),
+                            removeduplicatesICEpair( samplepoints[2] + eNetPoints[2] + cex[2]) )
+        else:
+            samplepoints = (removeduplicates(samplepoints[0] + cex[0]) , 
+                            removeduplicates(samplepoints[1] + cex[1]), 
+                            removeduplicatesICEpair(samplepoints[2] + cex[2]) )
 
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
             plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
@@ -225,14 +237,14 @@ def main(inputname, repr: Repr):
     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
 
-    # print the same thing again to the end of "output/{inputname}.txt"
-    with open("output/" + inputname + ".txt", "a") as f:
-        ori_stdout = sys.stdout
-        sys.stdout = f
-        invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
-        timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
-        print("-------------------\n")
-        sys.stdout = ori_stdout
+    # Print the same thing again to the end of "output/{inputname}.txt"
+    # with open("output/" + inputname + ".txt", "a") as f:
+    #     ori_stdout = sys.stdout
+    #     sys.stdout = f
+    #     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
+    #     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
+    #     print("-------------------\n")
+    #     sys.stdout = ori_stdout
         
 
     return (LII, z3_callcount)

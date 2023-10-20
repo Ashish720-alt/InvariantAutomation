@@ -9,6 +9,9 @@ from scipy.spatial import ConvexHull
 from enetspointcounting import getpoints
 from cost_funcs import LIDNFptdistance
 from sympy import * 
+import itertools
+import copy
+import scipy
 
 def Dstate(n):
     cc = np.empty(shape=(0,n+2), dtype = int)
@@ -71,12 +74,15 @@ def v_representation (cc):
 # Assumes it is a convex polytope and generators is a list of lists.
 def getvolume (generators, n):
     if (len(generators) < n+1):
+        print("Returning 0 Volume case 1")
         return 0
     A = np.asarray(generators)
     try:
         ret = ConvexHull(A).volume
+        print("Returning NonZero Volume" + str(ret))
         return ret
     except:
+        print("Returning 0 Volume case 2")
         return 0 
         
 # cc has only <=
@@ -181,25 +187,66 @@ def linearDiophantineSolution(A, b_t):
     
     return (knownValue.tolist(), colvectors)
 
-# print(linearDiophantineSolution( np.array( [[5, 6, 8], [6, -11, 7] ] , ndmin = 2 ), np.array( [1, 9] ) ))
+def isEmpty(cc):
+    v_repr = v_representation(cc)
+    return (len(v_repr) == 0)
 
 def isAffine(cc):
+    p_set = set()
     for p in cc:
-        if (p[-2] == 0):
+        p_tuple = tuple(p)
+        negation = [-x for x in p]
+        if tuple(negation) in p_set:
             return True
+        else:
+            p_set.add(p_tuple)
+    return False
+
+def getAffineNonaffinepreds(cc):
+    p_set = set()
+    affinepreds = []
+    affinepreds_LII = []
+    for p in cc:
+        p_tuple = tuple(p)
+        negation = [-x for x in p]
+        if tuple(negation) in p_set:
+            affinepreds.append( negation[:-2] + [0] + [negation[-1]] )
+            affinepreds_LII.append(negation[:-2] + [-1] + [negation[-1]]) 
+            affinepreds_LII.append(p[:-2] + [-1] + [p[-1]]) 
+        else:
+            p_set.add(p_tuple)
+    
+    NonAffinepreds = [p for p in cc if p not in affinepreds_LII ]
     
     return False
+
 
 def getAffine(cc):
     n = len(cc[0]) - 2
     ccList = cc.tolist()
+    # affinepreds = []
+    # NonAffinepreds = []
+    # for p in ccList:
+    #     if (p[-2] == 0):
+    #         affinepreds.append(p)
+    #     else:
+    #         NonAffinepreds.append(p)
+
+    p_set = set()
     affinepreds = []
-    NonAffinepreds = []
+    affinepreds_LII = []
     for p in ccList:
-        if (p[-2] == 0):
-            affinepreds.append(p)
+        p_tuple = tuple(p)
+        negation = [-x for x in p]
+        if tuple(negation) in p_set:
+            affinepreds.append( negation[:-2] + [0] + [negation[-1]] )
+            affinepreds_LII.append(negation[:-2] + [-1] + [negation[-1]]) 
+            affinepreds_LII.append(p[:-2] + [-1] + [p[-1]]) 
         else:
-            NonAffinepreds.append(p)
+            p_set.add(p_tuple)
+    
+    NonAffinepreds = [p for p in ccList if p not in affinepreds_LII ]
+
     if NonAffinepreds == []:
         NonAffinepreds = Dstate(n)[0].tolist()
     else:
@@ -271,6 +318,8 @@ def randomlysamplepointsCC (cc, m):
         return [ (basevector + np.matmul(S, v)).tolist() for v in lambdapoints]
     else:
         endpoints = v_representation(dnfconjunction([cc], Dstate(n), 0)[0])
+        if endpoints == []:
+            return []
         return randomlysamplepoints(endpoints, dnfconjunction([cc], Dstate(n), 0)[0])
 
 
@@ -388,8 +437,12 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
             rv = rv + [ (point, tl) for tl in tls]            
         return rv
     else:
+        
         n  = len(cc[0]) - 2
         endpoints = v_representation(dnfconjunction([cc], Dstate(n), 0)[0])
+        
+        
+        
         minpoints = [ conf.dspace_intmax] * n
         maxpoints = [ conf.dspace_intmin] * n
         for pt in endpoints:
@@ -401,6 +454,7 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
                 if( A > maxpoints[i]):
                     maxpoints[i] = A
 
+
         rv = []
         #ICE star outputted
         for i in range(m):
@@ -409,6 +463,7 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
             while ( tls == [] ):
                 for i in range(n):
                     point[i] = random.randint(minpoints[i], maxpoints[i] + 1)  
+
                 if (not pointsatisfiescc(point, cc)):
                     continue
                 tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
@@ -436,14 +491,35 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
 #         return rv
 
 
+def removeduplicates (l):
+    L = copy.deepcopy(l)
+    L.sort()
+    return list(L for L,_ in itertools.groupby(L))
+
+def removeduplicatesICEpair(input_list):
+    seen_pairs = set()
+    result = []
+    
+    for pair in input_list:
+        pair_tuple = (tuple(pair[0]), tuple(pair[1]))
+        if pair_tuple not in seen_pairs:
+            result.append(pair)
+            seen_pairs.add(pair_tuple)
+    
+    return result
+
+
 def get_plus0 (P, m):
     n = len(P[0][0]) - 2  
 
     plus0 = []
     for cc in P:
+        if (isEmpty(cc)):
+            continue        
         plus0 = plus0 + randomlysamplepointsCC(cc, m)
 
-    return plus0  
+
+    return removeduplicates(plus0)  
 
 def get_minus0 (Q, m):
     n = len(Q[0][0]) - 2
@@ -451,9 +527,15 @@ def get_minus0 (Q, m):
 
     minus0 = []
     for cc in negQ:
-        minus0 = minus0 + randomlysamplepointsCC(cc, m)
+        
+        if (isEmpty(cc)):
+            continue
 
-    return minus0
+        
+        minus0 = minus0 + randomlysamplepointsCC( dnfconjunction([cc], Dstate(n) , 0)[0], m) #Need a separate conjunction here as sampling from ~Q
+
+
+    return removeduplicates(minus0)
 
 
 def get_ICE0( T, P, Q, m):
@@ -463,13 +545,17 @@ def get_ICE0( T, P, Q, m):
         rv = []
         #The space is B 
         for cc in B:
+            if (isEmpty(cc)):
+                continue
             rv = rv + randomlysampleCC_ICEpairs(cc, m, transitionlist)
         return rv
 
     for rtf in T:
         rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n)
     
-    return rv
+
+    
+    return removeduplicatesICEpair(rv)
 
        
 

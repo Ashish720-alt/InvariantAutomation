@@ -17,6 +17,8 @@ def print_colorslist(t):
     return temp * q + temp[:r]
 
 
+
+
 def decimaltruncate(number, digits = 7):
     if (digits == -1):
         return number
@@ -148,10 +150,12 @@ def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslis
     return 
     
 
-def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout):
+def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout, new_enet, e , eNetPoints):
     if (conf.PRINT_Z3_ITERATIONS == conf.ON):    
-        print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", int(timeout), '\n', "\tz3_correct = ", correct)
-        prettyprint_samplepoints(original_samplepoints, "original-selection-points", "\t")
+        print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", int(timeout), '\n', "\tz3_correct = ", correct, '\n', "\te value = ", e)
+        prettyprint_samplepoints(original_samplepoints, "Original-selection-points", "\t")
+        if(new_enet):
+            prettyprint_samplepoints(eNetPoints, "\nAdded-selection-points", "\t")
         prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
         print("\n\n")
 
@@ -170,7 +174,7 @@ def invariantfound( NonIterativeI , Affine_I , I, Vars):
     print('\n')
 
 def noInvariantFound (Z3calls):
-    print("SA failed to converge after", Z3calls , "Z3 runs")
+    print("All SA threads failed to converge after", Z3calls , "Z3 runs")
 
 def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount, threads ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 

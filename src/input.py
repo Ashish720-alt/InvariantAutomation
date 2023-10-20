@@ -33,7 +33,7 @@ class Inputs:
             B = [np.array([[0, 1, -2, 1000]])]
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
-            c = 3
+            c = 2
             d = 1
 
         class bhmr2007:
@@ -127,10 +127,10 @@ class Inputs:
         class gr2006:
             Var = ['x', 'y']
             P = list3D_to_listof2Darrays([[[1, 0, 0, 0], [0, 1, 0, 0]]])
-            B = list3D_to_listof2Darrays([[[1, 0, -2, 50]], [[0, 1, 1, 1]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 0, 100]]]) , B , 1)
-            T = genLItransitionrel(B, ( [ np.array( [[1, 0, 1], [0, 1, 1], [0, 0, 1]] ),  ] , list3D_to_listof2Darrays([[[1, 0, -2, 50], [0, 1, 1, 0]]]) ), 
-                                    ( [ np.array( [[1, 0, 1], [0, 1, -1], [0, 0, 1]] ),  ] , list3D_to_listof2Darrays([[[1, 0, 1, 50], [0, 1, 1, 0]]]) )
+            B = list3D_to_listof2Darrays([[[1, 0, -2, 50] , [0, 1, 1, -1]] , [[1, 0, 1, 50] , [0, 1, 1, 1]]])
+            Q = list3D_to_listof2Darrays([[[1, 0, 0, 100]] , [[1, 0, -2, 50] , [0, 1, 1, -1]] , [[1, 0, 1, 50] , [0, 1, 1, 1]]]) 
+            T = genLItransitionrel(B, ( [ np.array( [[1, 0, 1], [0, 1, 1], [0, 0, 1]] ),  ] , list3D_to_listof2Darrays([[[1, 0, -2, 50], [0, 1, 1, -1]]]) ), 
+                                    ( [ np.array( [[1, 0, 1], [0, 1, -1], [0, 0, 1]] ),  ] , list3D_to_listof2Darrays([[[1, 0, 1, 50], [0, 1, 1, 1]]]) )
                                 )
             c = 5
             d = 3
