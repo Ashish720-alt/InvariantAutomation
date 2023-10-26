@@ -8,6 +8,7 @@ import ast
 import os.path
 from configure import Configure as conf
 from os import path
+import json
 
 def removeduplicates(coeffdomain):
     i = 0
@@ -98,7 +99,7 @@ def computeRotationGraph(K, n):
 
 def optimizedRotationGraph(K, n):
     if (n == 1):
-        return ([ [-1 ], [1] ],  { (-1) : [[1]] , (1) : [[-1]] })
+        return ([ [-1 ], [1] ],  { (-1, ) : [[1]] , (1, ) : [[-1]] })
     possibledomain = list(product( list(range(-K, K+1, 1)) , repeat=n)) #possibledomain is list of tuples
     possibledomain.remove( tuple([0]*n) )
     
@@ -182,6 +183,7 @@ def getrotationgraph(K, n):
             
             G = optimizedRotationGraph(K, n) #New Experiments
             
+            
             original_stdout = sys.stdout
             with open(filename, 'w') as f:
                 sys.stdout = f # Change the standard output to the file we created.
@@ -193,5 +195,12 @@ def getrotationgraph(K, n):
         E = ast.literal_eval(data)
 
     return ( list(E.keys()), E)
+
+#From json file; only positive values;
+# >>> f = open("result.json", "r")
+# >>> s = json.load(f)
+
+# s.strip('][').split(', ') #s is a string; string to list conversion
+
 
 # print(getrotationgraph(11, 5))

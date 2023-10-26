@@ -29,7 +29,7 @@ def experimentalSAconstantlist():
     S = []
     n =  conf.S_changecostmax
     for Emin in range(conf.S_Maxcost):
-        deltamax = floor(Emin * n)
+        deltamax = max(floor(Emin * n) , conf.S_minchangecost)
         for delta in range(1, deltamax + 1):
             S.append([Emin,Emin + delta])
     

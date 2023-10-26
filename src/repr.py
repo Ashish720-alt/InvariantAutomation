@@ -2,7 +2,7 @@
 """
 import numpy as np
 from dnfs_and_transitions import dnfconjunction
-from selection_points import Dstate, get_plus0, get_minus0, get_ICE0
+from selection_points import Dstate, get_plus0, get_minus0, get_ICE0, TIterates
 from domain import D_p
 from z3verifier import genTransitionRel_to_z3expr, DNF_to_z3expr
 from configure import Configure as conf
@@ -60,9 +60,11 @@ class Repr:
 
         self.curr_enet_Size = getpoints(self.n, conf.e0, conf.probenet_success, 0)[0]
         
+        self.transitionIterates = TIterates(self.T)
+        
         self.plus0 = get_plus0(self.P, self.curr_enet_Size)
         self.minus0 = get_minus0(self.Q, self.curr_enet_Size)
-        self.ICE0 = get_ICE0(self.T, self.P, self.Q, self.curr_enet_Size)        
+        self.ICE0 = get_ICE0(self.T, self.P, self.Q, self.curr_enet_Size, self.transitionIterates)        
                 
         
         
@@ -77,6 +79,7 @@ class Repr:
         self.rotationgraphedges = self.rotationgraph[1]
 
         self.colorslist = print_colorslist(conf.num_processes)
+        
 
     def get_n(self):
         return self.n
@@ -158,6 +161,9 @@ class Repr:
         (plus, minus, Implpair) = (samplepoints[0], samplepoints[1], samplepoints[2])
         plus = get_plus0(self.P, required_enetSize - self.curr_enet_Size)
         minus = get_minus0(self.Q, required_enetSize - self.curr_enet_Size)
-        Implpair = get_ICE0(self.T, self.P, self.Q, required_enetSize - self.curr_enet_Size)  
+        Implpair = get_ICE0(self.T, self.P, self.Q, required_enetSize - self.curr_enet_Size,  self.transitionIterates)  
         self.curr_enet_Size = required_enetSize           
         return (plus, minus, Implpair)
+    
+    def get_transitionIterates(self):
+        return self.transitionIterates

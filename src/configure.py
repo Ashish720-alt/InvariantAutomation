@@ -21,16 +21,20 @@ class Configure:
     SmallVolume = 50
 
     #Initial Invariant Samples.
-    I0_samples = 30
+    I0_samples = 100
 
 
     #Experimental T0 parameters
-    S_Maxcost = 2000
-    S_changecostmax = 0.1
+    S_Maxcost = 500
+    S_changecostmax = 0.2
+    S_minchangecost = 10
     T0_X0 = 0.75
     T0_e = 0.001
     T0_S = 2
     
+    #kth Implication pairs
+    maxiterateImplPair = 100 
+    maxiterateICE = 20
     
     #e-net parameters:
     e0 = 0.5
@@ -39,14 +43,15 @@ class Configure:
 
     #z3 parameters
     s = 5 
-    cexdistanceList = [100, 0]
+    z3_C1_Tmax = [0]
+    z3_C2_Tmax = [100, 0]
+    z3_C3_Tmax = [100, 0]
 
+    #SA Parameters
     translation_range = 5
     rotation_degree = 5
     rotation_rad = rotation_degree * (pi/180) 
-
     p_rot = 0.5
-
     gamma = e #Need floating point constant here
     beta0 = 100 #2^-20 ~ 10^(-7)
     beta = 4 #Change this!!
@@ -95,3 +100,4 @@ class Configure:
     #OPTIMIZATIONS
     NONITERATIVE_PRECONDITION = OFF
     AFFINE_SPACES = OFF
+    # Implement terminating inductive invariant?

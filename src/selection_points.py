@@ -32,6 +32,38 @@ def Dstate(n):
 
 
 
+# def LatticeApproximatePoint( pt, cc):
+#     n = len(pt)
+#     def nonintegralcoordinates( pt):
+#         rv = []
+#         for i in range(n):
+#             if not isinstance(pt[i], int):
+#                 rv.append(i)
+#         return rv
+
+#     def binarylist(n, size):
+#         binaryNumber = [int(x) for x in bin(n)[2:]]
+#         paddedSize = size - len(binaryNumber)
+#         return [0] * paddedSize + binaryNumber
+
+#     nonIntegerCoordinates = nonintegralcoordinates(pt)
+#     if (len(nonIntegerCoordinates) == 0):
+#         return pt
+#     else:
+#         d = len(nonIntegerCoordinates)
+#         for i in range(1, 2**d + 1):
+#             pt_new = pt.copy()
+#             binaryList = binarylist(i, d)
+#             for i in range(d):
+#                 if (binaryList[i] == 0):
+#                     pt_new[nonIntegerCoordinates[i]] = floor(pt_new[nonIntegerCoordinates[i]])
+#                 else:
+#                     pt_new[nonIntegerCoordinates[i]] = ceil(pt_new[nonIntegerCoordinates[i]])    
+#             if (pointsatisfiescc(pt_new, cc)):
+#                 return pt_new
+   
+#     return []      
+
 
 # Assumes cc has LI predicates only, and not genLI predicates
 def v_representation (cc):
@@ -371,24 +403,92 @@ def randomlysamplepointsCC (cc, m):
 #     else:
 #         return ExtremeLatticePoints(v_repr, cc, n)
 
+    #Need to store initial computation, and then finally do for multiple points in 1 go.
 
+
+def pointsatisfiesdnf(pt, dnf):
+    def pointsatisfiescc (pt, cc):
+        for p in cc:
+            sat = sum(p[:-2]* pt) - p[-1]
+            if (sat > 0):
+                return False
+        return True  
+    for cc in dnf:
+        if (pointsatisfiescc(pt, cc)):
+            return True
+    return False      
+
+
+def TIterates (T):
+    def rtfIterates (rtf):
+        def ptfIterates (ptf):
+            T_curr = ptf
+            T_list = [np.copy(T_curr)]
+
+            maxiterate = max(conf.maxiterateICE, conf.maxiterateImplPair)
+            
+            for _ in range(2, maxiterate + 1):
+                T_curr = T_curr @ ptf #Matrix multiplication
+                T_list.append(np.copy(T_curr))   
+            
+            return T_list
+
+        rv = []
+        for ptf in rtf.tlist:
+            rv.append(ptfIterates(ptf))
+        
+        return rv    
+
+    rv = []
+    for rtf in T:
+        rv.append(rtfIterates(rtf))
+    
+    return rv
+        
+
+
+
+
+
+
+def iteratedtransitions (x , ptf, B, maxiterate, T_list):
+    # T_curr = ptf
+    # T_list = []
+
+    # for _ in range(2, maxiterate + 1):
+    #     T_curr = T_curr @ ptf #Matrix multiplication
+    #     T_list.append(np.copy(T_curr))
+    
+    i = 0 
+    while (i < len(T_list)):
+        y = transition(x , T_list[i])
+        if (not pointsatisfiesdnf(y, B)):
+            break
+        i = i + 1
+    i = i - 1
+    
+    # print(i) ##Debug
+    if (i < 0):
+        return []
+    return transition(x, T_list[i])
+
+
+def filter_ICEtails(n, tl_list):
+    rv = []
+    for tl in tl_list:
+        if ( LIDNFptdistance(Dstate(n), tl) == 0):
+            rv.append(tl)
+    return rv
 
 
 #CC is 2d numpy array; unbounded polytopes allowed
-def randomlysampleCC_ICEpairs (cc, m, transitions):
+def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
     def pointsatisfiescc (pt, cc):
         for p in cc:
             sat = sum(p[:-2]* pt) - p[-1]
             if (sat > 0):
                 return False
         return True
-    
-    def filter_ICEtails(n, tl_list):
-        rv = []
-        for tl in tl_list:
-            if ( LIDNFptdistance(Dstate(n), tl) == 0):
-                rv.append(tl)
-        return rv
 
     n  = len(cc[0]) - 2
     if (isAffine(cc)):
@@ -433,7 +533,15 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
                     for i in range(A2_columns):
                         samplepoint[i] = random.randint(minpoints[i], maxpoints[i] + 1)     
                     point = (basevector + np.matmul(S, samplepoint)).tolist()
-                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
+                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])   
+                longtls = []
+                for (i,ptf) in enumerate(transitions):
+                    newtl = iteratedtransitions(point, ptf, loopGuard, conf.maxiterateImplPair, rtfIterates[i])
+                    if (newtl == []):
+                        continue
+                    longtls.append(newtl)
+                tls = tls + filter_ICEtails(n, longtls)
+                                          
             rv = rv + [ (point, tl) for tl in tls]            
         return rv
     else:
@@ -466,7 +574,14 @@ def randomlysampleCC_ICEpairs (cc, m, transitions):
 
                 if (not pointsatisfiescc(point, cc)):
                     continue
-                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])                              
+                tls = filter_ICEtails(n, [ transition(point, ptf) for ptf in transitions])
+                longtls = []
+                for (i,ptf) in enumerate(transitions):
+                    newtl = iteratedtransitions(point, ptf, loopGuard, conf.maxiterateImplPair, rtfIterates[i])
+                    if (newtl == []):
+                        continue
+                    longtls.append(newtl)
+                tls = tls + filter_ICEtails(n, longtls)                           
             rv = rv + [ (point, tl) for tl in tls]
         return rv
 
@@ -538,20 +653,20 @@ def get_minus0 (Q, m):
     return removeduplicates(minus0)
 
 
-def get_ICE0( T, P, Q, m):
+def get_ICE0( T, P, Q, m, Titerates):
     n = len(T[0].b[0][0]) - 2
     rv = []
-    def partialICE_enet (B , P, Q, transitionlist, m, n):
+    def partialICE_enet (B , P, Q, transitionlist, m, n, rtfIterates):
         rv = []
         #The space is B 
         for cc in B:
             if (isEmpty(cc)):
                 continue
-            rv = rv + randomlysampleCC_ICEpairs(cc, m, transitionlist)
+            rv = rv + randomlysampleCC_ICEpairs(cc, m, transitionlist, B, rtfIterates)
         return rv
 
-    for rtf in T:
-        rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n)
+    for (i,rtf) in enumerate(T):
+        rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n, Titerates[i])
     
 
     
@@ -559,5 +674,23 @@ def get_ICE0( T, P, Q, m):
 
        
 
+def get_longICEpairs( ICE, T, n, Titerates):
+    rv = []
+    for (hd, _) in ICE:
+        tls = []
+        for (i,rtf) in enumerate(T):
+            if ( pointsatisfiesdnf(hd, rtf.b) ):
+                longtls = []
+                for (j,ptf) in enumerate(rtf.tlist):
+                    newtl = iteratedtransitions(hd, ptf, rtf.b, conf.maxiterateICE, Titerates[i][j])
+                    if (newtl == []):
+                        continue
+                    longtls.append(newtl)
+                tls = tls + filter_ICEtails(n, longtls)
+                break
+        for newtl in tls:
+            rv.append((hd,newtl))
+    
+    return rv
 
 # print( randomlysamplepointsCC( np.array( [[1, 0, 1, 0] , [1, 0, -1, 2] , [0, 1, 1, 0] , [0, 1, -1, 2]]   ) , 8) )
