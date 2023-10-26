@@ -114,15 +114,14 @@ class Inputs:
             d = 2
 
         class gj2007b:
-            Var = ['x', 'y']
-            P = list3D_to_listof2Darrays([[[1, 0, 0, 0], [0, 1, 0, 50]]])
-            B = list3D_to_listof2Darrays([[[1, 0, -2, 100]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1, 0, 100]]]) , B , 1)
-            T = genLItransitionrel(B, ( [ np.array( [[1, 0, 1], [0, 1, 0], [0, 0, 1]] )  ] , list3D_to_listof2Darrays([[[1, 0, -2, 50]]]) ), 
-                                    ( [ np.array( [[1, 0, 1], [0, 1, 1], [0, 0, 1]] )  ] , list3D_to_listof2Darrays([[[1, 0, 1, 50]]]) )
-                                )
-            c = 2
-            d = 1
+            Var = ['x', 'm', 'n']
+            P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0],  [0, 0, 1, 1, 0]]])
+            B = list3D_to_listof2Darrays([[[1, 0, -1, -2, 0]]])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1, 0, 1, 0] , [0, 1, -1, -2, 0]]]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array( [[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0] , [0, 0, 0, 1]] ) , 
+                                           np.array( [[1, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0] , [0, 0, 0, 1]] ) ] , dnfTrue(3) )  )
+            c = 3
+            d = 2
 
         class gr2006:
             Var = ['x', 'y']

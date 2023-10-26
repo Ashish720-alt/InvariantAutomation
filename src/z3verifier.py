@@ -1,8 +1,9 @@
 from z3 import *
 import numpy as np
 from configure import Configure as conf
-from dnfs_and_transitions import dnfconjunction
-from selection_points import Dstate, removeduplicatesICEpair, removeduplicates
+from dnfs_and_transitions import dnfconjunction, dnfnegation, transition, deepcopy_DNF
+from selection_points import Dstate, removeduplicatesICEpair, removeduplicates, v_representation, pointsatisfiescc
+from math import floor, ceil, sqrt
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
@@ -57,8 +58,9 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 c = d()
                 if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
                     raise Z3Exception("arrays and uninterpreted sorts are not supported")
-                # block.append(c != m[d])
-                block.append( Or(c - m[d] > 100 , c - m[d] < -100) ) #Change to use ILP solver?!?         
+                block.append(c != m[d])
+                # block.append( Or(c - m[d] > 100 , c - m[d] < -100) ) #Change to use ILP solver?!?       
+     
             s.add(Or(block))
         else:
             if len(result) < conf.s and s.check() != unsat: 
@@ -66,26 +68,130 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 return result
         return result
 
+    # Assumes t > 0
+    def __get_enlargedI(I, t):
+        I_copy = deepcopy_DNF(I)
+        for cc in I_copy:
+            for p in cc:
+                magnitude = sqrt(sum(i*i for i in p[:-2]))
+                p[-1] = p[-1] + floor( magnitude * t )
+        return I_copy
+
     #P -> I
-    def __get_cex_plus(P_z3, I_z3, n):
+    def __get_cex_plus(P_z3, I, n):
+        for t in conf.z3_C1_Tmax:
+            I_enlarge = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
+            I_z3 = DNF_to_z3expr( I_enlarge, primed = 0)
+            plus = convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
+            if (len(plus) > 0):
+                return plus
+        I_z3 = DNF_to_z3expr( dnfconjunction(I, Dstate(n), 1), primed = 0)
         return convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
 
     #B & I & T => I'
-    def __get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n):
-        A = __get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3))
-        return convert_cexlist(A, 1, n) 
+    def __get_cex_ICE(B_z3, I, T_z3, n):
+        for t in conf.z3_C2_Tmax:
+            I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
+            I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
+            (I_z3, Ip_z3) = (DNF_to_z3expr( I_enlarge1, primed = 0), DNF_to_z3expr(I_enlarge2, primed = 1))
+            ICE = convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
+            if (len(ICE) > 0):
+                return ICE       
+        I_bounded = dnfconjunction(I, Dstate(n), 1)
+        (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
+        return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
 
     # I -> Q
-    def __get_cex_minus(I_z3, Q_z3, n):
+    def __get_cex_minus(I, Q_z3, n):
+        for t in conf.z3_C3_Tmax:
+            I_enlarge = dnfconjunction(__get_enlargedI(I, -t), Dstate(n), 1) 
+            I_z3 = DNF_to_z3expr( I_enlarge, primed = 0)
+            minus = convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
+            if (len(minus) > 0):
+                return minus
+        I_z3 = DNF_to_z3expr( dnfconjunction(I, Dstate(n), 1), primed = 0)
         return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
     
     n = len(I[0][0]) - 2
-    I_bounded = dnfconjunction(I, Dstate(n), 1)
-    (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
-    (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I_z3, n) ,__get_cex_minus(I_z3, Q_z3, n) ,__get_cex_ICE(B_z3, I_z3, T_z3, Ip_z3, n))
+    (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I, n) ,__get_cex_minus(I, Q_z3, n) ,__get_cex_ICE(B_z3, I, T_z3, n))
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )
 
+
+
+# def centroids(dnf):
+#     def centroid(cc):
+#         v_repr = v_representation(cc)
+#         if (v_repr == []):
+#             return []
+#         points = len(v_repr)
+#         n = len(v_repr)  
+#         coordinate_wise_sum = [0] * n
+#         for pt in v_repr:
+#             for i in range(n):
+#                 coordinate_wise_sum[i] += pt[i]
+#         centroid = [1.0 * x / points for x in coordinate_wise_sum]
+#         return centroid # Centroids need not be lattice point, need nearest lattice point satisfying cc, if it exists
+#     rv = []
+#     for cc in dnf:
+#         ctr = centroid(cc)
+#         if (ctr != []):
+#             rv.append(ctr)
+#     return rv
+
+
+
+# def ILP_verifier (P, B, T, Q, I):
+#     def __get_cex_plus(P, I):
+#         return centroids( dnfconjunction(P, dnfnegation(I), 0) ) # Centroids need not be lattice point, need nearest lattice point
+
+#     def __get_cex_minus(I, Q):
+#         return centroids( dnfconjunction(I, dnfnegation(Q), 0) )
+
+#     def __get_cex_ICE(B, I, T):
+#         #Assumes dnf in LII form
+#         def Tinverse (dnf, ptf):
+#             #Assumes cc in LII form; new equation is of the form A' x <= 0 where x is (n+1)*1 vector
+#             def transform_cc(L):
+#                 L_prime = []
+#                 for row in L:
+#                     new_row = row[:len(row)-2] + [row[-1] * -1]
+#                     L_prime.append(new_row)
+#                 return L_prime
+
+#             #Assumes cc in LII form
+#             def reverse_transform_cc(L_prime):
+#                 cc = []
+#                 for row in L_prime:
+#                     new_row = row[:len(row)-1] + [-1,row[-1] * -1]
+#                     cc.append(new_row)
+#                 return cc
+
+
+#             def Tinverse__cc(cc, ptf):
+#                 cc_prime = transform_cc(cc)
+#                 return reverse_transform_cc( np.matmul( np.array(cc_prime) , ptf ).tolist())
+
+#             rv = []
+#             for cc in dnf:
+#                 rv.append(Tinverse__cc(cc, ptf))
+#             return rv
+
+#         rv = []
+#         for rtf in T:
+#             for ptf in rtf.tlist:
+#                 heads = centroids( dnfconjunction(I, dnfconjunction(B , Tinverse(dnfnegation(I), ptf) , 1), 0) ) 
+#                 for hd in heads:
+#                     tl = transition(hd, ptf)
+#                     rv.append((hd,tl))
+#         return rv
+
+#     n = len(I[0][0]) - 2
+#     I_bounded = dnfconjunction(I, Dstate(n), 1)
+#     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P, I) ,__get_cex_minus(I, Q) ,__get_cex_ICE(B, I, T))
+#     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
+#     return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )    
+    
     
 # Testing:
 # from dnfs_and_transitions import dnfnegation, dnfconjunction, dnfdisjunction, dnfTrue

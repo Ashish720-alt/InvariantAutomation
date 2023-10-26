@@ -52,9 +52,17 @@ def prettyprint_samplepoints(samplepoints, header, indent):
     for ICE in samplepoints[2]:
         print('(', ICE[0], '->', ICE[1], ')',' , ', end = '')    
     print("\n", end = '')
+    return
 
-
-
+def prettyprint_ICEpairs(ImplicationPairs, header, indent):
+    print(indent + header + ":") 
+    print(2*indent + "-> := ", end = '')
+    for ICE in ImplicationPairs:
+        print('(', ICE[0], '->', ICE[1], ')',' , ', end = '')    
+    print("\n", end = '')
+    return
+    
+    
 def prettyprint_invariant(I, endstring , Vars):
     n = len(I[0][0]) - 2
     rv = ""
@@ -150,13 +158,14 @@ def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslis
     return 
     
 
-def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout, new_enet, e , eNetPoints):
+def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout, new_enet, e , eNetPoints, iteratedICEpairs):
     if (conf.PRINT_Z3_ITERATIONS == conf.ON):    
         print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", int(timeout), '\n', "\tz3_correct = ", correct, '\n', "\te value = ", e)
         prettyprint_samplepoints(original_samplepoints, "Original-selection-points", "\t")
         if(new_enet):
             prettyprint_samplepoints(eNetPoints, "\nAdded-selection-points", "\t")
         prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
+        prettyprint_ICEpairs(iteratedICEpairs, "Iterated ICE pairs", "\t")
         print("\n\n")
 
 def invariantfound( NonIterativeI , Affine_I , I, Vars):

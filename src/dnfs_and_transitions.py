@@ -113,6 +113,9 @@ def transition ( x , ptf):
     y = ymatrix_list[:-1]
     return y
 
+    
+
+
 def DNF_aslist(I):
     I_list = []
     for cc in I:

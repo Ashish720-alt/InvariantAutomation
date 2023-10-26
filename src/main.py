@@ -16,7 +16,7 @@ import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
 from invariantspaceplotter import plotinvariantspace
-from selection_points import removeduplicates, removeduplicatesICEpair
+from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
@@ -207,10 +207,16 @@ def main(inputname, repr: Repr):
         z3_end = timer()
         z3_time = z3_time + (z3_end - z3_start)
 
-        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints)
+        #Get iterated implication pairs 
+        iteratedImplicationpairs = get_longICEpairs( cex[2], repr.get_T(), repr.get_n(), repr.get_transitionIterates())
+        
+        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints, iteratedImplicationpairs)
 
         """ Collect counterexamples """
         initialize_start = timer()
+        
+        
+        cex = (cex[0] , cex[1] , cex[2] + iteratedImplicationpairs )
         
         if (new_enet):
             samplepoints = ( removeduplicates( samplepoints[0] + eNetPoints[0] + cex[0]), 
