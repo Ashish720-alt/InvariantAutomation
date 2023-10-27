@@ -90,15 +90,23 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
 
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I, T_z3, n):
+        # print(T_z3) #Debug
+        
         for t in conf.z3_C2_Tmax:
-            I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
-            I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
-            (I_z3, Ip_z3) = (DNF_to_z3expr( I_enlarge1, primed = 0), DNF_to_z3expr(I_enlarge2, primed = 1))
+            I_enlarge1 = __get_enlargedI(I, -t) 
+            I_enlarge2 = __get_enlargedI(I, t)          
+            # I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
+            # I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
+            (I_z3, Ip_z3, Dstate_z3, Dstatep_z3) = (DNF_to_z3expr( I_enlarge1, primed = 0), DNF_to_z3expr(I_enlarge2, primed = 1), 
+                                        DNF_to_z3expr(Dstate(n), primed = 0), DNF_to_z3expr(Dstate(n), primed = 1))
+            # print(Implies(And(B_z3, I_z3, T_z3), Ip_z3)) #Debug
             ICE = convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
             if (len(ICE) > 0):
+                # print(ICE) #Debug
                 return ICE       
         I_bounded = dnfconjunction(I, Dstate(n), 1)
         (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
+
         return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
 
     # I -> Q
@@ -114,6 +122,9 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     
     n = len(I[0][0]) - 2
     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I, n) ,__get_cex_minus(I, Q_z3, n) ,__get_cex_ICE(B_z3, I, T_z3, n))
+    
+    # print("hahah", cex_ICE) #Debug
+    
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )
 

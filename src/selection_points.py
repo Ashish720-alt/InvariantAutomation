@@ -468,7 +468,7 @@ def iteratedtransitions (x , ptf, B, maxiterate, T_list):
     i = i - 1
     
     # print(i) ##Debug
-    if (i < 0):
+    if (i <= 0):
         return []
     return transition(x, T_list[i])
 

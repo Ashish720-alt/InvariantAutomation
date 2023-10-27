@@ -129,7 +129,23 @@ def main(inputname, repr: Repr):
     I_list = manager.list()
     
     
-    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), repr.get_affineSubspace())
+    # (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), repr.get_affineSubspace())
+    
+    # gj2007b
+    # I_guess = [ [ [1, 0, -1, -1, 0] , [-1, 0, 0, -1, 0] , [0, -1, 0, -1, 0] ,[-1, 1, 0, -1, -1]  ]  ,
+                #   [ [1, 0, -1, -1, 0] , [-1, 0, 0, -1, 0] , [0, -1, 0, -1, 0] ,[0, 1, 0, -1, 0]  ]    ] 
+
+    # gj2007
+    # I_guess = [ [ [1, 0, -1, 0] , [-1, 0, -1, 0] , [0, -1 ,-1, 0] ,[-1, 1, -1, 0] ,[0, 1, -1, -1] ]  ,
+    #               [ [1, 0, -1, 0] , [-1, 0, -1, 0] , [0, -1, -1, 0] ,[0, 1, -1, 0] ,[0, 1,-1, -1] ]    ]
+
+    # gr2006
+    # I_guess = [ [ [1, 0, -1, 50] , [1, -1, -1, 0] , [-1, 1 ,-1, 0] ,[0, -1, -1, 0] ]  ,
+    #               [ [-1, 0, -1, -51] , [1, 1, -1, 100] , [-1, -1, -1, -100] ,[0, -1, -1, 0]  ]    ]
+
+    # benchmark05_conjunctive
+    I_guess = [ [ [1, -1, 0, -1, -1] , [1, 0, -1,-1, -1] ,  [-1, 0, 0,-1, 0] ] , [ [1, -1, 0, -1, 0] ,  [-1, 1, 0, -1, 0] , [1, 0, -1,-1, 0] , [-1, 0, 0,-1, 0] ]]
+    
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
     for i in range(conf.num_processes):
@@ -176,7 +192,7 @@ def main(inputname, repr: Repr):
                 (z3_correct, cex_thread) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), LII )           
                 if (z3_correct):
                     break
-                cex = (cex[0] + cex_thread[0] , cex[1] + cex_thread[1] , cex[2] + cex_thread[2] )
+                cex = (removeduplicates(cex[0] + cex_thread[0]) , removeduplicates(cex[1] + cex_thread[1]) , removeduplicatesICEpair(cex[2] + cex_thread[2]) )
 
         # Print the same thing again to the end of "output/{inputname}.txt"
         #     with open("output/" + inputname + ".txt", "a") as f:
