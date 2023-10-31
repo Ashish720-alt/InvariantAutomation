@@ -7,8 +7,6 @@ from math import floor, ceil, sqrt
 
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
-    # FIXME: I don't know if we can do this. Is possible to have np.size(I[0]) == 0 but np.size(I) != 0?
-    #        But np.size(I) == 0 will throw an error if I = [array(...), array(...), ...]
     if len(I) == 0 or np.size(I[0]) == 0:
         return True
 
@@ -46,7 +44,11 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         s = Solver()
         s.add(Not(C))
         while len(result) < conf.s and s.check() == sat: 
+
             m = s.model()
+            
+            print(s, '\n', m) #Debug
+            
             result.append(m)
             # Create a new constraint that blocks the current model
             block = []
@@ -58,8 +60,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 c = d()
                 if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
                     raise Z3Exception("arrays and uninterpreted sorts are not supported")
-                block.append(c != m[d])
-                # block.append( Or(c - m[d] > 100 , c - m[d] < -100) ) #Change to use ILP solver?!?       
+                block.append(c != m[d])    
      
             s.add(Or(block))
         else:
@@ -68,7 +69,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 return result
         return result
 
-    # Assumes t > 0
+    # t > 0 => enlarge ; t < 0 => shrink
     def __get_enlargedI(I, t):
         I_copy = deepcopy_DNF(I)
         for cc in I_copy:
@@ -85,29 +86,32 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
             plus = convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
             if (len(plus) > 0):
                 return plus
-        I_z3 = DNF_to_z3expr( dnfconjunction(I, Dstate(n), 1), primed = 0)
-        return convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
+        return []
 
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I, T_z3, n):
-        # print(T_z3) #Debug
-        
+        def __get_cex_ICE_givenI(B_z3, T_z3, n, I_z3, Ip_z3):
+            print("ICE pairs") #Debug
+            return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
+            
+    
+        rv = []
         for t in conf.z3_C2_Tmax:
-            I_enlarge1 = __get_enlargedI(I, -t) 
-            I_enlarge2 = __get_enlargedI(I, t)          
+            # I_enlarge1 = __get_enlargedI(I, -t) 
+            # I_enlarge2 = __get_enlargedI(I, t)          
             # I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
             # I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
-            (I_z3, Ip_z3, Dstate_z3, Dstatep_z3) = (DNF_to_z3expr( I_enlarge1, primed = 0), DNF_to_z3expr(I_enlarge2, primed = 1), 
-                                        DNF_to_z3expr(Dstate(n), primed = 0), DNF_to_z3expr(Dstate(n), primed = 1))
-            # print(Implies(And(B_z3, I_z3, T_z3), Ip_z3)) #Debug
-            ICE = convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
-            if (len(ICE) > 0):
-                # print(ICE) #Debug
-                return ICE       
-        I_bounded = dnfconjunction(I, Dstate(n), 1)
-        (I_z3, Ip_z3) = (DNF_to_z3expr( I_bounded, primed = 0), DNF_to_z3expr(I_bounded, primed = 1))
+            I_z3 = DNF_to_z3expr( I, primed = 0)
+            Ip_z3 = DNF_to_z3expr(I, primed = 1)
+            # Dstate_z3 = DNF_to_z3expr(Dstate(n), primed = 0)    
+            # Dstatep_z3 =    DNF_to_z3expr(Dstate(n), primed = 1)                    
 
-        return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
+            rv = __get_cex_ICE_givenI(B_z3, T_z3, n, I_z3, Ip_z3)
+            if (rv != []):
+                return rv
+        
+        return []
+
 
     # I -> Q
     def __get_cex_minus(I, Q_z3, n):
@@ -117,14 +121,11 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
             minus = convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
             if (len(minus) > 0):
                 return minus
-        I_z3 = DNF_to_z3expr( dnfconjunction(I, Dstate(n), 1), primed = 0)
-        return convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
+        return []
     
     n = len(I[0][0]) - 2
     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I, n) ,__get_cex_minus(I, Q_z3, n) ,__get_cex_ICE(B_z3, I, T_z3, n))
-    
-    # print("hahah", cex_ICE) #Debug
-    
+  
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )
 
