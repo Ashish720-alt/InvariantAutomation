@@ -43,6 +43,7 @@ def genLII_to_LII (genLII):
             elif (p[n] == 2):
                 p = p * -1
                 p[n+1] = p[n+1] - 1
+                p[n] = -1
                 cc = np.concatenate((cc, np.array([p], ndmin=2))) 
             elif (p[n] == 0):
                 p2 = p * -1
