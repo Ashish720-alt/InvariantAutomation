@@ -45,9 +45,8 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         s.add(Not(C))
         while len(result) < conf.s and s.check() == sat: 
 
+  
             m = s.model()
-            
-            print(s, '\n', m) #Debug
             
             result.append(m)
             # Create a new constraint that blocks the current model
@@ -91,21 +90,15 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I, T_z3, n):
         def __get_cex_ICE_givenI(B_z3, T_z3, n, I_z3, Ip_z3):
-            print("ICE pairs") #Debug
             return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
             
     
         rv = []
-        for t in conf.z3_C2_Tmax:
-            # I_enlarge1 = __get_enlargedI(I, -t) 
-            # I_enlarge2 = __get_enlargedI(I, t)          
-            # I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
-            # I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
-            I_z3 = DNF_to_z3expr( I, primed = 0)
-            Ip_z3 = DNF_to_z3expr(I, primed = 1)
-            # Dstate_z3 = DNF_to_z3expr(Dstate(n), primed = 0)    
-            # Dstatep_z3 =    DNF_to_z3expr(Dstate(n), primed = 1)                    
-
+        for t in conf.z3_C2_Tmax:       
+            I_enlarge1 = dnfconjunction(__get_enlargedI(I, -t) , Dstate(n), 1)
+            I_enlarge2 = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
+            I_z3 = DNF_to_z3expr( I_enlarge1, primed = 0)
+            Ip_z3 = DNF_to_z3expr(I_enlarge2, primed = 1)                  
             rv = __get_cex_ICE_givenI(B_z3, T_z3, n, I_z3, Ip_z3)
             if (rv != []):
                 return rv
@@ -125,7 +118,6 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     
     n = len(I[0][0]) - 2
     (cex_plus, cex_minus, cex_ICE) = ( __get_cex_plus(P_z3, I, n) ,__get_cex_minus(I, Q_z3, n) ,__get_cex_ICE(B_z3, I, T_z3, n))
-  
     correct = 1 if (len(cex_plus) + len(cex_minus) + len(cex_ICE) == 0) else 0
     return ( correct , ( removeduplicates(cex_plus), removeduplicates(cex_minus), removeduplicatesICEpair(cex_ICE) ) )
 

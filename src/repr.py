@@ -29,7 +29,7 @@ def genLItransitionrel(B, *args):
 
 class Repr:
     def __init__(self, P, B, T, Q, Var, c, d):
-         
+        
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
          
         if (conf.NONITERATIVE_PRECONDITION == conf.ON):
