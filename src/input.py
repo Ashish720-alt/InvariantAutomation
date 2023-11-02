@@ -773,10 +773,10 @@ class Inputs:
         class Mono1_1_2:
             Var =  ['x']
             P = list3D_to_listof2Darrays([[[1, 0, 0]]])
-            B = list3D_to_listof2Darrays([[[1, -2, 100000000]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 100000000]]]) , B , 1)
-            T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, -2, 10000000]]]) ) ,
-                                    ( [ np.array([[1, 2], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 1, 10000000]]]) ) )
+            B = list3D_to_listof2Darrays([[[1, -2, 1000000]]])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 1000000]]]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, -2, 1000000]]]) ) ,
+                                    ( [ np.array([[1, 2], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 1, 1000000]]]) ) )
             c = 1
             d = 1
        
