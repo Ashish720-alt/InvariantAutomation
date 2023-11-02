@@ -131,20 +131,6 @@ def main(inputname, repr: Repr):
     
     (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), repr.get_affineSubspace())
     
-    # gj2007b
-    # I_guess = [ [ [1, 0, -1, -1, 0] , [-1, 0, 0, -1, 0] , [0, -1, 0, -1, 0] ,[-1, 1, 0, -1, -1]  ]  ,
-                #   [ [1, 0, -1, -1, 0] , [-1, 0, 0, -1, 0] , [0, -1, 0, -1, 0] ,[0, 1, 0, -1, 0]  ]    ] 
-
-    # gj2007
-    # I_guess = [ [ [1, 0, -1, 0] , [-1, 0, -1, 0] , [0, -1 ,-1, 0] ,[-1, 1, -1, 0] ,[0, 1, -1, -1] ]  ,
-    #               [ [1, 0, -1, 0] , [-1, 0, -1, 0] , [0, -1, -1, 0] ,[0, 1, -1, 0] ,[0, 1,-1, -1] ]    ]
-
-    # gr2006
-    # I_guess = [ [ [1, 0, -1, 50] , [1, -1, -1, 0] , [-1, 1 ,-1, 0] ,[0, -1, -1, 0] ]  ,
-    #               [ [-1, 0, -1, -51] , [1, 1, -1, 100] , [-1, -1, -1, -100] ,[0, -1, -1, 0]  ]    ]
-
-    # benchmark05_conjunctive
-    # I_guess = [ [ [1, -1, 0, -1, -1] , [1, 0, -1,-1, -1] ,  [-1, 0, 0,-1, 0] ] , [ [1, -1, 0, -1, 0] ,  [-1, 1, 0, -1, 0] , [1, 0, -1,-1, 0] , [-1, 0, 0,-1, 0] ]]
     
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
