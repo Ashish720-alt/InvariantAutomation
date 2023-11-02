@@ -278,8 +278,6 @@ class Inputs:
             c = 2
             d = 1
 
-            # c = 4
-            # d = 2
 
         class benchmark06_conjunctive:
             Var =  ['i', 'j', 'x', 'y', 'k']
