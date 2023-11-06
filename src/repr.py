@@ -63,6 +63,7 @@ class Repr:
         self.transitionIterates = TIterates(self.T)
         
         self.plus0 = get_plus0(self.P, self.curr_enet_Size)
+        
         self.minus0 = get_minus0(self.Q, self.curr_enet_Size)
         self.ICE0 = get_ICE0(self.T, self.P, self.Q, self.curr_enet_Size, self.transitionIterates)        
                 
