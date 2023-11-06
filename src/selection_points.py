@@ -228,6 +228,7 @@ def isAffine(cc):
     for p in cc:
         p_tuple = tuple(p)
         negation = [-x for x in p]
+        negation[-2] = -1
         if tuple(negation) in p_set:
             return True
         else:
@@ -270,6 +271,7 @@ def getAffine(cc):
     for p in ccList:
         p_tuple = tuple(p)
         negation = [-x for x in p]
+        negation[-2] = -1
         if tuple(negation) in p_set:
             affinepreds.append( negation[:-2] + [0] + [negation[-1]] )
             affinepreds_LII.append(negation[:-2] + [-1] + [negation[-1]]) 
@@ -300,7 +302,6 @@ def getAffine(cc):
 
 
 #CC is 2d numpy array; unbounded polytopes allowed
-# Remove conversion from gLII to LII before
 def randomlysamplepointsCC (cc, m):
     def randomlysamplepoints(endpoints, cc):
         n = len(endpoints[0])
@@ -628,9 +629,13 @@ def get_plus0 (P, m):
     n = len(P[0][0]) - 2  
 
     plus0 = []
-    for cc in P:
+    
+    P_LIA = genLII_to_LII(P)
+    
+    for cc in P_LIA:
         if (isEmpty(cc)):
             continue        
+        
         plus0 = plus0 + randomlysamplepointsCC(cc, m)
 
 
@@ -638,7 +643,7 @@ def get_plus0 (P, m):
 
 def get_minus0 (Q, m):
     n = len(Q[0][0]) - 2
-    negQ = dnfnegation(Q) 
+    negQ = dnfnegation(Q) #This always returns LIA form
 
     minus0 = []
     for cc in negQ:
@@ -666,7 +671,7 @@ def get_ICE0( T, P, Q, m, Titerates):
         return rv
 
     for (i,rtf) in enumerate(T):
-        rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n, Titerates[i])
+        rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n, Titerates[i]) #All rft.b are in LIA form
     
 
     
