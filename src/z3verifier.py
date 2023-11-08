@@ -47,7 +47,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         print("1") #Debug
         
         while len(result) < conf.s and s.check() == sat: 
-
+            print("1.1") #Debug
   
             m = s.model()
             
@@ -65,14 +65,14 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 block.append(c != m[d])    
      
             s.add(Or(block))
+        
         else:
             print("2") #Debug
             if len(result) < conf.s and s.check() != unsat: 
                 print("2.1") #Debug
                 print("Solver can't verify or disprove")
                 return result
-            print("3") #Debug
-        
+        print("3") #Debug
         return result
 
     # t > 0 => enlarge ; t < 0 => shrink
