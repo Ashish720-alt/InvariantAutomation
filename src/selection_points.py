@@ -330,7 +330,7 @@ def randomlysamplepointsCC (cc, m):
     
     n  = len(cc[0]) - 2
     if (isAffine(cc)):
-        (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
+        (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.    
         (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
         if (basevector == []):
             return []
@@ -339,10 +339,11 @@ def randomlysamplepointsCC (cc, m):
             return [basevector]
         A2 = np.matmul(nonA, S)
         b2 = nonb - np.matmul(nonA, basevector)
+        
         lambda_cc = []
         (A2_rows, _) = A2.shape
         for i in range(A2_rows):
-            lambda_cc.append( [int(A2[i]), -1, b2[i]])   
+            lambda_cc.append( [int(x) for x in A2[i]  ]  + [-1, b2[i]])   # Original RHS is [int(A2[i]), -1, b2[i]])   
         endpoints = v_representation(np.array(lambda_cc, ndmin = 2, dtype = int))
         
         
@@ -502,11 +503,12 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
             return [ (basevector, tl) for tl in tls] 
         S = np.transpose(np.array(colvectors, ndmin = 2))
         A2 = np.matmul(nonA, S)
-        b2 = nonb - np.matmul(nonA, basevector)
+        b2 = nonb - np.matmul(nonA, basevector)        
+        
         lambda_cc = []
         (A2_rows, A2_columns) = A2.shape
         for i in range(A2_rows):
-            lambda_cc.append( [int(A2[i]), -1, b2[i]])  
+            lambda_cc.append( [int(x) for x in A2[i]  ]  + [-1, b2[i]])   # Original RHS is [int(A2[i]), -1, b2[i]]) 
         
         
         
