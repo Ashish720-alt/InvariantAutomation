@@ -5,7 +5,7 @@ from math import pi, e
 
 class Configure:
     
-    dspace_radius = 1000000
+    dspace_radius = 1.5 * 1000000 #Change coeff according to problem needs.
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
 
