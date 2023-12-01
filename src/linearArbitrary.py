@@ -35,7 +35,16 @@ if parse_res['all']:
         exit(1)
     for subfolder in dir(Inputs):
         for inp in dir(getattr(Inputs, subfolder)):
-            linearArbitrary(input_to_repr(getattr(getattr(Inputs, subfolder), inp), 0,0))
+            try: 
+                if inp.startswith("__") or subfolder.startswith("__"):
+                    continue
+                print("Running input " + subfolder + "." + inp)
+                repr = input_to_repr(getattr(getattr(Inputs, subfolder), inp), None, None)
+                name = subfolder + "." + inp
+                linearArbitrary(name, repr)
+            except Exception as e:
+                print(f"Error {e} in input " + subfolder + "." + inp)
+            print("----------------------")
 else:
     if parse_res['input'] is None:
         print(parser.print_help())
@@ -47,4 +56,4 @@ else:
             if subfolder == first_name:
                 for inp in getattr(Inputs, subfolder).__dict__:
                     if inp == last_name:
-                        linearArbitrary(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), 0, 0))
+                        linearArbitrary(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
