@@ -177,7 +177,9 @@ def getrotationgraph(K, n):
     #New Experiments
     filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
 
-    if (not path.isfile(filename)):
+    jsonfilename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json"
+
+    if (not path.isfile(filename) and not path.isfile(jsonfilename)):
             
             # G = computeRotationGraph(K,n)
             
@@ -190,11 +192,22 @@ def getrotationgraph(K, n):
                 pprint.pprint(G[1], f)
                 sys.stdout = original_stdout # Reset the standard output to its original value
 
-    with open(filename) as f:
-        data = f.read()
-        E = ast.literal_eval(data)
+    if (path.isfile(filename)):
+        with open(filename) as f:
+            data = f.read()
+            E = ast.literal_eval(data)
+    else:
+        with open(jsonfilename) as f:
+            data = f.read()
+            temp = ast.literal_eval(data)
+            E = {}
+            for key in temp:
+                tuple_key = tuple(ast.literal_eval(key))
+                E.update({ tuple_key : temp[key]  })
 
     return ( list(E.keys()), E)
+
+
 
 #From json file; only positive values;
 # >>> f = open("result.json", "r")

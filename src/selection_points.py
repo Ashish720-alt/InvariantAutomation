@@ -217,7 +217,7 @@ def linearDiophantineSolution(A, b_t):
     for j in range(len(knownVars), A_column):
         colvectors.append(T[j].tolist())
     
-    return (knownValue.tolist(), colvectors)
+    return (knownValue, colvectors)
 
 def isEmpty(cc):
     v_repr = v_representation(cc)
@@ -229,6 +229,8 @@ def isAffine(cc):
         p_tuple = tuple(p)
         negation = [-x for x in p]
         negation[-2] = -1
+        if (negation == p.tolist()):
+            continue
         if tuple(negation) in p_set:
             return True
         else:
@@ -493,7 +495,7 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
         return True
 
     n  = len(cc[0]) - 2
-    if (isAffine(cc)):
+    if (isAffine(cc)):     
         (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
         (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
         if (basevector == []): #No solution
@@ -548,7 +550,6 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
             rv = rv + [ (point, tl) for tl in tls]            
         return rv
     else:
-        
         n  = len(cc[0]) - 2
         endpoints = v_representation(dnfconjunction([cc], Dstate(n), 0)[0])
         

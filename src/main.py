@@ -26,6 +26,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     
     
     I = I_list[process_id]
+    n = repr.get_n()
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
@@ -53,7 +54,12 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             for j in range(repr.get_c()):
                 oldcoeff = I[i][j][:-2]
                 oldconst = I[i][j][-1]
-                rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                if (n <= 3):
+                    rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                else:
+                    negative_indices = [idx for idx, val in enumerate(oldcoeff) if val < 0]
+                    rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
+                                            for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
                 for r in rotneighbors:
                     constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
                     for c in constlist:
