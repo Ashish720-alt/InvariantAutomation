@@ -17,19 +17,26 @@ from input import Inputs, input_to_repr
 import multiprocessing as mp
 from invariantspaceplotter import plotinvariantspace
 from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
+from costplotter import CostPlotter
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
+def search(file, repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1):
     
     #Important for truly random processes.
     random.seed()
     
+    
+    if (conf.COST_PLOTTER == conf.ON):
+        costTimeList = []
     
     I = I_list[process_id]
     n = repr.get_n()
     tmax = repr.get_tmax()
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
+
+
+
     # temp = SA_Gamma /log(2)
 
     for t in range(1, tmax+1):
@@ -42,7 +49,14 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                     return
 
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
-                
+
+        if (conf.COST_PLOTTER == conf.ON):
+            costTimeList.append(costI)  
+            if (t % conf.COST_PLOTTER_WINDOW == 0):
+                CostPlotter( costTimeList , '_Z3Calls' + str(z3_callcount) + '_Thread' + str(process_id), 
+                            filename = file + '_Z3Calls' + str(z3_callcount) + '_Thread' + str(process_id) + ".png" )
+        
+           
         if (costI == 0):
             return_value[process_id] = (I, t)
             SAsuccess(process_id, repr.get_colorslist())
@@ -160,7 +174,7 @@ def main(inputname, repr: Repr):
         k1_list = k1list(repr.get_k0(), repr.get_n())
         SA_gammalist = experimentalSAconstantlist()       
         for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, k1_list[i])))
+            process_list.append(mp.Process(target = search, args = (inputname, repr, I_list, samplepoints, i, return_value, SA_gammalist[i], z3_callcount, k1_list[i])))
             process_list[i].start()
         
         for i in range(conf.num_processes):
