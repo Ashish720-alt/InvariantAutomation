@@ -11,7 +11,7 @@ from sklearn.svm import SVC
 from itertools import combinations
 
 
-PRINT_LOG = True
+PRINT_LOG = False
 
 def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
     def convert_cexlist(cexlist, ICEpair, n):
@@ -98,29 +98,30 @@ def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
     return (1, None, [])
 
 def pluspointSVM(p, pt):
-    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   )  >= p[-1]  )
+    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   )  <= p[-1]  )
 
 def minuspointSVM(p, pt):
-    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   ) < p[-1]  )
+    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   ) > p[-1]  )
 
 
 
-def SVM(plus, minus, baseplus, baseminus):
+def SVM(plus, minus, n):
     # Convert lists to numpy arrays
     
     
 
-    n = len(baseplus)
+    
     if (len(plus) + len(minus) == 0):
         return [[ [0]*(n-2) + [-1,0]  ]] #dnfTrue
-    
+    if (len(plus) == 0):
+        max_x = max(sublist[0] for sublist in minus) 
+        return [[ [-1] + [0]*(n-1) + [-1, -1*max_x - 1]  ]]
+    if (len(minus) == 0):
+        max_x = max(sublist[0] for sublist in plus) 
+        return [[ [1] + [0]*(n-1) + [-1,max_x]  ]]
+
     plus_actual = list(plus) #list is to create a new copy
     minus_actual = list(minus)
-    
-    if (len(plus) == 0):
-        plus_actual = plus_actual + [baseplus]
-    if len(minus) == 0:
-        minus_actual = minus_actual = [baseminus]
     
     # print("SVM", plus_actual, minus_actual, end = '') #Debug
     
@@ -136,32 +137,35 @@ def SVM(plus, minus, baseplus, baseminus):
     intercept = svm.intercept_[0]
 
     # Output in the specified format [coefficients, constant]
-    output = list(coef) + [1, intercept] #SVC learns w^Tx >= b form
-    
+    output_gen = list(coef) + [1, -1 * intercept] #SVC learns w^Tx >= b form
+    output = [-1 * x for x in output_gen]
     # print( output) #Debug
     
     return [[output]]     
 
-def fullSVM(plus, minus, baseplus, baseminus):
+def fullSVM(plus, minus, n):
     
-    # print("FullSVM", plus, minus, baseplus, baseminus) #Debug
+    print("FullSVM", plus, minus) #Debug
     
-    phi = SVM(plus, minus, baseplus, baseminus) 
+    phi = SVM(plus, minus, n) 
     plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
     plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
     minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
     
-    # print("classifier", phi, plus_correct, plus_wrong, minus_wrong) #Debug
+    print("classifier", phi, plus_correct, plus_wrong, minus_wrong) #Debug
     
     if (len(minus_wrong ) != 0):
-        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, baseplus, baseminus))
+        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n))
     if (len(plus_wrong) != 0):
-        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, baseplus, baseminus))
+        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, n))
 
     return phi
 
-def learnClassifier(plus, minus, baseplus, baseminus):
-    SVMclassifier = fullSVM(plus, minus, baseplus, baseminus)
+def learnClassifier(plus, minus, n):
+    SVMclassifier = fullSVM(plus, minus, n)
+    
+    print("Done") #Debug
+    
     # coeff = []
     # for cc in SVMclassifier:
     #     coeff = coeff + [ p[:-2] for p in cc]
@@ -178,9 +182,6 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
     Q_z3expr = DNF_to_z3expr(dnfconjunction(Q, Dstate(n), 1), primed = 0)
     T_z3expr = genTransitionRel_to_z3expr(T)
     
-    basepluspoint = get_plus0(P, 1)[0]
-    baseminuspoint = get_minus0(Q, 1)[0]
-    
     pluspoints = []
     minuspoints = []
     
@@ -190,11 +191,7 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
         print(pluspoints, minuspoints, classifier , '\n')
     
     for _ in range(0, 2000):
-        
-        
-        LII = [ np.array([[-x for x in p] for p in cc]) for cc in classifier  ]  
-        
-        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, LII)  
+        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, classifier)  
         
         if (z3_correct):
             print(inputname, "YES", classifier)
@@ -217,7 +214,7 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
         if (PRINT_LOG):
             print(cex, pluspoints, minuspoints, end = '')
         
-        classifier = learnClassifier(pluspoints, minuspoints, basepluspoint, baseminuspoint) #classifier as a 3D list  
+        classifier = learnClassifier(pluspoints, minuspoints, n) #classifier as a 3D list  
         if (PRINT_LOG):
             print('  ', classifier , '\n')
     

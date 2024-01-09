@@ -18,12 +18,15 @@ import multiprocessing as mp
 from invariantspaceplotter import plotinvariantspace
 from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
 from costplotter import CostPlotter
+import stagnation
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
     
     #Important for truly random processes.
     random.seed()
+    
+    
     
     I = I_list[process_id]
     n = repr.get_n()
@@ -32,6 +35,11 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     (costI, costlist) = cost(LII, samplepoints)  
 
     temp = SA_Gamma /log(2)
+
+
+    if (conf.CHECK_STAGNATION == conf.ON):
+        stagnant = False
+        costTimeList = [costI]
 
     for t in range(1, tmax+1):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
@@ -75,9 +83,15 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                 transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
                 for c in transconslist:
                     neighbors.append( ( i, j, oldcoeff + [-1,c]) )
+        
+        if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
+            if (stagnant):
+                if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
+                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
+                else:
+                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
+        
         deg = len(neighbors)
-        
-        
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
         I[P[0]][P[1]] = P[2]
@@ -108,8 +122,13 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist()) #Print rejected value
             I[P[0]][P[1]] = oldpredicate
             
-
-
+        if (conf.CHECK_STAGNATION == conf.ON):
+            if len(costTimeList) >= conf.STAGNANT_TIME_WINDOW:
+                costTimeList = costTimeList[1:]      
+            costTimeList = costTimeList + [costI]
+            stagnant = stagnation.isStagnant(costTimeList)
+            if (stagnant):
+                print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
         
         # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
