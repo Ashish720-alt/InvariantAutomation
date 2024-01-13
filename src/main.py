@@ -23,6 +23,7 @@ import stagnation
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
     
+    
     #Important for truly random processes.
     random.seed()
     
@@ -84,12 +85,12 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                 for c in transconslist:
                     neighbors.append( ( i, j, oldcoeff + [-1,c]) )
         
-        if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
-            if (stagnant):
-                if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
-                else:
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
+        # if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
+        #     if (stagnant):
+        #         if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
+        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
+        #         else:
+        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
         
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
@@ -129,7 +130,9 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             stagnant = stagnation.isStagnant(costTimeList)
             if (stagnant):
                 print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
-        
+                localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
+                print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
+                print(stagnation.checkAreaAroundStuck(I, repr, samplepoints))      
         # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
     # Process 'process_id' Failed!

@@ -87,7 +87,7 @@ class Configure:
     #Stagnant Runs Debugger
     CHECK_STAGNATION = ON
     CHECK_LOCALMINIMA = ON
-    STAGNANT_TIME_WINDOW = 1000
+    STAGNANT_TIME_WINDOW = 100
     STAGNANT_COST_RANGE = 50
     
     #Samplepoints Debugger    
