@@ -132,7 +132,10 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                 print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
                 localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
                 print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
-                print(stagnation.checkAreaAroundStuck(I, repr, samplepoints))      
+                localAreaCosts = stagnation.checkAreaAroundStuck(I, repr, samplepoints)
+                for i in range(conf.STAGNATION_AREA_CHECK):
+                    print(max(localAreaCosts[i]), localAreaCosts)       
+        
         # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
     # Process 'process_id' Failed!

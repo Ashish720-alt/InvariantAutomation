@@ -65,12 +65,13 @@ def checkAreaAroundStuck (I, repr, samplepoints):
     costI = (cost(LII, samplepoints))[0]
     costLists = [ [costI] ]
     
-    for _ in range(1, 2):
+    for _ in range(conf.STAGNATION_AREA_CHECK):
         nextneighbors = []
         neighborcostList = []
         for N in ns:
-            # print(N) 
+            # print(N) # Error comes between these two prints!
             S = getNeighbors(repr, N)
+            # print("Above inv neighbors found!") # Error comes between these two prints!
             nextneighbors = nextneighbors + S
             LII = dnfconjunction( list3D_to_listof2Darrays(N), repr.get_affineSubspace(), 0)
             neighborcostList = neighborcostList + [(cost(LII, samplepoints))[0]] 
