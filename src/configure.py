@@ -12,7 +12,7 @@ class Configure:
     num_processes = 4 #Number of threads
 
     Gamma0 = 2
-    maxSArun =  250000 #1000000
+    maxSArun =  1000000 #1000000
 
     k = 2
     r = 1
@@ -89,6 +89,7 @@ class Configure:
     CHECK_LOCALMINIMA = ON
     STAGNANT_TIME_WINDOW = 100
     STAGNANT_COST_RANGE = 50
+    STAGNATION_AREA_CHECK = 2
     
     #Samplepoints Debugger    
     SAMPLEPOINTS_DEBUGGER = OFF

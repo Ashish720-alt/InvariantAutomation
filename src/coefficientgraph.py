@@ -177,12 +177,13 @@ def getrotationgraph(K, n):
     #New Experiments
     filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
 
+    # jsonfilename = "../rotation-graph/n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json" #For remote server
     jsonfilename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json"
 
     if (not path.isfile(filename) and not path.isfile(jsonfilename)):
             
             # G = computeRotationGraph(K,n)
-            
+            print("Computing Coefficient Graph ...")
             G = optimizedRotationGraph(K, n) #New Experiments
             
             
