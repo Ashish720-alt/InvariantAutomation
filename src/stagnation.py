@@ -75,7 +75,7 @@ def checkAreaAroundStuck (I, repr, samplepoints):
             nextneighbors = nextneighbors + S
             LII = dnfconjunction( list3D_to_listof2Darrays(N), repr.get_affineSubspace(), 0)
             neighborcostList = neighborcostList + [(cost(LII, samplepoints))[0]] 
-        ns = nextneighbors.copy
+        ns = nextneighbors.copy()
         costLists.append(neighborcostList)
     
     return costLists   
