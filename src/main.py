@@ -129,12 +129,17 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             costTimeList = costTimeList + [costI]
             stagnant = stagnation.isStagnant(costTimeList)
             if (stagnant):
-                print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
-                localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
-                print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
-                localAreaCosts = stagnation.checkAreaAroundStuck(I, repr, samplepoints)
-                for i in range(conf.STAGNATION_AREA_CHECK):
-                    print(max(localAreaCosts[i]), localAreaCosts)       
+                if (conf.CHECK_LOCALMINIMA == conf.ON):
+                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
+                    localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
+                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
+                
+                #Printing localArea not feasible for even 2 neighbors (~17,000 elements)
+                # localAreaCosts = stagnation.checkAreaAroundStuck(I, repr, samplepoints)
+                # for i in range(1,conf.STAGNATION_AREA_CHECK + 1):
+                #     print(repr.get_colorslist()[process_id] + sorted(localAreaCosts[i])[:5], '\n', localAreaCosts[i])       
+                
+                stagnation.gradientdescent(I, repr, samplepoints, repr.get_colorslist()[process_id])
         
         # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 

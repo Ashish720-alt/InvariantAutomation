@@ -33,7 +33,7 @@ def getNeighbors (repr: Repr, I):
     
     neighbor_true = []
     for (i,j, p) in neighbors:
-        J = I #deepcopy_DNF(I)
+        J = listof2Darrays_to_list3D (deepcopy_DNF(I))
         J[i][j] = p
         neighbor_true.append(J)
     
@@ -57,10 +57,9 @@ def checkLocalMinima (I, repr, samplepoints):
         neighborcostList = neighborcostList + [(cost(LII, samplepoints))[0]]    
     return (costI <= min(neighborcostList))    
 
-
+#Ineffective function, 1 neighbors are around 200-300 and 2nd neighbors are around 17,000
 def checkAreaAroundStuck (I, repr, samplepoints):
     ns = getNeighbors (repr, I)
-    # print(ns) #Debug 
     LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
     costI = (cost(LII, samplepoints))[0]
     costLists = [ [costI] ]
@@ -69,13 +68,54 @@ def checkAreaAroundStuck (I, repr, samplepoints):
         nextneighbors = []
         neighborcostList = []
         for N in ns:
-            # print(N) # Error comes between these two prints!
             S = getNeighbors(repr, N)
-            # print("Above inv neighbors found!") # Error comes between these two prints!
             nextneighbors = nextneighbors + S
-            LII = dnfconjunction( list3D_to_listof2Darrays(N), repr.get_affineSubspace(), 0)
-            neighborcostList = neighborcostList + [(cost(LII, samplepoints))[0]] 
+            LIN = dnfconjunction( list3D_to_listof2Darrays(N), repr.get_affineSubspace(), 0)
+            neighborcostList.append(cost(LIN, samplepoints)[0]) 
         ns = nextneighbors.copy()
         costLists.append(neighborcostList)
     
     return costLists   
+
+def gradientdescent(I, repr, samplepoints, color):    
+    def get_bestNeighbor(repr, I, samplepoints):
+        def getcostI(I, repr, samplepoints):
+            return (cost(dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0), samplepoints))[0] 
+
+        neighbors = getNeighbors(repr, I)
+
+        if not neighbors:
+            return None 
+        costs = [getcostI(neighbor, repr, samplepoints) for neighbor in neighbors]
+        min_cost_index = costs.index(min(costs))
+        return (neighbors[min_cost_index], costs[min_cost_index])    
+    
+    c = (cost(dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0), samplepoints))[0] 
+    
+    #Don't want to do this for rare types of stagnation.
+    if (c > 1000):
+        return
+    
+    print(color + "Gradient Descent starts ...")
+    
+    
+    t = 0
+    while (t <= 1000):
+        (Inew, cnew) = get_bestNeighbor(repr, I, samplepoints)
+        if (cnew >= c):
+            print(color + str(t), "Hit a local minima at previous invariant!")
+            print(color + "Gradient Descent ends.")
+            return
+        else:
+            c = cnew
+            I = Inew
+            print(color + str(t), I, c)
+    
+        t = t + 1
+
+
+
+    print(color + "Gradient Descent ends.")
+    return            
+    
+    
