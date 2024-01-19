@@ -11,7 +11,12 @@ from sklearn.svm import SVC
 from itertools import combinations
 
 
-PRINT_LOG = False
+PRINT_LOG = True
+
+def listof2Darrays_to_list3D (I):
+    A = [cc.tolist() for cc in I ]
+    return A
+
 
 def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
     def convert_cexlist(cexlist, ICEpair, n):
@@ -104,13 +109,10 @@ def minuspointSVM(p, pt):
     return ( sum( [a * b for a,b in zip( p[:-2], pt)]   ) > p[-1]  )
 
 
-
+#PROBLEM: IN SVM What if PLUS_WRONG = PLUS, THEN INFINITE LOOP; but this shouldn't happpen?
 def SVM(plus, minus, n):
     # Convert lists to numpy arrays
-    
-    
 
-    
     if (len(plus) + len(minus) == 0):
         return [[ [0]*(n-2) + [-1,0]  ]] #dnfTrue
     if (len(plus) == 0):
@@ -145,14 +147,14 @@ def SVM(plus, minus, n):
 
 def fullSVM(plus, minus, n):
     
-    print("FullSVM", plus, minus) #Debug
+    print("\t\t\tFullSVM: \n", '\t\t\t\t', '+ = ', plus, ', - = ', minus) #Debug
     
     phi = SVM(plus, minus, n) 
     plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
     plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
     minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
     
-    print("classifier", phi, plus_correct, plus_wrong, minus_wrong) #Debug
+    print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
     
     if (len(minus_wrong ) != 0):
         phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n))
@@ -164,7 +166,7 @@ def fullSVM(plus, minus, n):
 def learnClassifier(plus, minus, n):
     SVMclassifier = fullSVM(plus, minus, n)
     
-    print("Done") #Debug
+    # print("Done") #Debug
     
     # coeff = []
     # for cc in SVMclassifier:
@@ -177,20 +179,20 @@ def learnClassifier(plus, minus, n):
 def linearArbitrary(inputname, P, B, T, Q, Vars):    
     n = len(P[0][0]) - 2
     
-    P_z3expr = DNF_to_z3expr( dnfconjunction(P, Dstate(n), 1), primed = 0)
-    B_z3expr = DNF_to_z3expr(dnfconjunction(B, Dstate(n), 1), primed = 0)
-    Q_z3expr = DNF_to_z3expr(dnfconjunction(Q, Dstate(n), 1), primed = 0)
+    P_z3expr = DNF_to_z3expr( P, primed = 0)
+    B_z3expr = DNF_to_z3expr(B, primed = 0)
+    Q_z3expr = DNF_to_z3expr(Q, primed = 0)
     T_z3expr = genTransitionRel_to_z3expr(T)
     
     pluspoints = []
     minuspoints = []
     
-    classifier = dnfTrue(n)
+    classifier = listof2Darrays_to_list3D( dnfTrue(n) )
     
     if (PRINT_LOG):
-        print(pluspoints, minuspoints, classifier , '\n')
+        print('t = -1 : ' , 'cex = []',', + = ', pluspoints, ', - = ', minuspoints, '\n\n')
     
-    for _ in range(0, 2000):
+    for t in range(0, 2000):
         (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, classifier)  
         
         if (z3_correct):
@@ -212,11 +214,11 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
                 minuspoints = minuspoints + [hd]
 
         if (PRINT_LOG):
-            print(cex, pluspoints, minuspoints, end = '')
+            print('t = ' + str(t) + ' :' , 'cex = ', cex, ', + = ', pluspoints, ', - = ', minuspoints)
         
         classifier = learnClassifier(pluspoints, minuspoints, n) #classifier as a 3D list  
         if (PRINT_LOG):
-            print('  ', classifier , '\n')
+            print('\t', 'ClassifierLearnt = ',  classifier , '\n\n')
     
     print(inputname, "NO")
     
