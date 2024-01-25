@@ -12,7 +12,7 @@ from itertools import combinations
 import sys
 from sklearn.tree import DecisionTreeClassifier
 
-PRINT_LOG = False
+PRINT_LOG = True
 
 def listof2Darrays_to_list3D (I):
     A = [cc.tolist() for cc in I ]
@@ -156,16 +156,16 @@ def fullSVM(plus, minus, n):
     
     # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
     
-    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) or  (len(minus) > 0 and len(minus_wrong) == len(minus)) ):
-        print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
-        print("Failed!!")
-        sys.exit()
     
     if (len(minus_wrong ) != 0):
         phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n))
     if (len(plus_wrong) != 0):
         phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, n))
 
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) or  (len(minus) > 0 and len(minus_wrong) == len(minus)) ):
+        print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
+        print("Failed!!")
+        sys.exit()
     return phi
 
 
