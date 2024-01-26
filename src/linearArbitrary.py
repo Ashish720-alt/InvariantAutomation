@@ -13,7 +13,7 @@ import sys
 from sklearn.tree import DecisionTreeClassifier
 import random
 
-PRINT_LOG = False
+PRINT_LOG = True
 
 def listof2Darrays_to_list3D (I):
     A = [cc.tolist() for cc in I ]
@@ -158,6 +158,7 @@ def fullSVM(plus, minus, n):
     
     # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
     
+<<<<<<< HEAD
     if ( (len(plus) > 0 and len(plus_wrong) == len(plus) and len(minus) > 0) ):
         randomNegative = random.choice(minus)
         phi = SVM(plus, [randomNegative], n) 
@@ -175,6 +176,8 @@ def fullSVM(plus, minus, n):
     if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
         print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
         raise Exception("Failed!!")
+=======
+>>>>>>> fcbc5b0c7466343d628e7e465d3d5f0e3a02a2ee
     
     if (len(minus_wrong ) != 0):
         phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n), 1)
@@ -184,6 +187,10 @@ def fullSVM(plus, minus, n):
 
 
 
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) or  (len(minus) > 0 and len(minus_wrong) == len(minus)) ):
+        print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
+        print("Failed!!")
+        sys.exit()
     return phi
 
 
