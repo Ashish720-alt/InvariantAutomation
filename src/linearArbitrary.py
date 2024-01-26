@@ -2,22 +2,44 @@
 from repr import Repr
 import argparse
 from input import Inputs
-from selection_points import Dstate, removeduplicates, removeduplicatesICEpair, get_minus0, get_plus0
-from z3verifier import DNF_to_z3expr, genTransitionRel_to_z3expr
+from z3verifier import  genTransitionRel_to_z3expr
 from dnfs_and_transitions import genLII_to_LII, dnfconjunction, dnfTrue, dnfdisjunction
 from z3 import *
 import numpy as np
 from sklearn.svm import SVC
-from itertools import combinations
 import sys
 from sklearn.tree import DecisionTreeClassifier
 import random
+from configure import Configure as conf
+
+#CONFIGURATION PARAMETERS ********************************************************************
+#Dont print traceback for exceptions.
+sys.tracebacklimit = 0
+
+# Ignore all Warnings!
+import warnings
+warnings.filterwarnings("ignore")
 
 PRINT_LOG = True
+approx_ratio = 1.0e4
+#*********************************************************************************************
 
 def listof2Darrays_to_list3D (I):
-    A = [cc.tolist() for cc in I ]
+    def cclevel(cc):
+        return [p.tolist() for p in cc]
+    A = [cclevel(cc) for cc in I ]
     return A
+
+def DNF_to_z3expr(I, primed):
+    p = 'p' if primed else ''
+    if len(I) == 0 or np.size(I[0]) == 0:
+        return True
+
+    d = len(I)
+    # c = len(I[0])
+    n = len(I[0][0]) - 2
+    return simplify(  Or([ And([ conf.OP[int(I[i][j][-2])](Sum([I[i][j][k] * Int(('x%s'+p) % k) 
+        for k in range(n)]), int(I[i][j][-1])) for j in range(len(I[i])) ]) for i in range(d) ]))
 
 
 def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
@@ -131,7 +153,7 @@ def SVM(plus, minus, n):
     y = np.array([1] * len(plus_actual) + [-1] * len(minus_actual))
 
     # Create SVM model with soft margin
-    svm = SVC(kernel='linear', C=1.0e6)
+    svm = SVC(kernel='linear', C=1.0e1)
     svm.fit(X, y)
 
     # Extract coefficients of the linear classifier
@@ -146,8 +168,6 @@ def SVM(plus, minus, n):
 
 def fullSVM(plus, minus, n):
     
-    # print("\t\t\tFullSVM: \n", '\t\t\t\t', '+ = ', plus, ', - = ', minus) #Debug
-    
     phi = SVM(plus, minus, n) 
 
 
@@ -155,10 +175,8 @@ def fullSVM(plus, minus, n):
     plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
     plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
     minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
+
     
-    # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
-    
-<<<<<<< HEAD
     if ( (len(plus) > 0 and len(plus_wrong) == len(plus) and len(minus) > 0) ):
         randomNegative = random.choice(minus)
         phi = SVM(plus, [randomNegative], n) 
@@ -176,8 +194,9 @@ def fullSVM(plus, minus, n):
     if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
         print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
         raise Exception("Failed!!")
-=======
->>>>>>> fcbc5b0c7466343d628e7e465d3d5f0e3a02a2ee
+    
+    # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
+    
     
     if (len(minus_wrong ) != 0):
         phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n), 1)
@@ -265,22 +284,37 @@ def DTlearn(plus_points, minus_points, slopes):
 
 def learnClassifier(plus, minus, n):
     SVMclassifier = fullSVM(plus, minus, n)
-    # print("SVM Classifier is ", SVMclassifier)
+    
+    
+    # print("SVM Classifier is ", SVMclassifier, plus, minus) #Debug
     
     if (len(plus) == 0 or len(minus) == 0):
         return SVMclassifier
+    
+    
     
     SVMcoeffs = []
     for cc in SVMclassifier:
         SVMcoeffs = SVMcoeffs + [ p[:-2] for p in cc]
     
     DTclassifier = DTlearn(plus, minus, SVMcoeffs)
-    # print(DTclassifier)
+    
+    # print("DT Classifier is ", DTclassifier, plus, minus) #Debug
     
     return DTclassifier
 
 def is_list_in_list_of_lists(main_list, sublist):
     return any(sublist == sub for sub in main_list)
+
+def approximateClassifier (I):
+    def approximateCC (cc):
+        def approximateP (p):
+            L = [int(approx_ratio * x) for x in p]
+            L[-2] = -1
+            return L
+        return [ approximateP(p) for p in cc ]    
+    return [ approximateCC(cc) for cc in I]
+    
 
 def linearArbitrary(inputname, P, B, T, Q, Vars):    
     n = len(P[0][0]) - 2
@@ -300,7 +334,10 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
         print('\t', 'ClassifierLearnt = ',  classifier , '\n\n')
     
     for t in range(0, 2000):
-        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, classifier)  
+        
+        Int_classifier = approximateClassifier(classifier)
+        
+        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, Int_classifier)  
         
         if (z3_correct):
             print(inputname, "Success!!", classifier)
@@ -322,13 +359,13 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
             tl = cex[0]
             if (any(hd == sublist for sublist in pluspoints)):
                 if (is_list_in_list_of_lists(pluspoints, tl)):
-                    print("Positive cex already in plus points! New positive cex = ", tl)
+                    print("Positive cex from ICE already in plus points! New positive cex = ", tl)
                     raise Exception("Failed!!")                
                 pluspoints = pluspoints + [tl]
                 minuspoints = []
             else:
                 if (is_list_in_list_of_lists(minuspoints, hd)):
-                    print("Minus cex already in minus points! New negative cex = ", hd)
+                    print("Minus cex from ICE already in minus points! New negative cex = ", hd)
                     raise Exception("Failed!!")                   
                 minuspoints = minuspoints + [hd]
 
