@@ -11,6 +11,7 @@ from sklearn.svm import SVC
 from itertools import combinations
 import sys
 from sklearn.tree import DecisionTreeClassifier
+import random
 
 PRINT_LOG = False
 
@@ -122,6 +123,7 @@ def SVM(plus, minus, n):
         max_x = max(sublist[0] for sublist in plus) 
         return [[ [1] + [0]*(n-1) + [-1,max_x]  ]]
 
+     # Normalizer required here ?!?
     plus_actual = list(plus) #list is to create a new copy
     minus_actual = list(minus)
     
@@ -129,7 +131,7 @@ def SVM(plus, minus, n):
     y = np.array([1] * len(plus_actual) + [-1] * len(minus_actual))
 
     # Create SVM model with soft margin
-    svm = SVC(kernel='linear', C=10000.0)
+    svm = SVC(kernel='linear', C=1.0e6)
     svm.fit(X, y)
 
     # Extract coefficients of the linear classifier
@@ -147,24 +149,40 @@ def fullSVM(plus, minus, n):
     # print("\t\t\tFullSVM: \n", '\t\t\t\t', '+ = ', plus, ', - = ', minus) #Debug
     
     phi = SVM(plus, minus, n) 
-    
-    # Normalizer required here ?!?
-    
+
+
+
     plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
     plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
     minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
     
     # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
     
-    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) or  (len(minus) > 0 and len(minus_wrong) == len(minus)) ):
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus) and len(minus) > 0) ):
+        randomNegative = random.choice(minus)
+        phi = SVM(plus, [randomNegative], n) 
+        plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
+        plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
+        minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
+        
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
+        randomPositive = random.choice(plus)
+        phi = SVM([randomPositive], minus, n) 
+        plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
+        plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
+        minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]        
+
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
         print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
-        print("Failed!!")
-        sys.exit()
+        raise Exception("Failed!!")
     
     if (len(minus_wrong ) != 0):
-        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n))
+        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n), 1)
     if (len(plus_wrong) != 0):
-        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, n))
+        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, n), 1)
+
+
+
 
     return phi
 
@@ -245,11 +263,11 @@ def learnClassifier(plus, minus, n):
     if (len(plus) == 0 or len(minus) == 0):
         return SVMclassifier
     
-    coeffs = []
+    SVMcoeffs = []
     for cc in SVMclassifier:
-        coeffs = coeffs + [ p[:-2] for p in cc]
+        SVMcoeffs = SVMcoeffs + [ p[:-2] for p in cc]
     
-    DTclassifier = DTlearn(plus, minus, coeffs)
+    DTclassifier = DTlearn(plus, minus, SVMcoeffs)
     # print(DTclassifier)
     
     return DTclassifier
@@ -284,15 +302,13 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
         if (clause == 1):
             if (is_list_in_list_of_lists(pluspoints, cex)):
                print("Positive cex already in plus points! New positive cex = ", cex)
-               print("Failed!!")
-               sys.exit() 
+               raise Exception("Failed!!")
             pluspoints = pluspoints + [cex]
             minuspoints = []            
         elif (clause == -1):
             if (is_list_in_list_of_lists(minuspoints, cex)):
                print("Minus cex already in minus points! New negative cex = ", cex)
-               print("Failed!!")
-               sys.exit() 
+               raise Exception("Failed!!")
             minuspoints = minuspoints + [cex]
         else:
             hd = cex[0]
@@ -300,15 +316,13 @@ def linearArbitrary(inputname, P, B, T, Q, Vars):
             if (any(hd == sublist for sublist in pluspoints)):
                 if (is_list_in_list_of_lists(pluspoints, tl)):
                     print("Positive cex already in plus points! New positive cex = ", tl)
-                    print("Failed!!")
-                    sys.exit()                 
+                    raise Exception("Failed!!")                
                 pluspoints = pluspoints + [tl]
                 minuspoints = []
             else:
                 if (is_list_in_list_of_lists(minuspoints, hd)):
                     print("Minus cex already in minus points! New negative cex = ", hd)
-                    print("Failed!!")
-                    sys.exit()                 
+                    raise Exception("Failed!!")                   
                 minuspoints = minuspoints + [hd]
 
         if (PRINT_LOG):
