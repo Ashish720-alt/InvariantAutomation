@@ -334,7 +334,7 @@ def randomlysamplepointsCC (cc, m):
     if (isAffine(cc)):
         (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.    
         (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
-        if (basevector == []):
+        if (np.any(basevector)): #No solution
             return []
         S = np.transpose(np.array(colvectors, ndmin = 2))
         if (colvectors == []): 

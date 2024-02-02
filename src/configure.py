@@ -12,7 +12,7 @@ class Configure:
     num_processes = 4 #Number of threads
 
     Gamma0 = 2
-    maxSArun =  250000 #1000000
+    maxSArun =  1000000 #1000000
 
     k = 2
     r = 1
@@ -46,8 +46,10 @@ class Configure:
     z3_C1_Tmax = [0]
     z3_C2_Tmax = [100, 0]
     z3_C3_Tmax = [100, 0]
+    
 
     #SA Parameters
+    NUM_ROUND_CHECK_EARLY_EXIT = 100
     translation_range = 5
     rotation_degree = 5
     rotation_rad = rotation_degree * (pi/180) 
@@ -74,21 +76,32 @@ class Configure:
     ON = 1
     OFF = 0
     # Print iterations or not?
-    INVARIANTSPACE_PLOTTER = OFF
-    SAMPLEPOINTS_DEBUGGER = OFF
-    SAMPLEPOINTS_DEBUGGER_WINDOW = 1000
-    COST_PLOTTER = ON
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = ON
+    PRINT_REJECT_ITERATIONS = OFF
     PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
-    NUM_ROUND_CHECK_EARLY_EXIT = 100
     PRINT_COLORED_THREADS = ON
     
+    #Stagnant Runs Debugger
+    CHECK_STAGNATION = OFF
+    CHECK_LOCALMINIMA = OFF
+    STAGNANT_TIME_WINDOW = 1000
+    STAGNANT_COST_RANGE = 50
+    STAGNATION_AREA_CHECK = 1
+    
+    #Samplepoints Debugger    
+    SAMPLEPOINTS_DEBUGGER = OFF
+    SAMPLEPOINTS_DEBUGGER_WINDOW = 1000
+    
+    #CostvsTimePlotter
+    COST_PLOTTER = OFF
+    
+    #InvariantSpacePlots
+    INVARIANTSPACE_PLOTTER = OFF
 
-    # n2Plotter hyperparameters
+    # n2Plotter (Data Space for n = 2) hyperparameters
     n2PLOTTER_LOW_RES = 300
     n2PLOTTER_HIGH_RES = 1000
     n2PLOTTER_LARGESCALE = 1
