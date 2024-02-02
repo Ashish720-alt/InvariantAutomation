@@ -2,16 +2,45 @@
 from repr import Repr
 import argparse
 from input import Inputs
-from selection_points import Dstate, removeduplicates, removeduplicatesICEpair, get_minus0, get_plus0
-from z3verifier import DNF_to_z3expr, genTransitionRel_to_z3expr
+from z3verifier import  genTransitionRel_to_z3expr
 from dnfs_and_transitions import genLII_to_LII, dnfconjunction, dnfTrue, dnfdisjunction
 from z3 import *
 import numpy as np
 from sklearn.svm import SVC
-from itertools import combinations
+import sys
+from sklearn.tree import DecisionTreeClassifier
+import random
+from configure import Configure as conf
 
+#CONFIGURATION PARAMETERS ********************************************************************
+#Dont print traceback for exceptions.
+sys.tracebacklimit = 0
+
+# Ignore all Warnings!
+import warnings
+warnings.filterwarnings("ignore")
 
 PRINT_LOG = True
+approx_ratio = 1.0e4
+#*********************************************************************************************
+
+def listof2Darrays_to_list3D (I):
+    def cclevel(cc):
+        return [p.tolist() for p in cc]
+    A = [cclevel(cc) for cc in I ]
+    return A
+
+def DNF_to_z3expr(I, primed):
+    p = 'p' if primed else ''
+    if len(I) == 0 or np.size(I[0]) == 0:
+        return True
+
+    d = len(I)
+    # c = len(I[0])
+    n = len(I[0][0]) - 2
+    return simplify(  Or([ And([ conf.OP[int(I[i][j][-2])](Sum([I[i][j][k] * Int(('x%s'+p) % k) 
+        for k in range(n)]), int(I[i][j][-1])) for j in range(len(I[i])) ]) for i in range(d) ]))
+
 
 def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
     def convert_cexlist(cexlist, ICEpair, n):
@@ -98,37 +127,33 @@ def z3_checker(P_z3, B_z3, T_z3, Q_z3, I):
     return (1, None, [])
 
 def pluspointSVM(p, pt):
-    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   )  >= p[-1]  )
+    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   )  <= p[-1]  )
 
 def minuspointSVM(p, pt):
-    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   ) < p[-1]  )
+    return ( sum( [a * b for a,b in zip( p[:-2], pt)]   ) > p[-1]  )
 
 
-
-def SVM(plus, minus, baseplus, baseminus):
+def SVM(plus, minus, n):
     # Convert lists to numpy arrays
-    
-    
 
-    n = len(baseplus)
     if (len(plus) + len(minus) == 0):
         return [[ [0]*(n-2) + [-1,0]  ]] #dnfTrue
-    
+    if (len(plus) == 0):
+        max_x = max(sublist[0] for sublist in minus) 
+        return [[ [-1] + [0]*(n-1) + [-1, -1*max_x - 1]  ]]
+    if (len(minus) == 0):
+        max_x = max(sublist[0] for sublist in plus) 
+        return [[ [1] + [0]*(n-1) + [-1,max_x]  ]]
+
+     # Normalizer required here ?!?
     plus_actual = list(plus) #list is to create a new copy
     minus_actual = list(minus)
-    
-    if (len(plus) == 0):
-        plus_actual = plus_actual + [baseplus]
-    if len(minus) == 0:
-        minus_actual = minus_actual = [baseminus]
-    
-    # print("SVM", plus_actual, minus_actual, end = '') #Debug
     
     X = np.array(plus_actual + minus_actual)
     y = np.array([1] * len(plus_actual) + [-1] * len(minus_actual))
 
     # Create SVM model with soft margin
-    svm = SVC(kernel='linear', C=1.0)
+    svm = SVC(kernel='linear', C=1.0e1)
     svm.fit(X, y)
 
     # Extract coefficients of the linear classifier
@@ -136,92 +161,222 @@ def SVM(plus, minus, baseplus, baseminus):
     intercept = svm.intercept_[0]
 
     # Output in the specified format [coefficients, constant]
-    output = list(coef) + [1, intercept] #SVC learns w^Tx >= b form
-    
-    # print( output) #Debug
+    output_gen = list(coef) + [1, -1 * intercept] #SVC learns w^Tx >= b form
+    output = [-1 * x for x in output_gen]
     
     return [[output]]     
 
-def fullSVM(plus, minus, baseplus, baseminus):
+def fullSVM(plus, minus, n):
     
-    # print("FullSVM", plus, minus, baseplus, baseminus) #Debug
-    
-    phi = SVM(plus, minus, baseplus, baseminus) 
+    phi = SVM(plus, minus, n) 
+
+
+
     plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
     plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
     minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
+
     
-    # print("classifier", phi, plus_correct, plus_wrong, minus_wrong) #Debug
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus) and len(minus) > 0) ):
+        randomNegative = random.choice(minus)
+        phi = SVM(plus, [randomNegative], n) 
+        plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
+        plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
+        minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]
+        
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
+        randomPositive = random.choice(plus)
+        phi = SVM([randomPositive], minus, n) 
+        plus_correct = [p for p in plus if pluspointSVM( phi[0][0] , p)]
+        plus_wrong = [p for p in plus if not pluspointSVM( phi[0][0] , p)]
+        minus_wrong = [m for m in minus if not minuspointSVM( phi[0][0] , m)]        
+
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) ):
+        print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
+        raise Exception("Failed!!")
+    
+    # print("\t\t\t\tClassifier = ", phi, ', +_corr = ', plus_correct, ', +_wrong = ', plus_wrong, ', -_wrong = ', minus_wrong) #Debug
+    
     
     if (len(minus_wrong ) != 0):
-        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, baseplus, baseminus))
+        phi = dnfconjunction(phi, fullSVM(plus_correct, minus_wrong, n), 1)
     if (len(plus_wrong) != 0):
-        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, baseplus, baseminus))
+        phi = dnfdisjunction(phi, fullSVM(plus_wrong, minus, n), 1)
 
+
+
+
+    if ( (len(plus) > 0 and len(plus_wrong) == len(plus)) or  (len(minus) > 0 and len(minus_wrong) == len(minus)) ):
+        print("SVM failed to find a classifier which correctly classifies atleast one positive and one negative point, conditioned to such a positive or negative point exists.")
+        print("Failed!!")
+        sys.exit()
     return phi
 
-def learnClassifier(plus, minus, baseplus, baseminus):
-    SVMclassifier = fullSVM(plus, minus, baseplus, baseminus)
-    # coeff = []
-    # for cc in SVMclassifier:
-    #     coeff = coeff + [ p[:-2] for p in cc]
+
+
+def DTlearn(plus_points, minus_points, slopes):
+    def getAllSlopes(slopes):
+        rv = []
+        n = len(slopes[0])
+        for p in slopes:
+            rv = rv + [p]
+        for i in range(n):
+            coordinate = [0]*n
+            coordinate[i] = 1
+            rv.append(coordinate)
+        return rv
     
-    return SVMclassifier
+    def transformDataset(D, F):
+        rv = []
+        for d in D:
+            rv.append([float(np.dot(d, f)) for f in F])
 
+        return rv
 
+    
+    # Combine plus and minus points with labels
+    Features = getAllSlopes(slopes)
+    plus_labels = [1] * len(plus_points)
+    minus_labels = [0] * len(minus_points)
+    datapoints = transformDataset(plus_points + minus_points, Features)
+    data = np.array(datapoints)
+    labels = np.array(plus_labels + minus_labels)
+
+    # Train Decision Tree Classifier
+    clf = DecisionTreeClassifier(random_state=42)
+    clf.fit(data, labels)
+
+    tree_structure = clf.tree_
+
+    def DTget_cc(root, leaf, leafpt):
+        node = root
+        rv = []
+        while node != leaf and (tree_structure.children_left[node] != tree_structure.children_right[node]):
+            feature_index = tree_structure.feature[node]
+            threshold = tree_structure.threshold[node]
+            # print(predicate, end=" -> ")
+            
+            if leafpt[feature_index] <= threshold:
+                predicate = Features[feature_index] + [-1, threshold]
+                rv.append(predicate)
+                node = tree_structure.children_left[node]
+            else:
+                predicate = [-1*x for x in Features[feature_index]] + [-1, (-1* threshold) - 1]
+                rv.append(predicate)
+                node = tree_structure.children_right[node]
+        return rv
+
+    # Iterate over all leaves and print the path features
+    Ls = clf.apply(datapoints[:len(plus_points)])
+    DLMap = {}
+    for i in range(len(Ls)):
+        DLMap[Ls[i]] = datapoints[i]        
+    leaves = np.where(tree_structure.children_left == tree_structure.children_right)[0]
+    root_node = 0
+    DT_dnf = []
+    for leaf in leaves:
+        if (not( leaf in DLMap.keys())):
+            continue
+        cc = DTget_cc(root_node, leaf, DLMap[leaf])
+        DT_dnf.append(cc)
+
+    return DT_dnf
+
+def learnClassifier(plus, minus, n):
+    SVMclassifier = fullSVM(plus, minus, n)
+    
+    
+    # print("SVM Classifier is ", SVMclassifier, plus, minus) #Debug
+    
+    if (len(plus) == 0 or len(minus) == 0):
+        return SVMclassifier
+    
+    
+    
+    SVMcoeffs = []
+    for cc in SVMclassifier:
+        SVMcoeffs = SVMcoeffs + [ p[:-2] for p in cc]
+    
+    DTclassifier = DTlearn(plus, minus, SVMcoeffs)
+    
+    # print("DT Classifier is ", DTclassifier, plus, minus) #Debug
+    
+    return DTclassifier
+
+def is_list_in_list_of_lists(main_list, sublist):
+    return any(sublist == sub for sub in main_list)
+
+def approximateClassifier (I):
+    def approximateCC (cc):
+        def approximateP (p):
+            L = [int(approx_ratio * x) for x in p]
+            L[-2] = -1
+            return L
+        return [ approximateP(p) for p in cc ]    
+    return [ approximateCC(cc) for cc in I]
+    
 
 def linearArbitrary(inputname, P, B, T, Q, Vars):    
     n = len(P[0][0]) - 2
     
-    P_z3expr = DNF_to_z3expr( dnfconjunction(P, Dstate(n), 1), primed = 0)
-    B_z3expr = DNF_to_z3expr(dnfconjunction(B, Dstate(n), 1), primed = 0)
-    Q_z3expr = DNF_to_z3expr(dnfconjunction(Q, Dstate(n), 1), primed = 0)
+    P_z3expr = DNF_to_z3expr( P, primed = 0)
+    B_z3expr = DNF_to_z3expr(B, primed = 0)
+    Q_z3expr = DNF_to_z3expr(Q, primed = 0)
     T_z3expr = genTransitionRel_to_z3expr(T)
-    
-    basepluspoint = get_plus0(P, 1)[0]
-    baseminuspoint = get_minus0(Q, 1)[0]
     
     pluspoints = []
     minuspoints = []
     
-    classifier = dnfTrue(n)
+    classifier = listof2Darrays_to_list3D( dnfTrue(n) )
     
     if (PRINT_LOG):
-        print(pluspoints, minuspoints, classifier , '\n')
+        print('t = -1 : ' , 'cex = []',', + = ', pluspoints, ', - = ', minuspoints)
+        print('\t', 'ClassifierLearnt = ',  classifier , '\n\n')
     
-    for _ in range(0, 2000):
+    for t in range(0, 2000):
         
+        Int_classifier = approximateClassifier(classifier)
         
-        LII = [ np.array([[-x for x in p] for p in cc]) for cc in classifier  ]  
-        
-        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, LII)  
+        (z3_correct, clause, cex) = z3_checker(P_z3expr, B_z3expr, T_z3expr, Q_z3expr, Int_classifier)  
         
         if (z3_correct):
-            print(inputname, "YES", classifier)
+            print(inputname, "Success!!", classifier)
             return
 
         if (clause == 1):
+            if (is_list_in_list_of_lists(pluspoints, cex)):
+               print("Positive cex already in plus points! New positive cex = ", cex)
+               raise Exception("Failed!!")
             pluspoints = pluspoints + [cex]
             minuspoints = []            
         elif (clause == -1):
+            if (is_list_in_list_of_lists(minuspoints, cex)):
+               print("Minus cex already in minus points! New negative cex = ", cex)
+               raise Exception("Failed!!")
             minuspoints = minuspoints + [cex]
         else:
             hd = cex[0]
             tl = cex[0]
             if (any(hd == sublist for sublist in pluspoints)):
+                if (is_list_in_list_of_lists(pluspoints, tl)):
+                    print("Positive cex from ICE already in plus points! New positive cex = ", tl)
+                    raise Exception("Failed!!")                
                 pluspoints = pluspoints + [tl]
                 minuspoints = []
             else:
+                if (is_list_in_list_of_lists(minuspoints, hd)):
+                    print("Minus cex from ICE already in minus points! New negative cex = ", hd)
+                    raise Exception("Failed!!")                   
                 minuspoints = minuspoints + [hd]
 
         if (PRINT_LOG):
-            print(cex, pluspoints, minuspoints, end = '')
+            print('t = ' + str(t) + ' :' , 'cex = ', cex, ', + = ', pluspoints, ', - = ', minuspoints)
         
-        classifier = learnClassifier(pluspoints, minuspoints, basepluspoint, baseminuspoint) #classifier as a 3D list  
+        classifier = learnClassifier(pluspoints, minuspoints, n) #classifier as a 3D list  
         if (PRINT_LOG):
-            print('  ', classifier , '\n')
+            print('\t', 'ClassifierLearnt = ',  classifier , '\n\n')
     
-    print(inputname, "NO")
+    print(inputname, "Failed!!")
     
     return
     
@@ -263,59 +418,3 @@ else:
                         obj = getattr(getattr(Inputs, subfolder), inp)
                         linearArbitrary(first_name + "." + last_name, obj.P, obj.B , obj.T , obj.Q, obj.Var)
 
-
-# #Decision Trees part
-# from itertools import combinations
-
-# def generate_predicates(coefficients):
-#     n = len(coefficients[0])
-#     predicates = []
-#     for coef in coefficients:
-#         for i in range(n):
-#             for comb in combinations(range(n), i + 1):
-#                 predicate = [0] * (2 * n)
-#                 for idx in comb:
-#                     predicate[idx] = coef[idx]
-#                 predicate[-1] = coef[-1]
-#                 predicates.append(tuple(predicate))
-#     return predicates
-
-# def format_predicate(predicate):
-#     n = len(predicate) // 2
-#     terms = []
-#     for i in range(n):
-#         coef1 = predicate[i]
-#         coef2 = predicate[i + n]
-#         if coef1 != 0:
-#             if coef2 >= 0:
-#                 terms.append(f"{coef1}x{i} + {coef2}")
-#             else:
-#                 terms.append(f"{coef1}x{i} - {abs(coef2)}")
-#     terms.append(f" <= {predicate[-1]}")
-#     return ' '.join(terms)
-
-# def build_classifier(plus_points, minus_points, coefficients):
-#     predicates = generate_predicates(coefficients)
-#     X = plus_points + minus_points
-#     y = [1] * len(plus_points) + [0] * len(minus_points)
-
-#     for predicate in predicates:
-#         indices = [i for i in range(len(predicate) - 1) if predicate[i] != 0]
-#         X_transformed = [[point[i] for i in indices] for point in X]
-
-#         from sklearn.tree import DecisionTreeClassifier
-#         clf = DecisionTreeClassifier()
-#         clf.fit(X_transformed, y)
-#         if clf.score(X_transformed, y) == 1:
-#             formatted_predicate = format_predicate(predicate)
-#             return f"Formula in DNF form: {formatted_predicate}"
-    
-#     return "Error: Unable to classify using provided coefficients"
-
-# # Example usage:
-# plus_points = [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
-# minus_points = [[-1, -2, -3], [-2, -3, -4], [-3, -4, -5]]
-# coefficients = [[2, 3, 1], [-2, -3, -1], [1, 1, 1, 0]]
-
-# result = build_classifier(plus_points, minus_points, coefficients)
-# print(result)
