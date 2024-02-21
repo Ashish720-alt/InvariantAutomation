@@ -4,8 +4,15 @@ import operator
 from math import pi, e
 
 class Configure:
-    
-    dspace_radius = 1.5 * 1000000 #Change coeff according to problem needs.
+
+
+    ON = 1
+    OFF = 0
+
+    dspace_full = OFF #Change this
+    dspace_maxradius = 1.5 * 1000000
+    dspace_scaledradius = 10 #Change testing Radius
+    dspace_radius = dspace_maxradius if (dspace_full == ON) else dspace_scaledradius 
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
 
@@ -56,12 +63,12 @@ class Configure:
     p_rot = 0.5
     gamma = e #Need floating point constant here
     beta0 = 100 #2^-20 ~ 10^(-7)
-    beta = 4 #Change this!!
+    beta = 4 
     # descent_prob = 0.5
 
     # d = 100
 
-    temp_C = 1000000.0 #Change this!!
+    temp_C = 1000000.0 
 
     # Operators
     OP = {
@@ -73,8 +80,6 @@ class Configure:
         10: operator.ne, # "!="
     }
 
-    ON = 1
-    OFF = 0
     # Print iterations or not?
     PRINT_ITERATIONS = ON
     PRETTYPRINTINVARIANT_ITERATIONS = ON

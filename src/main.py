@@ -173,7 +173,8 @@ def main(inputname, repr: Repr):
     I_list = manager.list()
     
     
-    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), repr.get_affineSubspace())
+    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
+                                    repr.get_affineSubspace(), repr.get_Dp())
     
     
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)

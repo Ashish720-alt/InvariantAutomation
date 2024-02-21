@@ -24,6 +24,11 @@ def LIPptdistance(p, pt):
     magnitude = sqrt(sum(i*i for i in p[:-2]))
     return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0)
 
+# def LIPptdistance(p, pt): #Uncomment 1 of the two
+#     magnitude = sqrt(sum(i*i for i in p[:-2]))
+#     return  (sum(p[:-2]* pt) - p[-1])/(magnitude) 
+
+
 def LIccptdistance(cc, pt):
     rv = 0.0
     for p in cc:

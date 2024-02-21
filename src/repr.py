@@ -69,8 +69,8 @@ class Repr:
         
         self.Dp = D_p(self.P, self.B, self.T, self.Q)
 
-        self.k0 = max(2, max(self.Dp[0])) if (max(self.Dp[0]) < 100) else 2
-        self.k1 = conf.dspace_radius * self.n * self.k0
+        self.k0 = max(2, max(self.Dp)) if (max(self.Dp) < 100) else 2
+        self.k1 = conf.dspace_maxradius * self.n * self.k0
 
         self.rotationgraph = getrotationgraph(self.k0, self.n) 
 

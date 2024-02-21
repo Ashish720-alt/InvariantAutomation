@@ -799,6 +799,18 @@ class Inputs:
                                     ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 0, 1, 500000]]]) ) )
             c = 2
             d = 2
+
+        class Mono5_1: 
+            Var =  ['x' , 'y' , 'z']
+            P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0] , [0, 1, 0, 0, 10000000] , [0, 0, 1, 0, 5000000]]])
+            B = list3D_to_listof2Darrays([[[1, -1, 0, -2, 0]]])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 0, 2, 0] , [1, 0, 0, -2, 0]  ]]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 0] , [0, 0, 1, -1] , [0, 0, 0, 1] ] ) ] , 
+                                       list3D_to_listof2Darrays([[[1, 0, 0, 1, 5000000]]]) ) ,
+                                    ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 0] , [0, 0, 1, 0] , [0, 0, 0, 1] ] ) ] , 
+                                       list3D_to_listof2Darrays([[[1, 0, 0, -2, 5000000]]]) ) )
+            c = 1
+            d = 1
   
     class linearArbitrarycompare:
         
