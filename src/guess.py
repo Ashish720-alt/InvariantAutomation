@@ -6,6 +6,7 @@ from math import inf, sqrt, floor, sin, ceil, log , e
 from cost_funcs import cost
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction
 
+
 def k1list(k0, n):
     # return [10]
     max_radius = conf.dspace_radius * k0 * n
@@ -41,26 +42,29 @@ def experimentalSAconstantlist():
     
     return [T for _ in range(conf.num_processes)]
 
-def randomlysamplelistoflists(l):
+def randomlysampleelementfromList(l):
     return l[np.random.choice( len(l))]
 
 
-def uniformlysample_I( rotation_vertices, k1, c, d, n):
-    def uniformlysample_cc(rotation_vertices, k1, n, c):
-        def uniformlysample_p(rotation_vertices, k1, n):
-            coeff = randomlysamplelistoflists(rotation_vertices)
+def uniformlysample_I( rotation_vertices, k1, c, d, n, Dp):
+    def uniformlysample_cc(rotation_vertices, k1, n, c, Dp):
+        def uniformlysample_p(rotation_vertices, k1, n, Dp):
+            coeff = randomlysampleelementfromList(rotation_vertices)
             # const = np.random.choice( list(range(-k1-1, k1 + 1 )) )
-            const = 0 # This gives  better results
+            if (n > 1):
+                const = 0 # This gives  better results
+            else:
+                const = randomlysampleelementfromList(Dp)
             return list(coeff) + [-1,const]
-        return  [ uniformlysample_p(rotation_vertices, k1, n) for i in range(c)  ]
-    return [ uniformlysample_cc(rotation_vertices, k1, n, c) for i in range(d)  ]
+        return  [ uniformlysample_p(rotation_vertices, k1, n, Dp) for i in range(c)  ]
+    return [ uniformlysample_cc(rotation_vertices, k1, n, c, Dp) for i in range(d)  ]
 
 
-def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace):
+def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace, Dp):
     I = []
     costI = inf
     for _ in range(conf.I0_samples):
-        Inew = uniformlysample_I( rotation_vertices, k1, c, d, n)
+        Inew = uniformlysample_I( rotation_vertices, k1, c, d, n, Dp)
         LII = dnfconjunction( list3D_to_listof2Darrays(Inew), affinespace , 0)
         (costInew, _ ) = cost(LII, samplepoints)
         if (costInew < costI):
@@ -304,7 +308,7 @@ def rotationtransition(oldpredicate, rotationneighbors, k1):
     newconst = inf
     
     while (newconst > k1 or newconst < -1 * k1):
-        newcoeff = list(randomlysamplelistoflists(rotationneighbors)) 
+        newcoeff = list(randomlysampleelementfromList(rotationneighbors)) 
         newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
 
     return newcoeff + [-1, newconst]
@@ -315,8 +319,8 @@ def getNewRotConstant(oldcoeff, oldconst, newcoeff, k1):
     oldnorm = 1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff))
     newnorm = 1.0 * np.dot(np.array(newcoeff), np.array(newcoeff)) 
     asymconst = floor( oldconst * dotproduct/ oldnorm  )
-    symconstmin = max(ceil(oldconst * newnorm / dotproduct), -1* k1)
-    symconstmax = min(ceil( (oldconst + 1) * newnorm / dotproduct), k1)
+    symconstmin = max(ceil(oldconst * newnorm / dotproduct), ceil(-1* k1) ) #Check this:: WHy do I need ceil here - remove this gives error!!
+    symconstmax = min(ceil( (oldconst + 1) * newnorm / dotproduct), ceil(k1)) #Check this:: WHy do I need ceil here - remove this gives error!!
     symconsts = list(range(symconstmin, symconstmax + 1))
     if asymconst not in symconsts and asymconst <= k1 and asymconst >= -k1:
         symconsts.append(asymconst)
@@ -340,8 +344,8 @@ def translationtransition(predicate, k1):
 def getNewTranslationConstant(oldcoeff, oldconst, k1):
     slope = sqrt(np.dot(np.array(oldcoeff), np.array(oldcoeff)))
     translation_range = floor(conf.translation_range * slope)
-    max_pos_dev = min(k1 - oldconst, translation_range)
-    max_neg_dev = max(-k1 - oldconst, -translation_range )
+    max_pos_dev = min(floor(k1 - oldconst), floor(translation_range)) #Check this:: WHy do I need floor here - remove this gives error!!
+    max_neg_dev = max(ceil(-k1 - oldconst), ceil(-translation_range) ) #Check this:: WHy do I need ceil here - remove this gives error!!
     translation_indices = list(range(oldconst + max_neg_dev, oldconst + max_pos_dev +1))
     translation_indices.remove(oldconst)
     return translation_indices
