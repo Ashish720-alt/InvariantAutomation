@@ -178,8 +178,10 @@ def getrotationgraph(K, n):
     filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
 
 
-    # jsonfilename = "../rotation-graph/n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json" #For remote server
-    jsonfilename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json"
+    if (conf.REMOTE_SERVER == conf.ON):
+        jsonfilename = "../rotation-graph/n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json" #For remote server
+    else:
+        jsonfilename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json"
 
     if (not path.isfile(filename) and not path.isfile(jsonfilename)):
             
