@@ -6,8 +6,12 @@ from math import pi, e
 class Configure:
 
 
+
     ON = 1
     OFF = 0
+
+    REMOTE_SERVER = OFF
+
 
     dspace_full = OFF #Change this
     dspace_maxradius = 1.5 * 1000000
