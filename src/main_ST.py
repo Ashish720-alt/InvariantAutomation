@@ -11,7 +11,7 @@ from print import initialized, statistics, z3statistics, invariantfound, timesta
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
-from math import log, floor
+from math import log, floor, exp
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
@@ -19,6 +19,13 @@ from invariantspaceplotter import plotinvariantspace
 from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
 from costplotter import CostPlotter
 import stagnation
+
+
+def ST_cost(cost, E_0):
+    ST_gamma = 1.0  #Vary this hyperparameter
+    p = exp(- ST_gamma * (cost - E_0))
+    return 1 - p
+
 
 # @jit(nopython=False)
 def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
@@ -33,7 +40,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
 
-    temp = SA_Gamma /log(2)
+
+    E_0 = costI
 
 
     if (conf.CHECK_STAGNATION == conf.ON):
@@ -108,8 +116,13 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = SA_Gamma/log(conf.Gamma0 + t)
-        a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
+
+        if (costInew < E_0):
+            E_0 = costInew
+        
+        beta = 1
+        # print(costI, ST_cost(costI, E_0)) #Check transformed values!
+        a = conf.gamma **( beta * -max( ST_cost(costInew, E_0) - ST_cost(costI, E_0), 0.0) ) 
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0

@@ -15,7 +15,7 @@ class Configure:
 
     dspace_full = OFF #Change this
     dspace_maxradius = 1.5 * 1000000
-    dspace_scaledradius = 10 #Change testing Radius
+    dspace_scaledradius = 100 #Change testing Radius
     dspace_radius = dspace_maxradius if (dspace_full == ON) else dspace_scaledradius 
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
@@ -97,7 +97,7 @@ class Configure:
     CHECK_STAGNATION = OFF
     CHECK_LOCALMINIMA = OFF
     STAGNANT_TIME_WINDOW = 1000
-    STAGNANT_COST_RANGE = 50
+    STAGNANT_COST_RANGE = 5
     STAGNATION_AREA_CHECK = 1
     
     #Samplepoints Debugger    
