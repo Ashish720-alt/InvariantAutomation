@@ -574,6 +574,8 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
             tls = []
             while ( tls == [] ):
                 for i in range(n):
+                    if (minpoints[i] > maxpoints[i]):
+                        return []
                     point[i] = random.randint(minpoints[i], maxpoints[i] + 1)  
 
                 if (not pointsatisfiescc(point, cc)):

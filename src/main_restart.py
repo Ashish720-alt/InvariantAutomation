@@ -36,9 +36,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     temp = SA_Gamma /log(2)
 
 
-    if (conf.CHECK_STAGNATION == conf.ON):
-        stagnant = False
-        costTimeList = [costI]
+    stagnant = False
+    costTimeList = [costI]
 
     for t in range(1, tmax+1):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
@@ -51,12 +50,6 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 
         samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
 
-        
-        if (conf.COST_PLOTTER == conf.ON):
-            # tmp = costTimeLists[process_id]
-            # tmp.append(costI)  
-            # costTimeLists[process_id] = tmp
-            costTimeLists[process_id] = costTimeLists[process_id] + [costI]
            
         if (costI == 0):
             return_value[process_id] = (I, t)
@@ -83,27 +76,10 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                 for c in transconslist:
                     neighbors.append( ( i, j, oldcoeff + [-1,c]) )
         
-        # if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
-        #     if (stagnant):
-        #         if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
-        #         else:
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
-        
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
         I[P[0]][P[1]] = P[2]
-                    
-        # index = get_index(repr.get_d(), repr.get_c())
-        
-        # oldpredicate = I[index[0]][index[1]]
-        # rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
-        
-        # if (isrotationchange(oldpredicate, rotneighbors, k1)):
-        #     I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
-        # else:
-        #     I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
         
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
@@ -121,24 +97,14 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
             statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist()) #Print rejected value
             I[P[0]][P[1]] = oldpredicate
             
-        #Local Minima Checker!!
-        if (conf.CHECK_STAGNATION == conf.ON):
-            if len(costTimeList) >= conf.STAGNANT_TIME_WINDOW:
-                costTimeList = costTimeList[1:]      
-            costTimeList = costTimeList + [costI]
-            stagnant = stagnation.isStagnant(costTimeList)
-            if (stagnant):
-                if (conf.CHECK_LOCALMINIMA == conf.ON):
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
-                    localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
-                
-                #Printing localArea not feasible for even 2 neighbors (~17,000 elements)
-                # localAreaCosts = stagnation.checkAreaAroundStuck(I, repr, samplepoints)
-                # for i in range(1,conf.STAGNATION_AREA_CHECK + 1):
-                #     print(repr.get_colorslist()[process_id] + sorted(localAreaCosts[i])[:5], '\n', localAreaCosts[i])       
-                
-                stagnation.gradientdescent(I, repr, samplepoints, repr.get_colorslist()[process_id])
+        #Restart on Stagnation i.e. stuck on local minima
+        if len(costTimeList) >= conf.STAGNANT_TIME_WINDOW:
+            costTimeList = costTimeList[1:]      
+        costTimeList = costTimeList + [costI]
+        stagnant = stagnation.isStagnant(costTimeList)
+        if (stagnant):
+            print(repr.get_colorslist()[process_id] + "Restarting thread " + str(process_id) + "!!!")
+            I = I_list[process_id]  # Restarted from same value
         
         # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
 
