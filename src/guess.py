@@ -311,6 +311,7 @@ def rotationtransition(oldpredicate, rotationneighbors, k1):
         newcoeff = list(randomlysampleelementfromList(rotationneighbors)) 
         newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
 
+
     return newcoeff + [-1, newconst]
 
 def getNewRotConstant(oldcoeff, oldconst, newcoeff, k1):

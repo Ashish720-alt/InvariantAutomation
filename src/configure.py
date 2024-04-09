@@ -13,7 +13,7 @@ class Configure:
     REMOTE_SERVER = OFF
 
 
-    dspace_full = OFF #Change this
+    dspace_full = ON #Change this
     dspace_maxradius = 1.5 * 1000000
     dspace_scaledradius = 100 #Change testing Radius
     dspace_radius = dspace_maxradius if (dspace_full == ON) else dspace_scaledradius 
