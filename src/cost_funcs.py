@@ -6,7 +6,7 @@ import numpy as np
 from dnfs_and_transitions import dnfnegation
 from configure import Configure as conf
 from copy import deepcopy
-from math import inf, sqrt
+from math import inf, sqrt , e
 from scipy.optimize import minimize, LinearConstraint
 
 # This is a good normalization function for our context as it gives higher weight to smaller positive values (which are frequent datapoints), and not 
@@ -20,9 +20,21 @@ def sigmoidfn(x, K):
 def negationLIpredicate(p):
     return (dnfnegation( [np.array( [p], ndmin = 2 )] ))[0][0]
 
+def distanceNormalizer(d):
+    HP_K = 50.0
+    HP_m = 1.0
+    if (d <= HP_K):
+        return (1.0*d)/HP_m
+    else:
+        return HP_K / (HP_m * ( 1 + e**(-(d - HP_K))) )
+    
+
+
 def LIPptdistance(p, pt):
     magnitude = sqrt(sum(i*i for i in p[:-2]))
-    return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0)
+    # return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0) #CHANGE HERE
+    return max( (sum(p[:-2]* pt) - p[-1])/(magnitude)  , 0.0) #Normalized distance
+
 
 # def LIPptdistance(p, pt): #Uncomment 1 of the two
 #     magnitude = sqrt(sum(i*i for i in p[:-2]))
@@ -54,7 +66,7 @@ def LIccptdistance(cc, pt):
 def LIDNFptdistance(dnf, pt):
     rv = inf
     for cc in dnf:
-        rv = conf.beta *  min(rv, LIccptdistance(cc, pt)) #Sum of individual distances Variant
+        rv =  distanceNormalizer(min(rv, LIccptdistance(cc, pt))) #Sum of individual distances Variant
         # rv = min(rv, LIccptdistance_ILP(cc, pt)) #ILP Variant
     return rv
 
@@ -100,8 +112,9 @@ def cost(I, tupleofpoints):
     (cost_plus, l1) = costplus(I, tupleofpoints[0])
     (cost_minus, l2) = costminus(I, tupleofpoints[1])
     (cost_ICE, l3) = costICE(I, tupleofpoints[2])
-    return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 ) 
-    # return (normalizationfn(cost_plus + cost_minus + cost_ICE, conf.beta0) , l1 + l2 + l3 ) 
+    return (cost_plus/ len(l1) + cost_minus/ len(l2) + cost_ICE/len(l3) , l1 + l2 + l3 ) #Average dataset distance
+    # return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 )      #CHANGE HERE
+
 
 
 

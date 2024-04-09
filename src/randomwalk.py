@@ -21,16 +21,17 @@ from costplotter import CostPlotter
 import stagnation
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
+def randomWalk(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
     
     
     #Important for truly random processes (threads).
     random.seed()
-    
+        
     I = I_list[process_id]
+
     n = repr.get_n()
     tmax = repr.get_tmax()
-    LII = dnfconjunction(list3D_to_listof2Darrays(I_list[process_id]), repr.get_affineSubspace() , 0)
+    LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
 
     temp = SA_Gamma /log(2)
@@ -53,16 +54,14 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 
         
         if (conf.COST_PLOTTER == conf.ON):
-            # tmp = costTimeLists[process_id]
-            # tmp.append(costI)  
-            # costTimeLists[process_id] = tmp
             costTimeLists[process_id] = costTimeLists[process_id] + [costI]
            
-        if (costI == 0):
-            return_value[process_id] = (I, t)
-            SAsuccess(process_id, repr.get_colorslist())
-            I_list[process_id] = I
-            return
+        # Comment this criterion for desired walk.
+        # if (costI == 0):
+        #     return_value[process_id] = (I, t)
+        #     SAsuccess(process_id, repr.get_colorslist())
+        #     I_list[process_id] = I
+        #     return
         
         neighbors = []
         for i in range(repr.get_d()):
@@ -77,40 +76,22 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
                                             for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
                 for r in rotneighbors:
                     constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
-                    # constlist = [oldconst] #Using the same constants as before, as cost change is barely much.
+                    # constlist = [oldconst]
                     for c in constlist:
                         neighbors.append( ( i, j, r + [-1,c]) )
                 transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
                 for c in transconslist:
                     neighbors.append( ( i, j, oldcoeff + [-1,c]) )
         
-        # if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
-        #     if (stagnant):
-        #         if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
-        #         else:
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
-        
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
         I[P[0]][P[1]] = P[2]
-                    
-        # index = get_index(repr.get_d(), repr.get_c())
-        
-        # oldpredicate = I[index[0]][index[1]]
-        # rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
-        
-        # if (isrotationchange(oldpredicate, rotneighbors, k1)):
-        #     I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
-        # else:
-        #     I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
-        
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
         temp = SA_Gamma/log(conf.Gamma0 + t)
-        a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
+        a = 1
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0
@@ -173,8 +154,12 @@ def main(inputname, repr: Repr):
     I_list = manager.list()
     
     
-    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
-                                    repr.get_affineSubspace(), repr.get_Dp())
+    # (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
+                                    # repr.get_affineSubspace(), repr.get_Dp())
+
+    #Random Walks from loop invariant
+    # When printing change number of processes to 1; For bhmr2007 file:
+    I_guess = [ [ [1,1,-3,0,-1,0] , [-1,-1,3,0,-1,0] , [0,0,1,-1,-1,0] ]   ]
     
     
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
@@ -204,7 +189,7 @@ def main(inputname, repr: Repr):
         # costTimeLists = {}
         for i in range(conf.num_processes):
             
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value,
+            process_list.append(mp.Process(target = randomWalk, args = (repr, I_list, samplepoints, i, return_value,
                                                                     SA_gammalist[i], z3_callcount, k1_list[i], costTimeLists )))
             process_list[i].start()
         
