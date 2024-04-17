@@ -109,10 +109,16 @@ def costICE(I, ICEpoints):
 
 
 def cost(I, tupleofpoints):
+    def norm_avg(sum, N):
+        if N == 0:
+            return 0
+        else:
+            return sum / N
+    
     (cost_plus, l1) = costplus(I, tupleofpoints[0])
     (cost_minus, l2) = costminus(I, tupleofpoints[1])
     (cost_ICE, l3) = costICE(I, tupleofpoints[2])
-    return (cost_plus/ len(l1) + cost_minus/ len(l2) + cost_ICE/len(l3) , l1 + l2 + l3 ) #Average dataset distance
+    return (norm_avg(cost_plus, len(l1)) + norm_avg(cost_minus, len(l2)) + norm_avg(cost_ICE, len(l3)) , l1 + l2 + l3 ) #Average dataset distance
     # return (cost_plus + cost_minus + cost_ICE , l1 + l2 + l3 )      #CHANGE HERE
 
 

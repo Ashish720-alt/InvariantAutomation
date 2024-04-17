@@ -152,6 +152,48 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
 
 """ Main function. """
 
+#Added this function - doesn't work in the case when if the first guess is correct answer, then it's cost is zero and division by zero not good.
+def randomwalk_costlist(I0, t, samplepoints, repr): 
+    costlist = []
+    n = repr.get_n()
+    I = I0
+    for _ in range(t):    
+        LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
+        (costI, _) = cost(LII, samplepoints)  
+        costlist.append(costI)
+        neighbors = []
+        for i in range(repr.get_d()):
+            for j in range(repr.get_c()):
+                oldcoeff = I[i][j][:-2]
+                oldconst = I[i][j][-1]
+                if (n <= 3):
+                    rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                else:
+                    negative_indices = [idx for idx, val in enumerate(oldcoeff) if val < 0]
+                    rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
+                                            for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
+                for r in rotneighbors:
+                    constlist = getNewRotConstant(oldcoeff, oldconst, r, repr.get_k1())
+                    # constlist = [oldconst] #Using the same constants as before, as cost change is barely much.
+                    for c in constlist:
+                        neighbors.append( ( i, j, r + [-1,c]) )
+                transconslist = getNewTranslationConstant(oldcoeff, oldconst, repr.get_k1())
+                for c in transconslist:
+                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
+        deg = len(neighbors)
+        P = neighbors[random.choice(range(deg))]
+        I[P[0]][P[1]] = P[2]
+    
+    print(costlist)
+    
+    rv = []
+    for s in range(len(costlist)):
+        if (s < len(costlist) - 1):
+           if (costlist[s+1] > costlist[s]):
+            rv.append((costlist[s], costlist[s+1]))
+    
+    return rv 
+
 
 def main(inputname, repr: Repr):
     """ ===== Initialization starts. ===== """
@@ -197,7 +239,11 @@ def main(inputname, repr: Repr):
         mcmc_start = timer()
         
         k1_list = k1list(repr.get_k0(), repr.get_n())
-        SA_gammalist = experimentalSAconstantlist()       
+        
+        # SA_gammalist = experimentalSAconstantlist()       
+        gammalist_costlist = randomwalk_costlist(I_list[0], 10, samplepoints, repr)
+        SA_gammalist = experimentalSAconstantlist( gammalist_costlist  ) #Changed temperature calculation using walk  
+        
         
         costTimeLists = manager.list()
         costTimeLists.extend([[] for i in range(conf.num_processes)])

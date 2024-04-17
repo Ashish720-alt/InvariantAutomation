@@ -26,19 +26,25 @@ def SAconstantlist( TS, k0, n, c, d, k1_list):
     return [SAconstant( TS, k0, k1 , n, c, d ) for k1 in k1_list]  
 
 
-def experimentalSAconstantlist():
-    S = []
-    n =  conf.S_changecostmax
-    for Emin in range(conf.S_Maxcost):
-        deltamax = max(floor(Emin * n) , conf.S_minchangecost)
-        for delta in range(1, deltamax + 1):
-            S.append([Emin,Emin + delta])
+def experimentalSAconstantlist(costlist = []):
     
+    if (costlist == []):
+        S = []
+        n =  conf.S_changecostmax
+        for Emin in range(conf.S_Maxcost):
+            deltamax = max(floor(Emin * n) , conf.S_minchangecost)
+            for delta in range(1, deltamax + 1):
+                S.append([Emin,Emin + delta])
+    else:
+        S = costlist
+        
     T = sum( [ i[1] - i[0] for i in S ] ) / (log(conf.T0_X0) * len(S))
     X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
     while (  abs(X_T - conf.T0_X0) > conf.T0_e ):
         T = T * (log(X_T)/ log(conf.T0_X0))
         X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
+    
+    print("T value found is ..", T) #Debug: Change this
     
     return [T for _ in range(conf.num_processes)]
 
