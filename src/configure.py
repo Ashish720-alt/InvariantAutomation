@@ -8,7 +8,7 @@ class Configure:
     OFF = 0
 
     REMOTE_SERVER = OFF
-    REMOTE_PATH = "../rotation-graph/"
+    REMOTE_PATH = "../../rotation-graph/"
 
     '''Invariant Space hyperparameters'''
     coeff_k = 2
