@@ -1,69 +1,162 @@
-""" Guessing a new invriant.
-"""
+""" Guessing a new invariant. """
+
 import numpy as np
 from configure import Configure as conf
-from math import inf, sqrt, floor, sin, ceil, log , e
+from math import inf, sqrt, sin, log , ceil, e, floor
 from cost_funcs import cost
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction
+from repr import Repr
 
+def COR_FP_Origin(oldcoeff, oldconst, newcoeff, k1):
+    symconsts = []
+    dotproduct = 1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff))
+    oldnorm = 1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff))
+    newnorm = 1.0 * np.dot(np.array(newcoeff), np.array(newcoeff)) 
+    asymconst = floor( oldconst * dotproduct/ oldnorm  )
+    symconstmin = max(ceil(oldconst * newnorm / dotproduct), ceil(-1* k1) )
+    symconstmax = min(ceil( (oldconst + 1) * newnorm / dotproduct), ceil(k1)) 
+    symconsts = list(range(symconstmin, symconstmax + 1))
+    if asymconst not in symconsts and asymconst <= k1 and asymconst >= -k1:
+        symconsts.append(asymconst)
+    return symconsts
 
-def k1list(k0, n):
-    # return [10]
-    max_radius = conf.dspace_radius * k0 * n
-    
-    n = floor(conf.num_processes/2)
-    radius_list = [1000] * n + [max_radius] * (conf.num_processes - n)
-        
-    return radius_list   
+def LargeTranslationConstant(oldcoeff, oldconst, k1):
+    slope = sqrt(np.dot(np.array(oldcoeff), np.array(oldcoeff)))
+    translation_range = floor(conf.translation_range * slope)
+    max_pos_dev = min(floor(k1 - oldconst), floor(translation_range))
+    max_neg_dev = max(ceil(-k1 - oldconst), ceil(-translation_range) ) 
+    translation_indices = list(range(oldconst + max_neg_dev, oldconst + max_pos_dev +1))
+    translation_indices.remove(oldconst)
+    return translation_indices
 
+def rotation_neighbors(i, j, coeff, const, repr: Repr, k1, n):
+    if (conf.BASIC_ROTATION == conf.OFF):
+        if (n <= 3):
+            rotneighbors = repr.get_coeffneighbors(coeff)
+        else:
+            negative_indices = [idx for idx, val in enumerate(coeff) if val < 0]
+            rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
+                                    for coeff in repr.get_coeffneighbors([abs(val) for val in coeff])]
+        rv = []
+        for r in rotneighbors:
+            if (conf.COR_SIMPLIFIED == conf.OFF):
+                constlist = COR_FP_Origin(coeff, const, r, k1)
+            else:
+                constlist = [const] #Using the same constants as before, as cost change is barely much.
+            for co in constlist:
+                rv.append( ( i, j, r + [-1,co]) )
+        return rv
+    else:
+        rv = []
+        unallowedcoeff = [0]*len(coeff)
+        for k in range(len(coeff)):
+            newcoeff1 = coeff.copy()
+            newcoeff2 = coeff.copy()
+            newcoeff1[k] = newcoeff1[k] + 1
+            newcoeff2[k] = newcoeff2[k] - 1 
+            if (newcoeff1[k] <= conf.BASIC_ROTATION_k0 and newcoeff1 != unallowedcoeff):
+                rv.append((i,j, newcoeff1 + [-1, const]))
+            if (newcoeff2[k] >= -conf.BASIC_ROTATION_k0 and newcoeff2 != unallowedcoeff):
+                rv.append((i,j, newcoeff2 + [-1, const]))
+        return rv
 
-def SAconstantlist( TS, k0, n, c, d, k1_list):    
+def translation_neighbors(i, j, coeff, const, k1):
+    rv = []
+    if (conf.TRANSLATION_SMALL == conf.OFF ):
+        transconslist = LargeTranslationConstant(coeff, const, k1)
+    else:
+        transconslist = [const + 1, const - 1] 
+    for co in transconslist:
+        rv.append( ( i, j, coeff + [-1,co]) )  
+    return rv
+
+def theoreticalSAconstantlist( TS, k0, n, c, d, k1_list):    
     def SAconstant(TS_size, k0, k1, n , c , d):
-        L_upper = conf.beta * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_rad / 2 ) )
+        L_upper = 4 * TS_size * max(conf.translation_range, 4 * k1 * sqrt(n) * sin( conf.rotation_rad / 2 ) )
         r_upper = c * d * 2 * k0 * k1 / ( (k0 - 1) * conf.translation_range ) 
         return L_upper * r_upper
 
     return [SAconstant( TS, k0, k1 , n, c, d ) for k1 in k1_list]  
 
 
-def experimentalSAconstantlist(costlist = []):
+def FasterBiased_RWcostlist(I, samplepoints, repr): 
+    n = repr.get_n()
+    c1 = float('inf')
+    c2 = 0
+    rv = []
+    while (len(rv) < conf.T0_COSTLISTLENGTH):    
+        LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
+        (c2, _) = cost(LII, samplepoints)  
+        if (c2 > c1): #only positive transitions
+            rv.append((c1,c2))
+        i = np.random.randint(0, repr.get_d())
+        j = np.random.randint(0, repr.get_c())
+        if (np.random.rand() < conf.T0_rotationMaxProb): #Choose rotation or translation
+            neighbors = rotation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr, repr.get_k1(), n)
+        else:
+            neighbors = translation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr.get_k1())
+        I[i][j] = neighbors[np.random.choice(range(len(neighbors)))][2]
+        c1 = c2
     
-    if (costlist == []):
-        S = []
-        n =  conf.S_changecostmax
-        for Emin in range(conf.S_Maxcost):
-            deltamax = max(floor(Emin * n) , conf.S_minchangecost)
-            for delta in range(1, deltamax + 1):
-                S.append([Emin,Emin + delta])
-    else:
-        S = costlist
-        
-    T = sum( [ i[1] - i[0] for i in S ] ) / (log(conf.T0_X0) * len(S))
-    X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
-    while (  abs(X_T - conf.T0_X0) > conf.T0_e ):
-        T = T * (log(X_T)/ log(conf.T0_X0))
-        X_T = sum([ e**(- i[1]/ T) for i in S ]) / sum([ e**(- i[0]/ T) for i in S ])
-    
-    print("T value found is ..", T) #Debug: Change this
-    
-    return [T for _ in range(conf.num_processes)]
+    return rv 
+
+def experimentalSAconstantlist(Ilist, samplepoints, repr):
+    def ExponentialWithError(x, y):
+        try:
+            result = e**(-x / y)
+        except OverflowError:
+            result = 0
+        except FloatingPointError:
+            result = 0
+        return result
+    rv = []
+    for I0 in Ilist:
+        S = FasterBiased_RWcostlist(I0, samplepoints, repr)    
+        T = -sum( [ i[1] - i[0] for i in S ] ) / (log(conf.T0_X0) * len(S))
+        N = [ ExponentialWithError(i[1], T) for i in S ] 
+        D = [ ExponentialWithError(i[0], T) for i in S ]
+        default_positive_transition = (0, 30*T) #The minimum value which python represents is 2.22 * 1e-16, which holds for a cost change of 36.04*T
+        if sum(D) == 0:  #To avoid division by zero for very small cost changes, add the default positive transition 
+            N.append(ExponentialWithError(default_positive_transition[1], T))
+            D.append(ExponentialWithError(default_positive_transition[0], T))
+            S.append(default_positive_transition)
+        X_T = sum(N) / sum(D) 
+        while (  abs(X_T - conf.T0_X0) > conf.T0_e ):
+            T = T * (log(X_T)/ log(conf.T0_X0))
+            N = [ ExponentialWithError(i[1], T) for i in S ]
+            D = [ ExponentialWithError(i[0], T) for i in S ]
+            default_positive_transition = (0, 35*T) 
+            if sum(D) == 0:  #T decreases in this loop, hence at some point D may add up to zero even if it wasn't previously doing so.
+                N.append(ExponentialWithError(default_positive_transition[1], T))
+                D.append(ExponentialWithError(default_positive_transition[0], T))
+                S.append(default_positive_transition)
+            X_T = sum(N) / sum(D)    
+        rv.append(T)             
+    return rv
 
 def randomlysampleelementfromList(l):
     return l[np.random.choice( len(l))]
 
-
 def uniformlysample_I( rotation_vertices, k1, c, d, n, Dp):
     def uniformlysample_cc(rotation_vertices, k1, n, c, Dp):
         def uniformlysample_p(rotation_vertices, k1, n, Dp):
-            coeff = randomlysampleelementfromList(rotation_vertices)
+            if (conf.BASIC_ROTATION == conf.OFF):
+                coeff = randomlysampleelementfromList(rotation_vertices)
+            else:
+                unallowedcoeff = [0]*n
+                coeff = unallowedcoeff
+                while (coeff == unallowedcoeff):
+                    coeff = []
+                    for _ in range(n):
+                        coeff.append(np.random.choice(range(-conf.BASIC_ROTATION_k0, conf.BASIC_ROTATION_k0+1)))
             # const = np.random.choice( list(range(-k1-1, k1 + 1 )) )
             if (n > 1):
                 const = 0 # This gives  better results
             else:
                 const = randomlysampleelementfromList(Dp)
             return list(coeff) + [-1,const]
-        return  [ uniformlysample_p(rotation_vertices, k1, n, Dp) for i in range(c)  ]
-    return [ uniformlysample_cc(rotation_vertices, k1, n, c, Dp) for i in range(d)  ]
+        return  [ uniformlysample_p(rotation_vertices, k1, n, Dp) for _ in range(c)  ]
+    return [ uniformlysample_cc(rotation_vertices, k1, n, c, Dp) for _ in range(d)  ]
 
 
 def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace, Dp):
@@ -79,309 +172,30 @@ def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace,
     
     return (I, costI)
 
-def rotationdegree(rotationneighbors):
-    return len(rotationneighbors)
 
-# C = op_norm_conj(C)
-# A = np.concatenate(
-#     [C[:, :self.num_var], C[:, self.num_var+1:]], axis=1)
-# return float(minimize(
-#     lambda x, p: np.linalg.norm(x - p),
-#     np.zeros(self.num_var),
-#     args=(p,),
-#     constraints=[LinearConstraint(A[:, :-1], -np.inf, -A[:, -1])],
-# ).fun)
 
-def listmultiplyconstant(c, l):
-    return [ c * x for x in l ]
+def SearchSpaceNeighbors(I, repr: Repr, d, c, k1, n):
+    neighbors = []
+    for i in range(d):
+        for j in range(c):
+            oldcoeff = I[i][j][:-2]
+            oldconst = I[i][j][-1]
+            if (conf.GUESS_SCHEME != conf.ONLY_TRANSLATION):
+                neighbors = neighbors + rotation_neighbors(i, j, oldcoeff, oldconst, repr, k1, n)
+            if (conf.GUESS_SCHEME != conf.ONLY_ROTATION):
+                neighbors = neighbors + translation_neighbors(i, j, oldcoeff, oldconst, k1)
+    return neighbors  
 
-def listadd(l1, l2):
-    return [sum(p) for p in zip(l1, l2)]
 
-# # Here, posed as an ILP!
-# def centre_of_rotation_new(pred, newcoefficient, spin, k1):
-#     # Need to convert the type of elements of this array to float?
-#     coeff = pred[:-2]
-#     const = pred[-1]
-#     n = len(coeff)
-#     sign = 1 if (spin >= 0) else -1
-#     v = listadd(listmultiplyconstant( 1.0/ sqrt(np.dot(newcoefficient, newcoefficient)) , newcoefficient) ,listmultiplyconstant(-1.0/ sqrt(np.dot(coeff, coeff)), coeff))
+# def guessInvariants( samplepoints, rotation_vertices, k1, c, d, n, affinespace, Dp, ct):
+#     population = []
+#     for _ in range(ct):
+#         I = uniformlysample_I( rotation_vertices, k1, c, d, n, Dp)
+#         LII = dnfconjunction( list3D_to_listof2Darrays(I), affinespace , 0)
+#         (costI, _ ) = cost(LII, samplepoints)
+#         population.append((I, costI))
     
-#     # print(coeff, const, n, sign, v) #Debugging
-    
-#     return minimize(
-#         lambda x, v, spin: spin * np.dot(np.array(v), np.array(x)),
-#         np.zeros(n), #This is the initial guess!
-#         args=(v,spin),
-#         bounds = Bounds(lb = np.full(n, conf.dspace_intmin), ub = np.full(n, conf.dspace_intmax) ),
-#         # Without newconstant constraints
-#         # constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) ]  ), np.array( [-np.inf, -np.inf] ), np.array( [const, -const] ) )],
-#         # With new constant constraints
-#         constraints=[LinearConstraint(np.array( [ coeff, listmultiplyconstant(-1, coeff) , newcoefficient]  ), np.array( [-np.inf, -np.inf, -k1 - 1] ), np.array( [const, -const, k1] ) )], #Convert this to shape (1,n) instead of (n)?
-#     ).x
-
-# print(centre_of_rotation_new( [-1,2,-1,200] , [-1,1] , 1 ))
-
-def origin_fp(pred):
-    coeff = pred[:-2]
-    const = 1.0 * pred[-1] #This should be plus as our invariant is ax + by - c <= 0 and fp is (h-x1)/a = (k - y1)/b = -(ax1 + by1 + c)/ (a^2 + b^2)
-    K = np.dot(np.array(coeff) , np.array(coeff))
-    return [ (x * const * 1.0)/K for x in coeff ]
-
-
-# def centre_of_rotation_projectedWalk(pred, filteredpoints):
-#     coeff = pred[:-2]
-#     o_fp = origin_fp(pred)
-#     const = round(np.dot(np.array(coeff), np.array(o_fp)), 0) 
-#     return const
-
-
-# def centre_of_rotation_walk(pred, filteredpoints):
-#     n = len(pred) - 2
-#     coeff = pred[:-2]
-#     A = np.array([ np.array(coeff) for i in range(n)])
-#     ns_columnarray = null_space(A)
-#     ns_array = np.transpose(ns_columnarray)
-#     ns_list = [list(x) for x in ns_array] 
-
-#     def coordinate_bounds(basis):
-#         def coeffbounds(basisvector):
-#             (maxvalue, minvalue) = (max(basisvector), min(basisvector))
-#             (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
-#             U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
-#             L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
-#             return (L,U)
-#         return [coeffbounds(v) for v in basis]
-
-#     bounds = coordinate_bounds(ns_list)
-#     K = pred[-1] / np.dot(np.array(coeff), np.array(coeff))
-
-#     def coordinate_to_point(coordinates, basis_list, K): #ns_list is basis_list
-#         rv = np.zeros(n, dtype = float)
-#         for i in range(len(basis_list)):
-#             rv = np.add(rv, coordinates[i]*np.array(basis_list[i]) )
-#         rv = np.add(rv, K*np.array(coeff))
-#         return list(rv)
-
-#     def centreofrotation_cost(newI, filteredpoints):
-#         (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-#         (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-#         (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-#         return pos_cost + neg_cost + ICE_cost
-
-
-#     # x0 = origin_fp(pred)
-#     # coordinate_curr =  list(np.transpose(np.matmul( inv(ns_columnarray) , np.transpose(np.array(x0)) )))
-#     k = len(ns_list)
-#     coordinate_curr = [0] * k
-#     point_curr = coordinate_to_point(coordinate_curr, ns_list, K)
-#     curr_const = round(np.dot(np.array(coeff), np.array(point_curr)), 0) 
-#     curr_cost = centreofrotation_cost([np.array(coeff + [-1, curr_const], ndmin = 2)], filteredpoints)
-#     i = 1
-#     while (i < conf.centre_walklength):
-#         j = random.choice(list(range(k)))
-#         change = random.choice([-1,1])
-#         coordinate_temp = coordinate_curr.copy()
-#         coordinate_temp[j] = coordinate_temp[j] + change
-#         print(coordinate_curr, coordinate_temp) #Debug
-#         point_temp = coordinate_to_point(coordinate_temp, ns_list, K)
-#         temp_const = round(np.dot(np.array(coeff), np.array(point_temp)), 0) 
-#         temp_cost = centreofrotation_cost([np.array(coeff + [-1, temp_const], ndmin = 2)], filteredpoints)
-#         if (temp_cost < curr_cost):
-#             print("Walk has moved!") #Debug
-#             curr_cost = temp_cost
-#             coordinate_curr = coordinate_temp
-#             point_curr = point_temp
-#         i = i + 1
-#     return point_curr
-
-# # Uniformly samples a point (not necessarily lattice point) on the hyperplane upto some approximation error (usually 1e-9)
-# def centre_of_rotation(pred):
-#     n = len(pred) - 2
-#     coeff = pred[:-2]
-#     A = np.array([ np.array(coeff) for i in range(n)])
-#     ns_array = np.transpose(null_space(A))
-#     ns_list = [list(x) for x in ns_array] 
-
-#     def coordinate_bounds(basis):
-#         def coeffbounds(basisvector):
-#             (maxvalue, minvalue) = (max(basisvector), min(basisvector))
-#             (maxposvalue, minnegvalue) = (max(0.01, maxvalue), min(-0.01, minvalue) )
-#             U = min( conf.dspace_intmax/(maxposvalue), conf.dspace_intmin/(minnegvalue)  )
-#             L = max( conf.dspace_intmax/(minnegvalue), conf.dspace_intmin/(maxposvalue)  )
-#             return (L,U)
-#         return [coeffbounds(v) for v in basis]
-
-#     bounds = coordinate_bounds(ns_list)
-
-#     def samplepoint(basis, bounds, coeff, b):
-#         def isvalidvector(pt):
-#             return all([ ((val >= conf.dspace_intmin) and (val <= conf.dspace_intmax)) for val in pt ])
-#         n = len(basis[0])
-#         rv = [conf.dspace_intmax+1]*n
-#         K = b / np.dot(np.array(coeff), np.array(coeff))
-#         while( not isvalidvector(list(rv))):
-#             coordinates = [ np.random.uniform(I[0], I[1]) for I in bounds] #Uniform Sampling
-#             # coordinates = [ np.random.normal(loc=0.0, scale=1.0) for I in bounds] #Gaussian Sampling
-#             rv = np.zeros(n, dtype = float)
-#             for i in range(len(basis)):
-#                 rv = np.add(rv, coordinates[i]*np.array(basis[i]) )
-#             rv = np.add(rv, K*np.array(coeff))
-#         return list(rv)
-    
-#     return [ samplepoint(ns_list, bounds, coeff, pred[-1]) for x in range(conf.centres_sampled)]
-
-# def centre_of_rotation_old(oldpredicate, filteredpoints, newcoefficient):
-#     centreofrotation_list = centre_of_rotation(newcoefficient + [-1,0])
-
-#     def centreofrotation_cost(newI, filteredpoints):
-#         (pos_cost, _, _) = costplus(newI, filteredpoints[0])
-#         (neg_cost, _, _) = costminus(newI, filteredpoints[1])
-#         (ICE_cost, _, _) = costICE(newI, filteredpoints[2])
-#         return pos_cost + neg_cost + ICE_cost
-
-#     centreofrotation = centreofrotation_list[0]
-#     const = round(np.dot(np.array(newcoefficient), np.array(centreofrotation)), 0) 
-#     newpred = newcoefficient + [-1, const]
-#     newI = [np.array( newpred, ndmin = 2)]
-#     cost = centreofrotation_cost(newI, filteredpoints)
-
-#     i = 1
-#     while (i < conf.centres_sampled):
-#         curr_centreofrotation = centreofrotation_list[i]
-#         curr_const = round(np.dot(np.array(newcoefficient), np.array(curr_centreofrotation)), 0) 
-#         currpred = newcoefficient + [-1, curr_const]
-#         currI = [np.array( currpred, ndmin = 2)]
-#         curr_cost = centreofrotation_cost(currI, filteredpoints)
-#         if (curr_cost < cost):
-#             cost = curr_cost
-#             centreofrotation = curr_centreofrotation
-#         i = i+1
-#     return centreofrotation
-
-# #samplepoints is a triple, costlist is a single list
-# def getrotationcentre_points(samplepoints, costlists, oldpred):
-#     pos_costlist = costlists[0: len(samplepoints[0])]
-#     neg_costlist = costlists[len(samplepoints[0]) : len(samplepoints[0]) + len(samplepoints[1])]
-#     ICE_costlist = costlists[len(samplepoints[0]) + len(samplepoints[1]): ]
-
-#     neg_oldpred = [-1*x for x in oldpred]  
-#     neg_oldpred[-2] = -1
-#     neg_oldpred[-1] = neg_oldpred[-1] - 1
-
-#     positivepts = samplepoints[0]
-#     negativepts = samplepoints[1]
-#     ICEpts = samplepoints[2]
-
-#     filtered_pos = []
-#     filtered_neg = []
-#     filtered_ICE = []
-
-#     def pt_linedistance(pred, pt):
-#         magnitude = sqrt(sum(i*i for i in pred[:-2]))
-#         s = 0
-#         for i in range(len(pt)):
-#             s = pred[i]*pt[i]
-#         s = s - pred[-1]    
-#         return  s/magnitude
-
-#     for i,pos in enumerate(positivepts):
-#         dist = pt_linedistance(oldpred, pos)
-#         if ( dist > 0 and dist <= conf.d and pos_costlist[i] > 0):
-#             filtered_pos.append(pos)
-
-#     for i,neg in enumerate(negativepts):
-#         dist = pt_linedistance(neg_oldpred, neg)
-#         if ( dist > 0 and dist <= conf.d and neg_costlist[i] > 0):
-#             filtered_neg.append(neg)
-
-#     for i,ICE in enumerate(ICEpts):
-#         dist1 = pt_linedistance(neg_oldpred, ICE[0])
-#         dist2 = pt_linedistance(oldpred, ICE[1])
-#         if ( dist1 <= 0 and dist2 > 0 and min(-dist1, dist2) <= conf.d and ICE_costlist[i] > 0):
-#             filtered_ICE.append(ICE)
-
-#     return (filtered_pos, filtered_neg, filtered_ICE )
-
-
-# whether rotation is possible or not i.e. if while loop is not an infinite loop is handled in isrotationchange(.. , .. , ..) function
-def rotationtransition(oldpredicate, rotationneighbors, k1):
-    
-    # n = len(oldpredicate) - 2
-    oldcoeff = oldpredicate[:-2]
-    oldconst = oldpredicate[-1]    
-    newcoeff = oldpredicate[:-2]
-    newconst = inf
-    
-    while (newconst > k1 or newconst < -1 * k1):
-        newcoeff = list(randomlysampleelementfromList(rotationneighbors)) 
-        newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
-
-
-    return newcoeff + [-1, newconst]
-
-def getNewRotConstant(oldcoeff, oldconst, newcoeff, k1):
-    symconsts = []
-    dotproduct = 1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff))
-    oldnorm = 1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff))
-    newnorm = 1.0 * np.dot(np.array(newcoeff), np.array(newcoeff)) 
-    asymconst = floor( oldconst * dotproduct/ oldnorm  )
-    symconstmin = max(ceil(oldconst * newnorm / dotproduct), ceil(-1* k1) ) #Check this:: WHy do I need ceil here - remove this gives error!!
-    symconstmax = min(ceil( (oldconst + 1) * newnorm / dotproduct), ceil(k1)) #Check this:: WHy do I need ceil here - remove this gives error!!
-    symconsts = list(range(symconstmin, symconstmax + 1))
-    if asymconst not in symconsts and asymconst <= k1 and asymconst >= -k1:
-        symconsts.append(asymconst)
-    return symconsts
-    
-    
-
-
-def translationtransition(predicate, k1):
-    slope = sqrt(np.dot(np.array(predicate[:-2]), np.array(predicate[:-2])))
-    translation_range = floor(conf.translation_range * slope)
-    translation_indices = list(range(-translation_range, translation_range +1))
-    translation_indices.remove(0)
-    s = inf
-    rv = predicate.copy()
-    while (rv[-1] + s > k1 or rv[-1] + s < -1 * k1):
-        s = np.random.choice(translation_indices)
-    rv[-1] = rv[-1] + s
-    return rv
-
-def getNewTranslationConstant(oldcoeff, oldconst, k1):
-    slope = sqrt(np.dot(np.array(oldcoeff), np.array(oldcoeff)))
-    translation_range = floor(conf.translation_range * slope)
-    max_pos_dev = min(floor(k1 - oldconst), floor(translation_range)) #Check this:: WHy do I need floor here - remove this gives error!!
-    max_neg_dev = max(ceil(-k1 - oldconst), ceil(-translation_range) ) #Check this:: WHy do I need ceil here - remove this gives error!!
-    translation_indices = list(range(oldconst + max_neg_dev, oldconst + max_pos_dev +1))
-    translation_indices.remove(oldconst)
-    return translation_indices
-
-
-def get_index(d, c):
-    return (np.random.choice( list(range(d)) ), np.random.choice( list(range(c)) ))
-
-def isrotationchange(oldpredicate, rotationneighbors, k1):
-    def isrotationpossible(oldpredicate, rotationneighbors, k1):
-        oldcoeff = oldpredicate[:-2]
-        oldconst = oldpredicate[-1]   
-        i = 0
-        for newcoeff in rotationneighbors:
-            newconst = floor( oldconst * (1.0 * np.dot(np.array(newcoeff), np.array(oldcoeff)))/ (1.0 * np.dot(np.array(oldcoeff), np.array(oldcoeff)))  )
-            if (not (newconst > k1 or newconst < -1 * k1)):
-                return True
-            i = i + 1
-        if (i == len(rotationneighbors)):
-            return False     
-    
-    return isrotationpossible(oldpredicate, rotationneighbors, k1) and (np.random.rand() <= conf.p_rot )
+#     return population
 
 
 
-    
-
-
-
-# h = [1,1,-1,3]
-# a = centre_of_rotation(h)
-# print(a, np.dot(np.array(h[:-2]), np.array(a)) - h[-1])

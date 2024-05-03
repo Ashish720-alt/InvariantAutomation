@@ -58,10 +58,10 @@ def npcd_const(X, r):
 
 
 def D_singlecoeff(coeff):
-    return ccl(gd_coeff(list_union(scd(conf.k), coeff)))
+    return ccl(gd_coeff(list_union(scd(conf.coeff_k), coeff)))
 
 def D_const(pc):
-    return ccl(gd_const(list_union(scd(conf.k), npcd_const(pc, conf.r) )))
+    return ccl(gd_const(list_union(scd(conf.coeff_k), npcd_const(pc, conf.coeff_r) )))
 
 def D_p(P, B, T , Q):
     (coeff, const) = extract_constants(P,B,T,Q)

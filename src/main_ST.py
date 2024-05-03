@@ -11,7 +11,7 @@ from print import initialized, statistics, z3statistics, invariantfound, timesta
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
-from math import log, floor, exp
+from math import log, floor, exp, e
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
@@ -122,7 +122,7 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         
         beta = 1
         # print(costI, ST_cost(costI, E_0)) #Check transformed values!
-        a = conf.gamma **( beta * -max( ST_cost(costInew, E_0) - ST_cost(costI, E_0), 0.0) ) 
+        a = conf.e **( beta * -max( ST_cost(costInew, E_0) - ST_cost(costI, E_0), 0.0) ) 
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0

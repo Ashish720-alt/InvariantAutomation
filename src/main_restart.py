@@ -11,7 +11,7 @@ from print import initialized, statistics, z3statistics, invariantfound, timesta
 from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
-from math import log, floor
+from math import log, floor, e
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
@@ -84,8 +84,8 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = SA_Gamma/log(conf.Gamma0 + t)
-        a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
+        temp = SA_Gamma/log(conf.t0 + t)
+        a = conf.e **( - max(costInew - costI, 0.0) / temp ) 
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0
