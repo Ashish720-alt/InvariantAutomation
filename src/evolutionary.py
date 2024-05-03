@@ -1,0 +1,218 @@
+""" Imports.
+"""
+import sys
+from configure import Configure as conf
+from cost_funcs import cost
+from guess import initialInvariant, rotationtransition, translationtransition, get_index, isrotationchange, k1list, guessInvariants, SAconstantlist, getNewRotConstant, getNewTranslationConstant, experimentalSAconstantlist
+from repr import Repr
+from z3verifier import z3_verifier
+from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
+from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
+from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation, deepcopy_DNF
+from timeit import default_timer as timer
+from math import log, floor, e
+import argparse
+from input import Inputs, input_to_repr
+import multiprocessing as mp
+from invariantspaceplotter import plotinvariantspace
+from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
+from costplotter import CostPlotter
+import stagnation
+import numpy as np
+
+# @jit(nopython=False)
+def search(repr: Repr, population, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
+    def sort_tuples_by_second_element(L):
+        sorted_list = sorted(L, key=lambda x: x[1])
+        return sorted_list
+
+    def pick_random_element(L):
+        # Generate a random index using numpy
+        index = np.random.randint(0, len(L))
+        
+        # Return the element at the generated index
+        return L[index]
+    
+    population = sort_tuples_by_second_element(population)
+    
+    
+    # I1 = population[1]
+    n = repr.get_n()
+    tmax = repr.get_tmax()
+    for t in range(1, tmax+1):
+        index = pick_random_element(range(len(population)))
+        (I, costI) = population[index]
+        
+        print(population) 
+        print('\n')
+        
+        
+        
+        if (costI == 0):
+            SAsuccess(0, repr.get_colorslist())
+            population[0] = I
+            return population[0]
+        
+        neighbors = []
+        for i in range(repr.get_d()):
+            for j in range(repr.get_c()):
+                oldcoeff = I[i][j][:-2]
+                oldconst = I[i][j][-1]
+                if (n <= 3):
+                    rotneighbors = repr.get_coeffneighbors(oldcoeff)
+                else:
+                    negative_indices = [idx for idx, val in enumerate(oldcoeff) if val < 0]
+                    rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
+                                            for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
+                for r in rotneighbors:
+                    if (conf.COR_SIMPLIFIED == conf.OFF):
+                        constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
+                    else:
+                        constlist = [oldconst] #Using the same constants as before, as cost change is barely much.
+                    for c in constlist:
+                        neighbors.append( ( i, j, r + [-1,c]) )
+                transconslist = [+1, -1] #Debug
+                # transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
+                for c in transconslist:
+                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
+
+        
+        deg = len(neighbors)
+        P = neighbors[pick_random_element(range(deg))]
+        oldpredicate = I[P[0]][P[1]] 
+        
+        Inew = deepcopy_DNF(I)
+        Inew[P[0]][P[1]] = P[2]
+        LII = dnfconjunction( list3D_to_listof2Darrays(Inew), repr.get_affineSubspace(), 0)
+        (costInew, _) = cost(LII, samplepoints)
+
+        if (costInew < costI):
+            population[index] = (I, costInew)
+        population = sort_tuples_by_second_element(population)        
+
+    # Process '0' Failed!
+    SAfail(0, repr.get_colorslist())
+    population[0] = I
+    return population[0]
+
+
+
+
+
+def main(inputname, repr: Repr):
+    """ ===== Initialization starts. ===== """
+    mcmc_time = 0
+    z3_time = 0
+    initialize_time = 0
+    z3_callcount = 0
+    initialize_start = timer()
+    tmax = repr.get_tmax()
+    samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
+    initialized( repr.get_affineSubspace(), repr.get_nonItersP(), repr.get_Var())
+    prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
+    print("\n")
+    
+    
+    population_size = 100
+    
+    population = guessInvariants(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
+                                        repr.get_affineSubspace(), repr.get_Dp(), population_size)
+
+    k1_list = k1list(repr.get_k0(), repr.get_n())
+    (I, t) = search(repr, population, samplepoints, 0, [], [], z3_callcount, k1_list[0], [] )
+
+
+
+            
+    """ Z3 validation """
+        
+    z3_callcount = z3_callcount + 1
+    foundI = False
+    cex = ([], [], [])
+    foundI = foundI or (I != None)      
+    if (I != None):
+        LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
+        (z3_correct, cex_thread) = z3_verifier(repr.get_P_z3expr(), repr.get_B_z3expr(), repr.get_T_z3expr(), repr.get_Q_z3expr(), LII )           
+        if (z3_correct):
+            print("corret invariant is :", I)
+            return
+        cex = (removeduplicates(cex[0] + cex_thread[0]) , removeduplicates(cex[1] + cex_thread[1]) , removeduplicatesICEpair(cex[2] + cex_thread[2]) )
+
+        
+        new_enet = (z3_callcount % conf.z3_stepwindow == 0)
+        i = floor(1.0 * z3_callcount / conf.z3_stepwindow)
+        e = conf.e0 / (2**i)
+        
+        # Constricting e-net
+        eNetPoints = ([], [], [])
+        if (new_enet):
+            eNetPoints = repr.update_enet(e, samplepoints)
+
+
+        #Get iterated implication pairs 
+        iteratedImplicationpairs = get_longICEpairs( cex[2], repr.get_T(), repr.get_n(), repr.get_transitionIterates())
+        
+        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints, iteratedImplicationpairs)
+
+        """ Collect counterexamples """
+        initialize_start = timer()
+        
+        
+        cex = (cex[0] , cex[1] , cex[2] + iteratedImplicationpairs )
+        
+        if (new_enet):
+            samplepoints = ( removeduplicates( samplepoints[0] + eNetPoints[0] + cex[0]), 
+                            removeduplicates( samplepoints[1] + eNetPoints[1] + cex[1] ),
+                            removeduplicatesICEpair( samplepoints[2] + eNetPoints[2] + cex[2]) )
+        else:
+            samplepoints = (removeduplicates(samplepoints[0] + cex[0]) , 
+                            removeduplicates(samplepoints[1] + cex[1]), 
+                            removeduplicatesICEpair(samplepoints[2] + cex[2]) )
+
+        if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
+            plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
+        
+        #samplepoints has changed, so cost and f changes for same invariant
+        for i in range(1):
+            LII = dnfconjunction( list3D_to_listof2Darrays(I_list[i]), repr.get_affineSubspace(), 0)
+            (costI, costlist) = cost(LII, samplepoints)
+            statistics(i, 0, I_list[i], costI, 0, 0, [], -1 , repr.get_Var(), repr.get_colorslist()) 
+        
+        
+        initialize_end = timer()
+        initialize_time = initialize_time + (initialize_end - initialize_start)
+
+    invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
+    timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, 1 )
+        
+
+    return (LII, z3_callcount)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='MCMC Invariant Search')
+    parser.add_argument('-c', type=int, help='Number of conjunctions')
+    parser.add_argument('-d', type=int, help='Number of disjunctions')
+    parser.add_argument('-i', '--input', type=str, help='Input object name')
+    parser.add_argument('-a', '--all', action='store_true', help='Run all inputs')
+    parse_res = vars(parser.parse_args())
+    if parse_res['all']:
+        if (parse_res['input'] is not None):
+            print(parser.print_help())
+            print("Please specify either input object name or all inputs")
+            exit(1)
+        for subfolder in dir(Inputs):
+            for inp in dir(getattr(Inputs, subfolder)):
+                main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+    else:
+        if parse_res['input'] is None:
+            print(parser.print_help())
+            print("Please specify input object name")
+            exit(1)
+        else:
+            (first_name, last_name) = parse_res['input'].split('.')
+            for subfolder in Inputs.__dict__:
+                if subfolder == first_name:
+                    for inp in getattr(Inputs, subfolder).__dict__:
+                        if inp == last_name:
+                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))

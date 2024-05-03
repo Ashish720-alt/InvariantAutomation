@@ -3,27 +3,30 @@
 import sys
 from configure import Configure as conf
 from cost_funcs import cost
-from guess import initialInvariant, rotationtransition, translationtransition, get_index, isrotationchange, k1list, SAconstantlist, getNewRotConstant, getNewTranslationConstant, experimentalSAconstantlist
+from guess import initialInvariant,  experimentalSAconstantlist, SearchSpaceNeighbors, FasterBiased_RWcostlist
 from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
-from print import SAexit, SAsuccess, samplepoints_debugger, SAfail
+from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
-from math import log, floor
+from math import log, floor, e
 import argparse
 from input import Inputs, input_to_repr
 import multiprocessing as mp
 from invariantspaceplotter import plotinvariantspace
 from selection_points import removeduplicates, removeduplicatesICEpair, get_longICEpairs
 from costplotter import CostPlotter
-import stagnation
+from stagnation import checkLocalMinima, isStagnant
+from colorama import Fore
+
+
+
+
 
 # @jit(nopython=False)
-def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, k1, costTimeLists):
-    
-    
+def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, costTimeLists, output ):
     #Important for truly random processes (threads).
     random.seed()
     
@@ -36,180 +39,99 @@ def search(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma,
     temp = SA_Gamma /log(2)
 
 
-    if (conf.CHECK_STAGNATION == conf.ON):
-        stagnant = False
-        costTimeList = [costI]
+    if (conf.CHECK_LOCALMINIMA  == conf.ON):
+        costSingleTimeList = [costI]
+    if (conf.AVERAGE_ACC_PROB_CHECKER == conf.ON):
+        aList = []
 
     for t in range(1, tmax+1):
         if (t % conf.NUM_ROUND_CHECK_EARLY_EXIT == 0):
             for i in range(conf.num_processes):
                 if return_value[i] != None and return_value[i][0] != None:
                     return_value[process_id] = (None, t)
-                    SAexit(process_id, repr.get_colorslist())
+                    SAexit(process_id, repr.get_colorslist(), output)
                     I_list[process_id] = I
                     return
 
-        samplepoints_debugger(repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist())        
-
-        
+        if (conf.n2PLOTTER == conf.ON):
+            n2plotter(inputname.split('.')[1], repr.get_n(), process_id, z3_callcount, t, samplepoints, I, repr.get_colorslist(), outputfile = output)        
         if (conf.COST_PLOTTER == conf.ON):
-            # tmp = costTimeLists[process_id]
-            # tmp.append(costI)  
-            # costTimeLists[process_id] = tmp
             costTimeLists[process_id] = costTimeLists[process_id] + [costI]
            
         if (costI == 0):
             return_value[process_id] = (I, t)
-            SAsuccess(process_id, repr.get_colorslist())
+            SAsuccess(process_id, repr.get_colorslist(), output)
             I_list[process_id] = I
             return
         
-        neighbors = []
-        for i in range(repr.get_d()):
-            for j in range(repr.get_c()):
-                oldcoeff = I[i][j][:-2]
-                oldconst = I[i][j][-1]
-                if (n <= 3):
-                    rotneighbors = repr.get_coeffneighbors(oldcoeff)
-                else:
-                    negative_indices = [idx for idx, val in enumerate(oldcoeff) if val < 0]
-                    rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
-                                            for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
-                for r in rotneighbors:
-                    constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
-                    # constlist = [oldconst] #Using the same constants as before, as cost change is barely much.
-                    for c in constlist:
-                        neighbors.append( ( i, j, r + [-1,c]) )
-                transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
-                for c in transconslist:
-                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
-        
-        # if (conf.CHECK_STAGNATION == conf.ON and conf.CHECK_LOCALMINIMA == conf.ON):
-        #     if (stagnant):
-        #         if (stagnation.checkLocalMinima(I, neighbors, samplepoints)):
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is stuck in a Local Minima!")
-        #         else:
-        #             print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is NOT stuck in a Local Minima.")
-        
+        neighbors = SearchSpaceNeighbors(I, repr, repr.get_d(), repr.get_c(), repr.get_k1(), n)
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
         I[P[0]][P[1]] = P[2]
-                    
-        # index = get_index(repr.get_d(), repr.get_c())
-        
-        # oldpredicate = I[index[0]][index[1]]
-        # rotneighbors = repr.get_coeffneighbors(oldpredicate[:-2])
-        
-        # if (isrotationchange(oldpredicate, rotneighbors, k1)):
-        #     I[index[0]][index[1]] = rotationtransition(oldpredicate, rotneighbors, k1) 
-        # else:
-        #     I[index[0]][index[1]] = translationtransition(oldpredicate, k1) 
-        
-        
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = SA_Gamma/log(conf.Gamma0 + t)
-        a = conf.gamma **( - max(costInew - costI, 0.0) / temp ) 
+        temp = SA_Gamma/log(conf.t0 + t)
+        a = e **( - max(costInew - costI, 0.0) / temp ) 
+        if (conf.AVERAGE_ACC_PROB_CHECKER == conf.ON and a < 1):
+            aList = aList + [a]    
         if (random.rand() <= a): 
             reject = 0
             descent = 1 if (costInew > costI) else 0
             costI = costInew
-            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
+            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist(), output)
         else:
             reject = 1
             descent = 0
-            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist()) #Print rejected value
+            statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist(), output) #Print rejected value
             I[P[0]][P[1]] = oldpredicate
             
-        #Local Minima Checker!!
-        if (conf.CHECK_STAGNATION == conf.ON):
-            if len(costTimeList) >= conf.STAGNANT_TIME_WINDOW:
-                costTimeList = costTimeList[1:]      
-            costTimeList = costTimeList + [costI]
-            stagnant = stagnation.isStagnant(costTimeList)
+        if (conf.CHECK_LOCALMINIMA  == conf.ON):
+            if len(costSingleTimeList) >= conf.STAGNANT_TIME_WINDOW:
+                costSingleTimeList = costSingleTimeList[1:]      
+            costSingleTimeList = costSingleTimeList + [costI]
+            stagnant = isStagnant(costSingleTimeList) #Heuristic Local Minima Checker
             if (stagnant):
-                if (conf.CHECK_LOCALMINIMA == conf.ON):
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " has stagnated!")
-                    localMinimastring = "" if stagnation.checkLocalMinima(I, repr, samplepoints) else "NOT"
-                    print(repr.get_colorslist()[process_id] + "Process " + str(process_id) + " is " + localMinimastring + " stuck in a Local Minima.")  
-                
-                #Printing localArea not feasible for even 2 neighbors (~17,000 elements)
-                # localAreaCosts = stagnation.checkAreaAroundStuck(I, repr, samplepoints)
-                # for i in range(1,conf.STAGNATION_AREA_CHECK + 1):
-                #     print(repr.get_colorslist()[process_id] + sorted(localAreaCosts[i])[:5], '\n', localAreaCosts[i])       
-                
-                stagnation.gradientdescent(I, repr, samplepoints, repr.get_colorslist()[process_id])
-        
-        # statistics(process_id, t, I, costInew, descent, reject, costlist, a, repr.get_Var(), repr.get_colorslist())
+                print_with_mode(repr.get_colorslist()[process_id], "Process " + str(process_id) + " has stagnated!", endstr= '\n', file= output)
+                checkLocalMinima(I, repr, samplepoints, repr.get_colorslist()[process_id]) #Heuristic Algorithm to find how far from Local Minima
+        if (conf.AVERAGE_ACC_PROB_CHECKER == conf.ON and t % conf.AVERAGE_ACC_PROB_WINDOW == 0):
+            if (len(aList) < 0):
+                print_with_mode(repr.get_colorslist()[process_id], "Process " + str(process_id) + " for window " + 
+                                    str(t // conf.AVERAGE_ACC_PROB_WINDOW) + ' made no positive transitions.', endstr = '\n', file = output)
+            else:
+                print_with_mode(repr.get_colorslist()[process_id], "Average a for Process " + str(process_id) + " for window " + 
+                                    str(t // conf.AVERAGE_ACC_PROB_WINDOW) + ' is ' + str( sum(aList)/ len(aList)), endstr = '\n', file = output)
+            aList = []
 
     # Process 'process_id' Failed!
-    SAfail(process_id, repr.get_colorslist())
+    SAfail(process_id, repr.get_colorslist(), output)
     return_value[process_id] = (None, t)
     I_list[process_id] = I
     return 
 
 
 """ Main function. """
-
-#Added this function - doesn't work in the case when if the first guess is correct answer, then it's cost is zero and division by zero not good.
-def randomwalk_costlist(I0, t, samplepoints, repr): 
-    costlist = []
-    n = repr.get_n()
-    I = I0
-    for _ in range(t):    
-        LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
-        (costI, _) = cost(LII, samplepoints)  
-        costlist.append(costI)
-        neighbors = []
-        for i in range(repr.get_d()):
-            for j in range(repr.get_c()):
-                oldcoeff = I[i][j][:-2]
-                oldconst = I[i][j][-1]
-                if (n <= 3):
-                    rotneighbors = repr.get_coeffneighbors(oldcoeff)
-                else:
-                    negative_indices = [idx for idx, val in enumerate(oldcoeff) if val < 0]
-                    rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
-                                            for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
-                for r in rotneighbors:
-                    constlist = getNewRotConstant(oldcoeff, oldconst, r, repr.get_k1())
-                    # constlist = [oldconst] #Using the same constants as before, as cost change is barely much.
-                    for c in constlist:
-                        neighbors.append( ( i, j, r + [-1,c]) )
-                transconslist = getNewTranslationConstant(oldcoeff, oldconst, repr.get_k1())
-                for c in transconslist:
-                    neighbors.append( ( i, j, oldcoeff + [-1,c]) )
-        deg = len(neighbors)
-        P = neighbors[random.choice(range(deg))]
-        I[P[0]][P[1]] = P[2]
-    
-    print(costlist)
-    
-    rv = []
-    for s in range(len(costlist)):
-        if (s < len(costlist) - 1):
-           if (costlist[s+1] > costlist[s]):
-            rv.append((costlist[s], costlist[s+1]))
-    
-    return rv 
-
-
 def main(inputname, repr: Repr):
     """ ===== Initialization starts. ===== """
+
+    if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+        outputF = open("output/" + inputname + ".txt", 'w')
+    else:
+        outputF = None
+    
     mcmc_time = 0
     z3_time = 0
     initialize_time = 0
     z3_callcount = 0
     initialize_start = timer()
+    
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
-    initialized( repr.get_affineSubspace(), repr.get_nonItersP(), repr.get_Var())
-    prettyprint_samplepoints(samplepoints, "Selected-Points", "\t")
-    print("\n")
+    initialized( repr.get_affineSubspace(), repr.get_nonItersP(), repr.get_Var(), outputfile = outputF)
+    prettyprint_samplepoints(samplepoints, "Selected-Points", "\t", outputfile = outputF)
 
     if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
-        plotinvariantspace(3, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), 0)
+        plotinvariantspace(conf.INVARIANTSPACE_MAXCONST, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), 0)
 
     manager = mp.Manager()
     I_list = manager.list()
@@ -217,12 +139,10 @@ def main(inputname, repr: Repr):
     
     (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
                                     repr.get_affineSubspace(), repr.get_Dp())
-    
-    
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
     for i in range(conf.num_processes):
-        statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist() ) 
+        statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist(), outputF ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
     initialize_time = initialize_time + (initialize_end - initialize_start)
@@ -231,41 +151,34 @@ def main(inputname, repr: Repr):
     mcmc_time = 0.0
     mcmc_iterations = 0
     while (1):
-        """ Searching Loop """
+        """ Search Based Algorithm (eg: simulated annealing) Loop """
         process_list = []
         return_value = manager.list()
         return_value.extend([None for i in range(conf.num_processes)])
         
         mcmc_start = timer()
+        SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
         
-        k1_list = k1list(repr.get_k0(), repr.get_n())
-        
-        # SA_gammalist = experimentalSAconstantlist()       
-        gammalist_costlist = randomwalk_costlist(I_list[0], 10, samplepoints, repr)
-        SA_gammalist = experimentalSAconstantlist( gammalist_costlist  ) #Changed temperature calculation using walk  
-        
+        print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
         
         costTimeLists = manager.list()
         costTimeLists.extend([[] for i in range(conf.num_processes)])
-        # costTimeLists = {}
         for i in range(conf.num_processes):
-            
-            process_list.append(mp.Process(target = search, args = (repr, I_list, samplepoints, i, return_value,
-                                                                    SA_gammalist[i], z3_callcount, k1_list[i], costTimeLists )))
+            process_list.append(mp.Process(target = simulatedAnnealing, args = (inputname, repr, I_list, samplepoints, i, return_value,
+                                                                    SA_gammalist[i], z3_callcount, costTimeLists, outputF )))
             process_list[i].start()
-        
+            
         for i in range(conf.num_processes):
             process_list[i].join()
 
         if (conf.COST_PLOTTER == conf.ON):
-            CostPlotter( costTimeLists , conf.num_processes, filename = inputname + '_Z3Calls' + str(z3_callcount) + ".png" )
+            CostPlotter( costTimeLists , conf.num_processes, filename = 'CostPlots/' + inputname + '_Z3Calls' + str(z3_callcount) + ".png" )
 
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)     
             
         """ Z3 validation """
         z3_start = timer()
-        
         z3_callcount = z3_callcount + 1
         foundI = False
         cex = ([], [], [])
@@ -280,22 +193,17 @@ def main(inputname, repr: Repr):
                     break
                 cex = (removeduplicates(cex[0] + cex_thread[0]) , removeduplicates(cex[1] + cex_thread[1]) , removeduplicatesICEpair(cex[2] + cex_thread[2]) )
 
-        # Print the same thing again to the end of "output/{inputname}.txt"
-        #     with open("output/" + inputname + ".txt", "a") as f:
-        #         ori_stdout = sys.stdout
-        #         sys.stdout = f
-        #         noInvariantFound(z3_callcount) 
-        #         print("-------------------\n")
-        #         sys.stdout = ori_stdout
         if (z3_correct):
             z3_end = timer()
             z3_time = z3_time + (z3_end - z3_start)
             break   
         elif foundI == False:
-            noInvariantFound(z3_callcount)
+            noInvariantFound(z3_callcount, outputfile = outputF)
             z3_end = timer()
-            z3_time = z3_time + (z3_end - z3_start)
-            return ("All thread time out", z3_callcount)
+            z3_time = z3_time + (z3_end - z3_start)        
+            if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+                outputF.close()
+            return ("All threads time out", z3_callcount)
         
         new_enet = (z3_callcount % conf.z3_stepwindow == 0)
         i = floor(1.0 * z3_callcount / conf.z3_stepwindow)
@@ -306,20 +214,15 @@ def main(inputname, repr: Repr):
         if (new_enet):
             eNetPoints = repr.update_enet(e, samplepoints)
 
-        z3_end = timer()
-        z3_time = z3_time + (z3_end - z3_start)
-
         #Get iterated implication pairs 
         iteratedImplicationpairs = get_longICEpairs( cex[2], repr.get_T(), repr.get_n(), repr.get_transitionIterates())
+        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints, iteratedImplicationpairs, outputF)
+        z3_end = timer()
+        z3_time = z3_time + (z3_end - z3_start)
         
-        z3statistics(z3_correct, samplepoints, cex, z3_callcount, (t == tmax), new_enet, e , eNetPoints, iteratedImplicationpairs)
-
         """ Collect counterexamples """
         initialize_start = timer()
-        
-        
         cex = (cex[0] , cex[1] , cex[2] + iteratedImplicationpairs )
-        
         if (new_enet):
             samplepoints = ( removeduplicates( samplepoints[0] + eNetPoints[0] + cex[0]), 
                             removeduplicates( samplepoints[1] + eNetPoints[1] + cex[1] ),
@@ -330,36 +233,29 @@ def main(inputname, repr: Repr):
                             removeduplicatesICEpair(samplepoints[2] + cex[2]) )
 
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
-            plotinvariantspace(5, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
+            plotinvariantspace(conf.INVARIANTSPACE_MAXCONST, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
         
         #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):
             LII = dnfconjunction( list3D_to_listof2Darrays(I_list[i]), repr.get_affineSubspace(), 0)
             (costI, costlist) = cost(LII, samplepoints)
-            statistics(i, 0, I_list[i], costI, 0, 0, [], -1 , repr.get_Var(), repr.get_colorslist()) 
+            statistics(i, 0, I_list[i], costI, 0, 0, [], -1 , repr.get_Var(), repr.get_colorslist(), outputF) 
         
         
         initialize_end = timer()
         initialize_time = initialize_time + (initialize_end - initialize_start)
 
-    invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
-    timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
-
-    # Print the same thing again to the end of "output/{inputname}.txt"
-    # with open("output/" + inputname + ".txt", "a") as f:
-    #     ori_stdout = sys.stdout
-    #     sys.stdout = f
-    #     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var())
-    #     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes )
-    #     print("-------------------\n")
-    #     sys.stdout = ori_stdout
-        
-
+    invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var(), outputF)
+    timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes, outputfile = outputF )
+    if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+        outputF.close()
+    
+    
     return (LII, z3_callcount)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='MCMC Invariant Search')
+    parser = argparse.ArgumentParser(description='SA-CEGUS Invariant Search')
     parser.add_argument('-c', type=int, help='Number of conjunctions')
     parser.add_argument('-d', type=int, help='Number of disjunctions')
     parser.add_argument('-i', '--input', type=str, help='Input object name')

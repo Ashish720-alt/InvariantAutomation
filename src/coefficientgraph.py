@@ -172,16 +172,11 @@ def getrotationgraph(K, n):
     theta0 = conf.rotation_rad
     K = getK(n, theta0) 
 
-    # filename = "n" + str(n) + "K" + str(K)
-
-    #New Experiments
     filename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree)
-
-
     if (conf.REMOTE_SERVER == conf.ON):
-        jsonfilename = "../rotation-graph/n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json" #For remote server
+        jsonfilename = conf.REMOTE_PATH + filename + ".json" #For remote server
     else:
-        jsonfilename = "n" + str(n) + "K" + str(K) + "t" + str(conf.rotation_degree) + ".json"
+        jsonfilename = filename + ".json"
 
     if (not path.isfile(filename) and not path.isfile(jsonfilename)):
             
@@ -213,11 +208,3 @@ def getrotationgraph(K, n):
 
 
 
-#From json file; only positive values;
-# >>> f = open("result.json", "r")
-# >>> s = json.load(f)
-
-# s.strip('][').split(', ') #s is a string; string to list conversion
-
-
-# print(getrotationgraph(11, 5))

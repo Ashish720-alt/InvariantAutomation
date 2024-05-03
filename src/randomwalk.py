@@ -57,11 +57,11 @@ def randomWalk(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Ga
             costTimeLists[process_id] = costTimeLists[process_id] + [costI]
            
         # Comment this criterion for desired walk.
-        # if (costI == 0):
-        #     return_value[process_id] = (I, t)
-        #     SAsuccess(process_id, repr.get_colorslist())
-        #     I_list[process_id] = I
-        #     return
+        if (costI == 0):
+            return_value[process_id] = (I, t)
+            SAsuccess(process_id, repr.get_colorslist())
+            I_list[process_id] = I
+            return
         
         neighbors = []
         for i in range(repr.get_d()):
@@ -75,8 +75,10 @@ def randomWalk(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Ga
                     rotneighbors = [ [-coeff[i] if i in negative_indices else coeff[i] for i in range(n)]  
                                             for coeff in repr.get_coeffneighbors([abs(val) for val in oldcoeff])]
                 for r in rotneighbors:
-                    constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
-                    # constlist = [oldconst]
+                    if (conf.COR_SIMPLIFIED == conf.OFF):
+                        constlist = getNewRotConstant(oldcoeff, oldconst, r, k1)
+                    else:
+                        constlist = [oldconst]
                     for c in constlist:
                         neighbors.append( ( i, j, r + [-1,c]) )
                 transconslist = getNewTranslationConstant(oldcoeff, oldconst, k1)
@@ -90,7 +92,7 @@ def randomWalk(repr: Repr, I_list, samplepoints, process_id, return_value, SA_Ga
         
         LII = dnfconjunction( list3D_to_listof2Darrays(I), repr.get_affineSubspace(), 0)
         (costInew, costlist) = cost(LII, samplepoints)
-        temp = SA_Gamma/log(conf.Gamma0 + t)
+        temp = SA_Gamma/log(conf.t0 + t)
         a = 1
         if (random.rand() <= a): 
             reject = 0
@@ -159,7 +161,7 @@ def main(inputname, repr: Repr):
 
     #Random Walks from loop invariant
     # When printing change number of processes to 1; For bhmr2007 file:
-    I_guess = [ [ [1,1,-3,0,-1,0] , [-1,-1,3,0,-1,0] , [0,0,1,-1,-1,0] ]   ]
+    I_guess = [ [ [1,1,-3,0,-1,0] , [-1,-1,3,0,-1,0] , [0,0,1,-1,-1,0] ]   ] #Correct
     
     
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)

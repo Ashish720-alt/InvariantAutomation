@@ -2,8 +2,21 @@ from configure import Configure as conf
 from dnfs_and_transitions import RTI_to_LII, DNF_aslist,  list3D_to_listof2Darrays, dnfTrue, dnfFalse
 from z3verifier import DNF_to_z3expr
 from colorama import Fore, Back, Style
-from math import floor
+from math import floor, isnan, isinf
 from n2Invariantplotter import do_plot
+
+def print_with_mode(color, s, endstr = '\n', file = None):
+    if (conf.PRINTING_MODE == conf.TERMINAL or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+        print(color + s, end = endstr)
+        print(Style.RESET_ALL, end = '')  
+    if (conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+        try:
+            file.write(s + endstr + '\n')
+        except Exception as e:
+            print("Error:", e)
+        
+    return
+
 
 def print_colorslist(t):
     if (conf.PRINT_COLORED_THREADS == conf.ON):
@@ -16,50 +29,59 @@ def print_colorslist(t):
     r = t - (q * templen)
     return temp * q + temp[:r]
 
-
-
+def list_to_string(L):
+    rv = "["
+    for i in range(len(L)):
+        rv = rv + str(L[i])
+        if (i != len(L) - 1):
+            rv = rv + ", "
+    rv = rv + " ]"
+    return rv
 
 def decimaltruncate(number, digits = 7):
     if (digits == -1):
         return number
-    power = "{:e}".format(number).split('e')[1]
-    return round(number, -(int(power) - digits))
+    power = int("{:e}".format(number).split('e')[1])
+    if isnan(power) or isinf(power): #To check for NAN warnings!
+        return number
+    else:
+        return round(number, -(power - digits))
 
 def decimaltruncate_list(l, digits = 4):
     return [decimaltruncate(x, digits) for x in l ]
 
-def samplepoints_debugger(n, p, z3calls, t, samplepoints, I, colorslist):
-    if (conf.SAMPLEPOINTS_DEBUGGER == conf.ON):
-        if (t % conf.SAMPLEPOINTS_DEBUGGER_WINDOW == 0):
-            if (n == 2):
-                print(colorslist[p] + 'P' + str(p) + ' plotting graph...')
-                do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(LargeScale)', 
-                        '2DInvariantPlots', conf.n2PLOTTER_LARGESCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)
-                do_plot('Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + 'Invariant Plot' + '(SmallScale)', 
-                        '2DInvariantPlots', conf.n2PLOTTER_SMALLSCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
-            else:    
-                prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t")    
+def n2plotter(inputname, n, p, z3calls, t, samplepoints, I, colorslist, outputfile = None):
+    if (t % conf.n2PLOTTER_WINDOW == 0):
+        if (n == 2):
+            print_with_mode(colorslist[p],'P' + str(p) + ' plotting graph...', file = outputfile)
+            do_plot(inputname + '_Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + '(LargeScale).png', 
+                    '2DStateSpacePlots', conf.n2PLOTTER_LARGESCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)
+            do_plot(inputname + '_Z3:' + str(z3calls) + 'P:' + str(p) + 'T:' + str(t) + '(SmallScale).png', 
+                    '2DStateSpacePlots', conf.n2PLOTTER_SMALLSCALE, I, samplepoints, resolution = conf.n2PLOTTER_HIGH_RES)            
+        else:    
+            prettyprint_samplepoints(samplepoints, "Samplepoints Now", "\t", outputfile)    
 
-def prettyprint_samplepoints(samplepoints, header, indent):
-    print(indent + header + ":")
-    print(2*indent + "+ := ", end = '')
+def prettyprint_samplepoints(samplepoints, header, indent, outputfile = None):
+    print_with_mode(Fore.WHITE, indent + header + ":", file = outputfile)
+    print_with_mode(Fore.WHITE, 2*indent + "+ := ", endstr = '', file = outputfile)
     for plus in samplepoints[0]:
-        print(plus,' , ', end = '')
-    print("\n" + 2*indent + "- := ", end = '')
+        print_with_mode(Fore.WHITE, list_to_string(plus) + ' , ', endstr = '', file = outputfile)
+    print_with_mode(Fore.WHITE, "\n" + 2*indent + "- := ", endstr = '', file =  outputfile)
     for minus in samplepoints[1]:
-        print(minus,' , ', end = '')        
-    print("\n" + 2*indent + "-> := ", end = '')
+        print_with_mode(Fore.WHITE, list_to_string(minus) + ' , ', endstr = '', file = outputfile)        
+    print_with_mode(Fore.WHITE, "\n" + 2*indent + "-> := ", endstr = '', file = outputfile)
     for ICE in samplepoints[2]:
-        print('(', ICE[0], '->', ICE[1], ')',' , ', end = '')    
-    print("\n", end = '')
+        print_with_mode(Fore.WHITE, '( ' + list_to_string(ICE[0]) + ' -> ' + list_to_string(ICE[1]) + ' )  , ', endstr = '', file = outputfile)    
+    print_with_mode(Fore.WHITE, "\n", endstr = '', file = outputfile)
+    print_with_mode(Fore.WHITE, '\n', file = outputfile)
     return
 
-def prettyprint_ICEpairs(ImplicationPairs, header, indent):
-    print(indent + header + ":") 
-    print(2*indent + "-> := ", end = '')
+def prettyprint_ICEpairs(ImplicationPairs, header, indent, outputfile = None):
+    print_with_mode(Fore.WHITE, indent + header + ":", file = outputfile) 
+    print_with_mode(Fore.WHITE, 2*indent + "-> := ", endstr = '', file = outputfile)
     for ICE in ImplicationPairs:
-        print('(', ICE[0], '->', ICE[1], ')',' , ', end = '')    
-    print("\n", end = '')
+        print_with_mode(Fore.WHITE, '( ' + list_to_string(ICE[0]) + ' -> ' + list_to_string(ICE[1]) + ' )  , ', endstr = '', file = outputfile)    
+    print_with_mode(Fore.WHITE, "\n", endstr = '', file = outputfile)
     return
     
     
@@ -94,103 +116,90 @@ def prettyprint_invariant(I, endstring , Vars):
     
     # print(DNF_to_z3expr(I, primed = 0))
 
-def SAsuccess(process_id, colorslist):
+def SAsuccess(process_id, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print(colorslist[process_id] + "Process ", process_id, " found approximate invariant!")
-        print(Style.RESET_ALL)    
+        outputfile.write("HEE\n")
+        print_with_mode(colorslist[process_id], "Process " + str(process_id) + " found approximate invariant!", endstr = '\n', file = outputfile)
+          
 
-def SAexit(process_id, colorslist):
+def SAexit(process_id, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print(colorslist[process_id] + "Process ", process_id, " exit early!")
-        print(Style.RESET_ALL)    
+        print_with_mode(colorslist[process_id], "Process " +  str(process_id) + " exit early!",endstr = '\n', file = outputfile) 
 
-def SAfail(process_id, colorslist):
+def SAfail(process_id, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print(colorslist[process_id] + "Process ", process_id, " failed!")
-        print(Style.RESET_ALL, end = '')    
+        print_with_mode(colorslist[process_id], "Process " +  str(process_id) + " failed!",endstr = '\n', file = outputfile)  
 
-def initialized(A, B, Vars):
+def initialized(A, B, Vars, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print("Initialization Complete...")
-        print("\tAffine SubSpace: ", end = '')
+        print_with_mode(Fore.WHITE, "Initialization Complete...", file = outputfile)
+        print_with_mode(Fore.WHITE, "\tAffine SubSpace: ", endstr = '', file = outputfile)
         if (A != []):
-            print( prettyprint_invariant(A, '', Vars))
+            print_with_mode(Fore.WHITE, prettyprint_invariant(A, '', Vars), file = outputfile)
         else:
-            print( '\n', end = '')
-        print("\tNon Iterative Precondition: ", end = '')
+            print_with_mode(Fore.WHITE, '\n', endstr = '', file = outputfile)
+        print_with_mode(Fore.WHITE, "\tNon Iterative Precondition: ", endstr = '', file = outputfile)
         if (B != []):
-            print( prettyprint_invariant(B, '', Vars))
+            print_with_mode(Fore.WHITE, prettyprint_invariant(B, '', Vars), file = outputfile)
         else:
-            print( '\n')
+            print_with_mode(Fore.WHITE, '\n', file = outputfile)
 
-def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslist):
+# Fix the printing
+def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):    
         if (reject):
             if (conf.PRINT_REJECT_ITERATIONS == conf.ON):
                 end_string = "[X]" 
-                if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                    print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", ( decimaltruncate(mincost ), 
-                            decimaltruncate(acc )) , "\t", end_string )
+                print_with_mode(colorslist[p], "P = " + str(p) + "," + "t = " + str(t) + ":" + "\t" + prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars) + "\t" + "(cost, a) = " + '(' 
+                         + str(decimaltruncate(mincost )) + "," + str(decimaltruncate(acc )) + ')' + "\t" + end_string, endstr= '\n', file = outputfile )
                 if (conf.PRINT_COSTLIST == conf.ON):
-                    print(decimaltruncate_list(costlist), "\n")
-                else:
-                    print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '', Vars), "\t", "(cost, a) = ", ( 
-                            decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
-                if (conf.PRINT_COSTLIST == conf.ON):
-                    print(decimaltruncate_list(costlist), "\n")
-                print(Style.RESET_ALL, end = '')
+                    print_with_mode(Fore.WHITE, list_to_string( decimaltruncate_list(costlist)), endstr = "\n", file = outputfile )
             else:
                 return
         else:
             end_string = "(L)" if descent else "   "
-            if (conf.PRETTYPRINTINVARIANT_ITERATIONS == conf.OFF):
-                print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", I, "\t", "(cost, a) = ", (decimaltruncate(mincost ),  
-                        decimaltruncate(acc )) , "\t", end_string )
-                if (conf.PRINT_COSTLIST == conf.ON):
-                    print(decimaltruncate_list(costlist), "\n")
-            else:
-                print(colorslist[p] + "P = ", p, ",", "t = ", t,":", "\t", prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars), "\t", "(cost, a) = ", ( 
-                        decimaltruncate(mincost ), decimaltruncate(acc )) , "\t", end_string )
-                if (conf.PRINT_COSTLIST == conf.ON):
-                    print(decimaltruncate_list(costlist), "\n")
-            print(Style.RESET_ALL, end = '')
+            print_with_mode(colorslist[p], "P = " + str(p) + "," + "t = " + str(t) + ":" + "\t" + prettyprint_invariant((list3D_to_listof2Darrays(I)), '',  Vars) + "\t" + "(cost, a) = " + '(' 
+                    + str(decimaltruncate(mincost )) + "," + str(decimaltruncate(acc )) + ')' + "\t" + end_string, endstr= '\n', file = outputfile )
+            if (conf.PRINT_COSTLIST == conf.ON):
+                print_with_mode(Fore.WHITE, list_to_string( decimaltruncate_list(costlist)), endstr = "\n", file = outputfile )
             return
     return 
     
 
-def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout, new_enet, e , eNetPoints, iteratedICEpairs):
+def z3statistics(correct, original_samplepoints, added_samplepoints, z3_callcount, timeout, new_enet, e , eNetPoints, iteratedICEpairs, outputf):
     if (conf.PRINT_Z3_ITERATIONS == conf.ON):    
-        print("Z3 Call " + str(z3_callcount) + ":\n", "\tTimeout = ", int(timeout), '\n', "\tz3_correct = ", correct, '\n', "\te value = ", e)
-        prettyprint_samplepoints(original_samplepoints, "Original-selection-points", "\t")
+        print_with_mode(Fore.WHITE, "Z3 Call " + str(z3_callcount) + ":\n" + "\tTimeout = " + str(int(timeout)) + '\n' + "\tz3_correct = " + str(correct) + '\n' + "\te value = " + str(e), endstr = '\n', file = outputf)
+        prettyprint_samplepoints(original_samplepoints, "Original-selection-points", "\t", outputfile = outputf)
         if(new_enet):
-            prettyprint_samplepoints(eNetPoints, "\nAdded-selection-points", "\t")
-        prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t")
-        prettyprint_ICEpairs(iteratedICEpairs, "Iterated ICE pairs", "\t")
-        print("\n\n")
+            prettyprint_samplepoints(eNetPoints, "\nAdded-selection-points", "\t", outputfile = outputf)
+        prettyprint_samplepoints(added_samplepoints, "CEX-generated", "\t", outputfile = outputf)
+        prettyprint_ICEpairs(iteratedICEpairs, "Iterated ICE pairs", "\t", outputfile = outputf)
+        print_with_mode(Fore.WHITE, "\n\n", endstr= '\n', file= outputf)
 
-def invariantfound( NonIterativeI , Affine_I , I, Vars):
-    print("Invariant Found:\t", end = '')
+def invariantfound( NonIterativeI , Affine_I , I, Vars, outputfile):
+    print_with_mode(Fore.WHITE, "Invariant Found:\t", endstr = '', file = outputfile)
     n = len(Vars) 
     if (NonIterativeI != []):
-        print(prettyprint_invariant( list3D_to_listof2Darrays(NonIterativeI), '  \/  [', Vars), end = '')
+        print_with_mode(Fore.WHITE, prettyprint_invariant( list3D_to_listof2Darrays(NonIterativeI), '  \/  [', Vars), endstr = '', file = outputfile)
     if (Affine_I != []):
-        print(prettyprint_invariant( list3D_to_listof2Darrays(Affine_I), '  /\  [', Vars),  end = '')
-    print(prettyprint_invariant( list3D_to_listof2Darrays(I), '', Vars), end = '')
+        print_with_mode(Fore.WHITE, prettyprint_invariant( list3D_to_listof2Darrays(Affine_I), '  /\  [', Vars),  endstr = '', file = outputfile)
+    print_with_mode(Fore.WHITE, prettyprint_invariant( list3D_to_listof2Darrays(I), '', Vars), endstr = '', file = outputfile)
     if (Affine_I != []):
-        print(']', end = '')
+        print_with_mode(Fore.WHITE, ']', endstr = '', file = outputfile)
     if (NonIterativeI != []):
-        print(']', end = '')
-    print('\n')
+        print_with_mode(Fore.WHITE, ']', endstr = '', file = outputfile)
+    print_with_mode(Fore.WHITE, '\n', file = outputfile)
 
-def noInvariantFound (Z3calls):
-    print("All SA threads failed to converge after", Z3calls , "Z3 runs")
+def noInvariantFound (Z3calls, outputfile):
+    print_with_mode(Fore.WHITE, "All SA threads failed to converge after" +  str(Z3calls) + "Z3 runs", file = outputfile)
 
-def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount, threads ):
+def timestatistics(mcmc_time, total_iterations, z3_time, initialize_time, z3_callcount, threads, outputfile ):
     if (conf.PRINT_TIME_STATISTICS == conf.ON): 
-        print("\nTime Statistics:")
-        print("\tTotal Initialization and Re-initialization Time: ", initialize_time)
-        print("\tTotal MCMC time: ", mcmc_time)
-        print("\tTotal Z3 Time: ", z3_time)
-        print("\tTotal MCMC iterations: ", total_iterations)
-        print("\tTotal Z3 calls: ", z3_callcount)
-        print("\tNumber of Threads: ", threads)
+        print_with_mode(Fore.WHITE, "\nTime Statistics:", file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal Time: " + str(initialize_time + mcmc_time + z3_time), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal Initialization and Re-initialization Time: " +  str(initialize_time), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal MCMC time: " + str(mcmc_time), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal Z3 Time: " + str(z3_time), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal MCMC iterations forall threads: " + str(total_iterations), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tTotal Z3 calls: " + str(z3_callcount), file = outputfile)
+        print_with_mode(Fore.WHITE, "\tNumber of Threads: " + str(threads) , file = outputfile)
