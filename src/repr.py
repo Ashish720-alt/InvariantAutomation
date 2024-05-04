@@ -72,7 +72,8 @@ class Repr:
         self.k0 = max(2, max(self.Dp)) if (max(self.Dp) < 100) else 2
         self.k1 = conf.dspace_maxradius * self.n * self.k0
 
-        self.rotationgraph = getrotationgraph(self.k0, self.n) 
+        if (conf.BASIC_ROTATION == conf.OFF):
+            self.rotationgraph = getrotationgraph(self.k0, self.n) 
 
         self.rotationgraphvertices = self.rotationgraph[0]
         self.rotationgraphedges = self.rotationgraph[1]
