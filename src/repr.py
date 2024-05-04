@@ -76,6 +76,11 @@ class Repr:
             self.rotationgraph = getrotationgraph(self.k0, self.n) 
             self.rotationgraphvertices = self.rotationgraph[0]
             self.rotationgraphedges = self.rotationgraph[1]
+        else:
+            self.rotationgraph = None
+            self.rotationgraphvertices = None
+            self.rotationgraphedges = None
+            
 
         self.colorslist = print_colorslist(conf.num_processes)
         
