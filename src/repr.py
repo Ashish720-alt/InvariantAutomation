@@ -74,9 +74,8 @@ class Repr:
 
         if (conf.BASIC_ROTATION == conf.OFF):
             self.rotationgraph = getrotationgraph(self.k0, self.n) 
-
-        self.rotationgraphvertices = self.rotationgraph[0]
-        self.rotationgraphedges = self.rotationgraph[1]
+            self.rotationgraphvertices = self.rotationgraph[0]
+            self.rotationgraphedges = self.rotationgraph[1]
 
         self.colorslist = print_colorslist(conf.num_processes)
         
