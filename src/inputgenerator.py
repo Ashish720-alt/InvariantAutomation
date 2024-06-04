@@ -427,11 +427,11 @@ def transition_str_formatter(s):
 
 def program_converter ( var_string, P, B, Ts, Q):
     var_vector = variable_def_formatter(var_string)
-    print("Variables: ", var_vector)
-    print("P: ", DNF_parser(P, var_vector) )
-    print("B: ", DNF_parser(B, var_vector) )
-    print("Q: ", DNF_parser(Q, var_vector) )
-    print("T: ")
+    print("Var =", var_vector)
+    print("P =", DNF_parser(P, var_vector) )
+    print("B =", DNF_parser(B, var_vector) )
+    print("Q =", DNF_parser(Q, var_vector) )
+    print("T = ", end = '')
     for (i,x) in enumerate(Ts):
         Bx = x[1]
         Ts_x = x[0]
@@ -1035,6 +1035,12 @@ class loops_crafted_1:
         T = [ ( ["x = x + 1;"] , "(x < 500000)") , ( ["y = y + 1; x = x + 1;"] , "(x >= 500000)") ]
         Q = "( x < y) || ( y < x)"
 
+    class Mono6_1:
+        V = "int x,y,z;"
+        P = "((x == 0) && (y == 10000000) && (z == 5000000))"
+        B = "(x < y)"
+        T = [ ( ["x = x + 1;"] , "(x < 5000000)") , ( ["z = z + 1; x = x + 1;"] , "(x >= 5000000)") ]
+        Q = "( z < x) || ( z > x)"
 
     class name:
         V = ""
@@ -1043,5 +1049,5 @@ class loops_crafted_1:
         T = [ ( [""] , "") ]
         Q = ""
 
-class_wrapper_program_converter(loops_crafted_1.Mono4_1)
+class_wrapper_program_converter(loops_crafted_1.Mono6_1)
 

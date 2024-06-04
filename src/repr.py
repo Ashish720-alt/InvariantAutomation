@@ -28,7 +28,7 @@ def genLItransitionrel(B, *args):
     return [B_LItransitionrel(x[0], x[1], B) for x in args ]
 
 class Repr:
-    def __init__(self, P, B, T, Q, Var, c, d):
+    def __init__(self, P, B, T, Q, Var, c, d, clist = []):
         
         self.n = len(P[0][0]) - 2  # n+1 is op, n+2 is const
          
@@ -57,6 +57,7 @@ class Repr:
         self.c = c
         self.d = d
         self.tmax = conf.maxSArun
+        self.cList = clist
 
         self.curr_enet_Size = getpoints(self.n, conf.e0, conf.probenet_success, 0)[0]
         
@@ -120,6 +121,9 @@ class Repr:
 
     def get_c(self):
         return self.c
+
+    def get_cList(self):
+        return self.cList
 
     def get_d(self):
         return self.d   

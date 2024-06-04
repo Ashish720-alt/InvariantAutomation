@@ -66,7 +66,6 @@ def D_const(pc):
 def D_p(P, B, T , Q):
     (coeff, const) = extract_constants(P,B,T,Q)
     
-    
     pc = list_union(coeff, const)
     return pc
     

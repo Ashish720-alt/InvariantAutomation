@@ -90,7 +90,7 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
         if (c2 > c1): #only positive transitions
             rv.append((c1,c2))
         i = np.random.randint(0, repr.get_d())
-        j = np.random.randint(0, repr.get_c())
+        j = np.random.randint(0, repr.get_cList()[i])
         if (np.random.rand() < conf.T0_rotationMaxProb): #Choose rotation or translation
             neighbors = rotation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr, repr.get_k1(), n)
         else:
@@ -101,6 +101,7 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
     return rv 
 
 def experimentalSAconstantlist(Ilist, samplepoints, repr):
+    print("Calculating initial temp ...")
     def ExponentialWithError(x, y):
         try:
             result = e**(-x / y)
@@ -137,7 +138,7 @@ def experimentalSAconstantlist(Ilist, samplepoints, repr):
 def randomlysampleelementfromList(l):
     return l[np.random.choice( len(l))]
 
-def uniformlysample_I( rotation_vertices, k1, c, d, n, Dp):
+def uniformlysample_I( rotation_vertices, k1, cList, d, n, Dp):
     def uniformlysample_cc(rotation_vertices, k1, n, c, Dp):
         def uniformlysample_p(rotation_vertices, k1, n, Dp):
             if (conf.BASIC_ROTATION == conf.OFF):
@@ -156,14 +157,15 @@ def uniformlysample_I( rotation_vertices, k1, c, d, n, Dp):
                 const = randomlysampleelementfromList(Dp)
             return list(coeff) + [-1,const]
         return  [ uniformlysample_p(rotation_vertices, k1, n, Dp) for _ in range(c)  ]
-    return [ uniformlysample_cc(rotation_vertices, k1, n, c, Dp) for _ in range(d)  ]
+    return [ uniformlysample_cc(rotation_vertices, k1, n, ci, Dp) for ci in cList  ]
 
 
-def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace, Dp):
+def initialInvariant( samplepoints, rotation_vertices, k1, cList, d, n, affinespace, Dp):
     I = []
     costI = inf
-    for _ in range(conf.I0_samples):
-        Inew = uniformlysample_I( rotation_vertices, k1, c, d, n, Dp)
+    samplesize = conf.I0_samples if n > 1 else conf.I0_samples_n1
+    for _ in range(samplesize):
+        Inew = uniformlysample_I( rotation_vertices, k1, cList, d, n, Dp)
         LII = dnfconjunction( list3D_to_listof2Darrays(Inew), affinespace , 0)
         (costInew, _ ) = cost(LII, samplepoints)
         if (costInew < costI):
@@ -174,10 +176,10 @@ def initialInvariant( samplepoints, rotation_vertices, k1, c, d, n, affinespace,
 
 
 
-def SearchSpaceNeighbors(I, repr: Repr, d, c, k1, n):
+def SearchSpaceNeighbors(I, repr: Repr, d, cList, k1, n):
     neighbors = []
     for i in range(d):
-        for j in range(c):
+        for j in range(cList[i]):
             oldcoeff = I[i][j][:-2]
             oldconst = I[i][j][-1]
             if (conf.GUESS_SCHEME != conf.ONLY_TRANSLATION):
