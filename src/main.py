@@ -21,10 +21,6 @@ from costplotter import CostPlotter
 from stagnation import checkLocalMinima, isStagnant
 from colorama import Fore
 
-
-
-
-
 # @jit(nopython=False)
 def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, costTimeLists, output ):
     #Important for truly random processes (threads).
@@ -64,7 +60,7 @@ def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, 
             I_list[process_id] = I
             return
         
-        neighbors = SearchSpaceNeighbors(I, repr, repr.get_d(), repr.get_c(), repr.get_k1(), n)
+        neighbors = SearchSpaceNeighbors(I, repr, repr.get_d(), repr.get_cList(), repr.get_k1(), n) 
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
@@ -137,7 +133,7 @@ def main(inputname, repr: Repr):
     I_list = manager.list()
     
     
-    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_c(), repr.get_d(), repr.get_n(), 
+    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), 
                                     repr.get_affineSubspace(), repr.get_Dp())
     LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
     (costI, costlist) = cost(LII, samplepoints)  
@@ -157,22 +153,26 @@ def main(inputname, repr: Repr):
         return_value.extend([None for i in range(conf.num_processes)])
         
         mcmc_start = timer()
-        SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
         
-        print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
-        
-        costTimeLists = manager.list()
-        costTimeLists.extend([[] for i in range(conf.num_processes)])
-        for i in range(conf.num_processes):
-            process_list.append(mp.Process(target = simulatedAnnealing, args = (inputname, repr, I_list, samplepoints, i, return_value,
-                                                                    SA_gammalist[i], z3_callcount, costTimeLists, outputF )))
-            process_list[i].start()
+        if (costI != 0):
+            SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
+            print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
             
-        for i in range(conf.num_processes):
-            process_list[i].join()
+            costTimeLists = manager.list()
+            costTimeLists.extend([[] for i in range(conf.num_processes)])
+            for i in range(conf.num_processes):
+                process_list.append(mp.Process(target = simulatedAnnealing, args = (inputname, repr, I_list, samplepoints, i, return_value,
+                                                                        SA_gammalist[i], z3_callcount, costTimeLists, outputF )))
+                process_list[i].start()
+                
+            for i in range(conf.num_processes):
+                process_list[i].join()
 
-        if (conf.COST_PLOTTER == conf.ON):
-            CostPlotter( costTimeLists , conf.num_processes, filename = 'CostPlots/' + inputname + '_Z3Calls' + str(z3_callcount) + ".png" )
+            if (conf.COST_PLOTTER == conf.ON):
+                CostPlotter( costTimeLists , conf.num_processes, filename = 'CostPlots/' + inputname + '_Z3Calls' + str(z3_callcount) + ".png" )
+        else:
+            for i in range(conf.num_processes):
+                return_value[i] = (I_list[i], 1)
 
         mcmc_end = timer()
         mcmc_time = mcmc_time + (mcmc_end - mcmc_start)     
@@ -235,6 +235,13 @@ def main(inputname, repr: Repr):
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
             plotinvariantspace(conf.INVARIANTSPACE_MAXCONST, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
         
+        #For n = 1, random sampling again gives better results.
+        if (repr.get_n() == 1):
+            (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), 
+                                    repr.get_affineSubspace(), repr.get_Dp())        
+            for i in range(conf.num_processes):
+                # statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist(), outputF ) 
+                I_list.append(I_guess.copy())        
         #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):
             LII = dnfconjunction( list3D_to_listof2Darrays(I_list[i]), repr.get_affineSubspace(), 0)
@@ -258,26 +265,28 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='SA-CEGUS Invariant Search')
     parser.add_argument('-c', type=int, help='Number of conjunctions')
     parser.add_argument('-d', type=int, help='Number of disjunctions')
+    parser.add_argument('-clist', type=list, help='List of c values')
     parser.add_argument('-i', '--input', type=str, help='Input object name')
-    parser.add_argument('-a', '--all', action='store_true', help='Run all inputs')
+    # parser.add_argument('-a', '--all', action='store_true', help='Run all inputs')
     parse_res = vars(parser.parse_args())
-    if parse_res['all']:
-        if (parse_res['input'] is not None):
-            print(parser.print_help())
-            print("Please specify either input object name or all inputs")
-            exit(1)
-        for subfolder in dir(Inputs):
-            for inp in dir(getattr(Inputs, subfolder)):
-                main(input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+    # This code doesn't work!
+    # if parse_res['all']:
+    #     if (parse_res['input'] is not None):
+    #         print(parser.print_help())
+    #         print("Please specify either input object name or all inputs")
+    #         exit(1)
+    #     for subfolder in dir(Inputs):
+    #         for inp in dir(getattr(Inputs, subfolder)):
+    #             main("a.b", input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+    # else:
+    if parse_res['input'] is None:
+        print(parser.print_help())
+        print("Please specify input object name")
+        exit(1)
     else:
-        if parse_res['input'] is None:
-            print(parser.print_help())
-            print("Please specify input object name")
-            exit(1)
-        else:
-            (first_name, last_name) = parse_res['input'].split('.')
-            for subfolder in Inputs.__dict__:
-                if subfolder == first_name:
-                    for inp in getattr(Inputs, subfolder).__dict__:
-                        if inp == last_name:
-                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
+        (first_name, last_name) = parse_res['input'].split('.')
+        for subfolder in Inputs.__dict__:
+            if subfolder == first_name:
+                for inp in getattr(Inputs, subfolder).__dict__:
+                    if inp == last_name:
+                        main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'], parse_res['clist']))

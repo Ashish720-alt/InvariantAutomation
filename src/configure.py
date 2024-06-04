@@ -32,10 +32,11 @@ class Configure:
     t0 = 2
     maxSArun =  1000000 #1000000
     I0_samples = 100 #Initial Invariant Samples.
+    I0_samples_n1 = 1000
     
     #Search Space Graph Choices
     BASIC_ROTATION = ON
-    BASIC_ROTATION_k0 = 1
+    BASIC_ROTATION_k0 = 2
     COR_SIMPLIFIED = ON
     TRANSLATION_SMALL = ON
     ONLY_ROTATION = -1
@@ -108,7 +109,7 @@ class Configure:
     '''Graph Plotter hyperparameters '''
     #Average Acceptance Probability Checker
     AVERAGE_ACC_PROB_CHECKER = ON
-    AVERAGE_ACC_PROB_WINDOW = 100
+    AVERAGE_ACC_PROB_WINDOW = 500
     
     #CostvsTimePlotter
     COST_PLOTTER = OFF

@@ -16,6 +16,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
             c = 2
             d = 1
+            #  
 
         class c2d1_1:
             Var = ['x','y' ]
@@ -25,6 +26,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )         
             c = 2 #c = 3 Value here shows larger c also converges
             d = 1
+             
 
     class loop_lit:
         class afnp2014_modified:
@@ -35,6 +37,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) ) 
             c = 2
             d = 1
+             
 
         class bhmr2007:
             Var = [ 'a', 'b' ,'i' , 'n' ]
@@ -45,6 +48,7 @@ class Inputs:
                                         np.array([[1, 0, 0, 0, 2], [0, 1, 0, 0, 1], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0] , [0, 0, 0, 0, 1] ])  ] , dnfTrue(4) ) ) 
             c = 3
             d = 1
+             
         
         class cggmp2005:
             Var = [ 'i', 'j']
@@ -54,6 +58,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 0, 2], [0, 1, -1], [0, 0, 1]])] , dnfTrue(2) ) )         
             c = 3
             d = 1
+             
 
         class cggmp2005_variant:
             Var = [ 'lo', 'mid', 'hi' ]
@@ -63,6 +68,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, -1], [0, 0, 1, -1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 3
             d = 1
+             
 
         class gsv2008:
             Var = [ 'x', 'y']
@@ -72,6 +78,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])] , dnfTrue(2) ) )    
             c = 1
             d = 2
+             
 
         class css2003:
             Var = ['i', 'j', 'k']
@@ -81,6 +88,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 1, 0], [0, 0, 1, -1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 3
             d = 1
+             
 
         ##Conjunctive Randomized loop guard!
         class gcnr2008:
@@ -101,6 +109,7 @@ class Inputs:
                                 )
             c = 3
             d = 1
+             
 
         class gj2007:
             Var = ['x', 'y']
@@ -112,6 +121,7 @@ class Inputs:
                                 )                                           
             c = 5
             d = 2
+            clist = [4,1]
 
         class gj2007b:
             Var = ['x', 'm', 'n']
@@ -122,6 +132,7 @@ class Inputs:
                                            np.array( [[1, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0] , [0, 0, 0, 1]] ) ] , dnfTrue(3) )  )
             c = 4
             d = 2
+             
 
         class gr2006:
             Var = ['x', 'y']
@@ -133,6 +144,7 @@ class Inputs:
                                 )
             c = 4
             d = 2
+             
             
         class hhk2008:
             Var =  ['a', 'b', 'res', 'cnt']
@@ -142,6 +154,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]] ) ] , dnfTrue(4)) )    
             c = 3
             d = 1
+             
 
         class jm2006:
             Var = ['i', 'j', 'x', 'y']
@@ -151,6 +164,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array( [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, -1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]] ) ] , dnfTrue(4)) )
             c = 2
             d = 1
+             
 
         class jm2006_variant:
             Var = ['i', 'j', 'x', 'y', 'z']
@@ -160,6 +174,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, -1], [0, 0, 0, 1, 0, -2], [0, 0, 0, 0, 1, 1], [0, 0, 0, 0, 0, 1]] ) ] , dnfTrue(5)) )
             c = 2
             d = 1
+             
 
     class loop_new:
 
@@ -171,6 +186,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )    
             c = 1
             d = 1
+             
             
         class count_by_1_variant:
             Var = ['i']
@@ -180,6 +196,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )    
             c = 1
             d = 1
+             
 
         class count_by_2:
             Var = ['i']
@@ -189,6 +206,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 2], [0, 1]] ) ] , dnfTrue(1)) )    
             c = 5000
             d = 1
+             
             
         class count_by_k:
             Var = ['i', 'k']
@@ -198,6 +216,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 10000
             d = 1
+             
 
     class loop_simple:
         class nested_1:
@@ -208,6 +227,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [np.array([[1, 1], [0, 1]])] , dnfTrue(1) ) ) 
             c = 1
             d = 1
+             
 
     class loop_zilu:
         class benchmark01_conjunctive:
@@ -218,6 +238,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array( [[1, 1, 0], [1, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
 
         class benchmark02_linear:
             Var =  ['n', 'i', 'l']
@@ -227,6 +248,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )        
             c = 1
             d = 1
+             
 
         
         class benchmark03_linear_modified:
@@ -239,6 +261,7 @@ class Inputs:
                                             , dnfTrue(4)  ) ) 
             c = 2 
             d = 1
+             
 
         class benchmark04_conjunctive:
             Var =  ['k', 'j', 'n']
@@ -248,6 +271,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, -1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1
+             
 
         # correct version!
         # class benchmark05_conjunctive:
@@ -277,6 +301,7 @@ class Inputs:
                                         )
             c = 2
             d = 1
+             
 
 
         class benchmark06_conjunctive:
@@ -291,6 +316,7 @@ class Inputs:
                                     [0, 0, 0, 0, 0, 1]]) ] , list3D_to_listof2Darrays([[[-1, 1, 0, 0, 0, -2, 0]], [[1, -1, 0, 0, 0, -2, 0]]]) )   )
             c = 2
             d = 1
+             
 
         class benchmark07_linear: # modified to make it provable; see solve-by-hand.ipynb
             Var =  ['i', 'n', 'k', 'flag']
@@ -304,6 +330,7 @@ class Inputs:
                                         list3D_to_listof2Darrays([[[0, 0, 0, 1, 0, 0]]]) )   )     
             c = 1
             d = 1
+             
 
         class benchmark08_conjunctive:
             Var =  ['n', 'sum', 'i']
@@ -313,6 +340,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1            
+             
 
         class benchmark09_conjunctive:
             Var =  ['x', 'y']
@@ -322,6 +350,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, -1], [0, 1, -1], [0, 0, 1]]) ] , dnfTrue(2)) )
             c = 1
             d = 1
+             
 
         class benchmark10_conjunctive:
             Var = ['i' , 'c']
@@ -331,6 +360,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [1, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 2
             d = 1
+             
 
         class benchmark11_linear:
             Var =  ['x', 'n']
@@ -340,6 +370,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 1
             d = 1
+             
 
         class benchmark12_linear:
             Var =  ['x', 'y', 't']
@@ -352,6 +383,7 @@ class Inputs:
                             )
             c = 1
             d = 1
+             
 
         class benchmark13_conjunctive:
             Var =  ['i', 'j', 'k']
@@ -361,6 +393,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1
+             
 
         class benchmark14_linear:
             Var =  ['i']
@@ -370,6 +403,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, -1], [0, 1]] ) ] , dnfTrue(1)) )
             c = 2
             d = 1
+             
 
         class benchmark15_conjunctive:
             Var =  ['low', 'mid', 'high']
@@ -379,6 +413,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, -1], [0, 0, 1, -1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 3
             d = 1
+             
 
         class benchmark16_conjunctive:
             Var =  ['i', 'k']
@@ -388,6 +423,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, -1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
 
         class benchmark17_conjunctive:
             Var =  ['i', 'k', 'n']
@@ -397,6 +433,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1
+             
         
         class benchmark18_conjunctive:
             Var =  ['i', 'k', 'n'] 
@@ -406,6 +443,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 3
             d = 1
+             
 
         class benchmark19_conjunctive:
             Var =  ['j', 'k', 'n']
@@ -415,6 +453,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 4
             d = 1
+             
 
         class benchmark20_conjunctive:
             Var =  ['i', 'n', 'sum']
@@ -424,6 +463,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1
+             
 
         class benchmark21_disjunctive:
             Var =  ['x', 'y']
@@ -435,6 +475,7 @@ class Inputs:
                                 )
             c = 1
             d = 2
+             
             
         class benchmark22_conjunctive:
             Var =  ['x', 'y']
@@ -444,6 +485,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
 
         class benchmark23_conjunctive:
             Var =  ['i', 'j']
@@ -453,6 +495,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 2], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
             
         class benchmark24_conjunctive:
             Var =  ['i', 'k', 'n']
@@ -462,6 +505,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 2], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 2
             d = 1
+             
 
         class benchmark25_linear:
             Var =  ['x']
@@ -471,6 +515,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )
             c = 1
             d = 1
+             
             
         class benchmark26_linear:
             Var =  ['x', 'y']
@@ -480,6 +525,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 1
             d = 1
+             
 
         class benchmark27_linear:
             Var =  ['i', 'j', 'k']
@@ -489,6 +535,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 1
             d = 1
+             
 
         class benchmark28_linear:
             Var =  ['i', 'j']
@@ -500,6 +547,7 @@ class Inputs:
                                     ( [ np.array([[1, 0, 0], [-1, 1, 0], [0, 0, 1]] ) ] , list3D_to_listof2Darrays( [[[-2, 1, 1, 0]]] )    )     )
             c = 1
             d = 1
+             
 
         class benchmark29_linear:
             Var =  ['x', 'y']
@@ -509,6 +557,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 100], [0, 1, 0], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 1
             d = 1
+             
 
         class benchmark30_conjunctive:
             Var =  ['x', 'y']
@@ -518,6 +567,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 2
             d = 1
+             
 
         class benchmark31_disjunctive:
             Var =  ['x', 'y']
@@ -527,6 +577,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 1
             d = 3
+             
 
         class benchmark32_linear:
             Var =  ['x']
@@ -539,6 +590,7 @@ class Inputs:
                 )
             c = 1
             d = 1
+             
 
         class benchmark33_linear:
             Var =  ['x']
@@ -548,6 +600,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )
             c = 1
             d = 1
+             
 
         class benchmark34_conjunctive:
             Var =  ['j', 'k', 'n']
@@ -557,6 +610,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 4
             d = 1
+             
 
         class benchmark35_linear:
             Var =  ['x']
@@ -566,6 +620,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )
             c = 1
             d = 1
+             
 
         class benchmark36_conjunctive:
             Var =  ['x', 'y']
@@ -575,6 +630,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
 
         class benchmark37_conjunctive:
             Var =  ['x', 'y']
@@ -584,6 +640,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, -1], [0, 1, -1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
             
         class benchmark38_conjunctive:
             Var =  ['x', 'y']
@@ -593,6 +650,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 4], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
             
         class benchmark39_conjunctive:
             Var =  ['x', 'y']
@@ -602,6 +660,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, -4], [0, 1, -1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 3
             d = 1
+             
             
         class benchmark40_polynomial:
             Var =  ['x', 'y']
@@ -615,6 +674,7 @@ class Inputs:
             )
             c = 2
             d = 2
+             
             
         class benchmark41_conjunctive:
             Var =  ['x', 'y', 'z']
@@ -624,6 +684,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, -2], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 5
             d = 1
+             
             
         class benchmark42_conjunctive:
             Var =  ['x', 'y', 'z']
@@ -633,6 +694,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 2], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 5
             d = 1
+             
             
 
         class benchmark43_conjunctive:
@@ -643,6 +705,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 2
             d = 1
+             
             
 
         class benchmark44_disjunctive:
@@ -656,6 +719,7 @@ class Inputs:
             )
             c = 1
             d = 1
+             
             
 
         class benchmark45_disjunctive:
@@ -668,6 +732,7 @@ class Inputs:
                                     )
             c = 1
             d = 2
+             
             
 
         class benchmark46_disjunctive:
@@ -682,7 +747,7 @@ class Inputs:
                                     )
             c = 1
             d = 3
-            
+             
         class benchmark47_linear:
             Var =  ['x', 'y']
             P = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
@@ -695,6 +760,7 @@ class Inputs:
                                     )
             c = 1
             d = 1
+             
             
         class benchmark48_linear:
             Var =  ['i', 'j', 'k']
@@ -704,8 +770,9 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]] ) ] , dnfTrue(3)) )
             c = 1
             d = 1
+             
             
-        # FIXME: this will be stuck at z3_verfier.__get_cex() but it produces the correct answer if skip by ctrl+C
+        
         class benchmark49_linear:
             Var =  ['i', 'j', 'r']
             P = list3D_to_listof2Darrays([[[-1, -1, 1, 2, 0]]])
@@ -723,7 +790,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 0, -1], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)) )
             c = 1
             d = 1
-            
+             
         class benchmark51_polynomial:
             Var =  ['x']
             P = list3D_to_listof2Darrays([[[1, 1, 0], [1, -1, 50]]])
@@ -734,7 +801,7 @@ class Inputs:
                                     )
             c = 2
             d = 1
-            
+             
         class benchmark52_polynomial:
             Var =  ['i']
             P = list3D_to_listof2Darrays([[[1, -2, 10], [1, 2, -10]]])
@@ -743,6 +810,7 @@ class Inputs:
             T = genLItransitionrel(B, ( [ np.array([[1, 1], [0, 1]] ) ] , dnfTrue(1)) )
             c = 2
             d = 1
+             
        
         class benchmark53_polynomial:
             Var =  ['x', 'y']
@@ -756,6 +824,7 @@ class Inputs:
             )
             c = 2
             d = 2
+             
        
 
     class loops_crafted_1:
@@ -769,6 +838,7 @@ class Inputs:
                                     ( [ np.array([[1, 2], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 1, 10000000]]]) ) )
             c = 1
             d = 1
+             
        
         class Mono1_1_2:
             Var =  ['x']
@@ -779,6 +849,7 @@ class Inputs:
                                     ( [ np.array([[1, 2], [0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 1, 1000000]]]) ) )
             c = 1
             d = 1
+             
        
         class Mono3_1:
             Var =  ['x', 'y']
@@ -789,6 +860,7 @@ class Inputs:
                                     ( [ np.array([[1, 0, 1], [0, 1, -1], [0, 0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 0, 1, 500000]]]) )  )
             c = 2
             d = 2
+             
 
         class Mono4_1:
             Var =  ['x', 'y']
@@ -799,6 +871,7 @@ class Inputs:
                                     ( [ np.array([[1, 0, 1], [0, 1, 1], [0, 0, 1]] ) ] , list3D_to_listof2Darrays([[[1, 0, 1, 500000]]]) ) )
             c = 2
             d = 2
+             
 
         class Mono5_1: 
             Var =  ['x' , 'y' , 'z']
@@ -811,26 +884,7 @@ class Inputs:
                                        list3D_to_listof2Darrays([[[1, 0, 0, -2, 5000000]]]) ) )
             c = 1
             d = 1
-  
-    class linearArbitrarycompare:
-        
-        class temp_8:
-            Var =  ['x', 'y']
-            P = list3D_to_listof2Darrays([[[1, 0, 0, -50]]])
-            B = list3D_to_listof2Darrays([[[1, 0, -2, 0]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[0, 1,  2, 0]]]) , B , 1)
-            T = genLItransitionrel(B, ( [ np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]] ) ] , dnfTrue(2)  )  )
-            c = 3
-            d = 1
-
-        class valigator_7:
-            Var =  ['x', 'cnt' , 'a']
-            P = list3D_to_listof2Darrays([[[1, 0, -1, 0, 0] , [0, 1, 0, 0, 1], [0, 0, 1, 1, 0]]])
-            B = list3D_to_listof2Darrays([[[0, 1, 0, 2, 0]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0,  -1, 0, 1]]]) , B , 1)
-            T = genLItransitionrel(B, ( [ np.array([[1, 0, 0, 1], [0, 1, 0, -1], [0, 0,1, 0], [0, 0, 0, 1]] ) ] , dnfTrue(3)  )  )
-            c = 4
-            d = 1
+             
 
     '''
     # Var = ( , )
@@ -843,12 +897,17 @@ class Inputs:
     
 
 
-def input_to_repr(obj, c, d):
+def input_to_repr(obj, c, d, c_list):
     if c is None:
         c = obj.c
     if d is None:
         d = obj.d
-    return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d)
+    if c_list is None:
+        if (not hasattr(obj, 'clist')):
+            c_list = [c] * d
+        else:
+            c_list = obj.clist
+    return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d, clist = c_list)
 
 ''''''''''''''''''''''''''''''''''''''
 # Hill Climbing Algorithm:
