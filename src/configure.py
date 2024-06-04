@@ -99,7 +99,7 @@ class Configure:
     PRINTING_MODE = TERMINAL_AND_FILE
     
     PRINT_ITERATIONS = ON
-    PRINT_REJECT_ITERATIONS = ON
+    PRINT_REJECT_ITERATIONS = OFF
     PRINT_COSTLIST = OFF
     PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
@@ -108,7 +108,7 @@ class Configure:
 
     '''Graph Plotter hyperparameters '''
     #Average Acceptance Probability Checker
-    AVERAGE_ACC_PROB_CHECKER = ON
+    AVERAGE_ACC_PROB_CHECKER = OFF
     AVERAGE_ACC_PROB_WINDOW = 500
     
     #CostvsTimePlotter

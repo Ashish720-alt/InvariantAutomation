@@ -17,7 +17,7 @@ class Inputs:
             Q = [np.array([[1, -1, 6]])]
             T = genLItransitionrel(
                 B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
-            c = 2
+            c = 1
             d = 1
             #  
 

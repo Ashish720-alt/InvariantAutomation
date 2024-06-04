@@ -8,7 +8,7 @@ from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
-from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string
+from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string, printTemperaturePrompt
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
 from math import log, floor, e
@@ -124,7 +124,8 @@ def main(inputname, repr: Repr):
     tmax = repr.get_tmax()
     samplepoints = (repr.get_plus0(), repr.get_minus0(), repr.get_ICE0())
     initialized( repr.get_affineSubspace(), repr.get_nonItersP(), repr.get_Var(), outputfile = outputF)
-    prettyprint_samplepoints(samplepoints, "Selected-Points", "\t", outputfile = outputF)
+    if (conf.PRINT_Z3_ITERATIONS == conf.ON):
+        prettyprint_samplepoints(samplepoints, "Selected-Points", "\t", outputfile = outputF)
 
     if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
         plotinvariantspace(conf.INVARIANTSPACE_MAXCONST, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), 0)
@@ -155,8 +156,10 @@ def main(inputname, repr: Repr):
         mcmc_start = timer()
         
         if (costI != 0):
+            printTemperaturePrompt(repr.get_colorslist(), outputF)
             SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
-            print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
+            if (conf.PRINT_ITERATIONS == conf.ON):
+                print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
             
             costTimeLists = manager.list()
             costTimeLists.extend([[] for i in range(conf.num_processes)])
