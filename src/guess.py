@@ -84,7 +84,11 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
     c1 = float('inf')
     c2 = 0
     rv = []
+    
+    counter = 0
     while (len(rv) < conf.T0_COSTLISTLENGTH):    
+        if (counter >= 3*conf.T0_COSTLISTLENGTH):
+            break
         LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
         (c2, _) = cost(LII, samplepoints)  
         if (c2 > c1): #only positive transitions
@@ -97,11 +101,11 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
             neighbors = translation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr.get_k1())
         I[i][j] = neighbors[np.random.choice(range(len(neighbors)))][2]
         c1 = c2
-    
+        counter = counter + 1
+        
     return rv 
 
 def experimentalSAconstantlist(Ilist, samplepoints, repr):
-    print("Calculating initial temp ...")
     def ExponentialWithError(x, y):
         try:
             result = e**(-x / y)

@@ -144,6 +144,11 @@ def initialized(A, B, Vars, outputfile):
         else:
             print_with_mode(Fore.WHITE, '\n', file = outputfile)
 
+def printTemperaturePrompt(colorslist, outputfile):
+    if (conf.PRINT_ITERATIONS == conf.ON):
+        print_with_mode(colorslist[-1], "Calculating initial temp ...", endstr= '\n', file = outputfile)
+    return
+
 # Fix the printing
 def statistics(p, t, I, mincost, descent, reject, costlist, acc, Vars, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):    
