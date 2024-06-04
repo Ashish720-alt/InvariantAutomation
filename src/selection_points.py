@@ -498,9 +498,7 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
     if (isAffine(cc)):     
         (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
         (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
-        print("BaseVector")
-        print(type(basevector))
-        print(np.shape(basevector))
+
         if (len(basevector) == 0): #No solution
             return []
         if (len(colvectors) == 0):
