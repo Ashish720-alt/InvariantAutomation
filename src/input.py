@@ -144,15 +144,15 @@ class Inputs:
         class gj2007b:
             Var = ['x', 'm', 'n']
             P = list3D_to_listof2Darrays(
-                [[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0],  [0, 0, 1, 2, 0]]])
+                [[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0],  [0, 0, 1, 2, 0], [0,0,1,2,0]]])
             B = list3D_to_listof2Darrays([[[1, 0, -1, -2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[0, 1, 0, 1, 0], [0, 1, -1, -2, 0]], [[0, 0, 1, -1, 0]]]), B, 1)
+                [[[0, 1, 0, 1, 0], [0, 1, -1, -2, 0]] ]), B, 1)
             T = genLItransitionrel(B, ([np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
                                         np.array([[1, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])], dnfTrue(3)))
             c = 4
             d = 2
-             
+            clist = [4,2]
 
         class gr2006:
             Var = ['x', 'y']
@@ -167,6 +167,8 @@ class Inputs:
                                    )
             c = 4
             d = 2
+            clist = [4,3]
+            
         class hhk2008:
             Var = ['a', 'b', 'res', 'cnt']
             P = list3D_to_listof2Darrays([[[-1, 0, 1, 0, 0, 0], [0, -1, 0, 1, 0, 0], [
