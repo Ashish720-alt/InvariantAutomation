@@ -22,7 +22,7 @@ if __name__ == "__main__":
             subfolder = getattr(Inputs, folder)
             for inp in subfolder.__dict__:
                 if not inp.startswith("__"):
-                    tasks.append(input_to_repr(getattr(subfolder, inp), None, None))
+                    tasks.append(input_to_repr(getattr(subfolder, inp), None, None, None))
 
     pool_size = args.pool_size
 

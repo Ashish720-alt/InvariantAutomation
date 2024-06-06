@@ -471,7 +471,6 @@ def iteratedtransitions (x , ptf, B, maxiterate, T_list):
         i = i + 1
     i = i - 1
     
-    # print(i) ##Debug
     if (i <= 0):
         return []
     return transition(x, T_list[i])
@@ -488,6 +487,7 @@ def filter_ICEtails(n, tl_list):
 #CC is 2d numpy array; unbounded polytopes allowed
 def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
     def pointsatisfiescc (pt, cc):
+        
         for p in cc:
             sat = sum(p[:-2]* pt) - p[-1]
             if (sat > 0):
@@ -495,7 +495,10 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
         return True
 
     n  = len(cc[0]) - 2
+    
+    # print("randomlysampleCC_ICEpairs function:", cc) #Debug
     if (isAffine(cc)):     
+        # print("cc is affine!") #Debug
         (A, b, nonA, nonb) = getAffine(cc) #Adds the Dstate requirement to the nonAffine predicates too.
         (basevector, colvectors) = linearDiophantineSolution(np.array(A, ndmin = 2), np.array(b))
 
@@ -533,9 +536,9 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
             samplepoint = [conf.dspace_intmin - 2]*A2_columns
             tls = []
             while ( tls == [] ):
-                # print(basevector, S , samplepoint) #Debugging
                 point = (basevector + np.matmul(S, samplepoint)).tolist()
-                while (  not pointsatisfiescc(point, np.array(lambda_cc, ndmin = 2, dtype = int)) ):
+                # print(point, samplepoint) #Debugging
+                while (  not pointsatisfiescc(samplepoint, np.array(lambda_cc, ndmin = 2, dtype = int)) ):
                     for i in range(A2_columns):
                         samplepoint[i] = random.randint(minpoints[i], maxpoints[i] + 1)     
                     point = (basevector + np.matmul(S, samplepoint)).tolist()
@@ -673,10 +676,12 @@ def get_ICE0( T, P, Q, m, Titerates):
         for cc in B:
             if (isEmpty(cc)):
                 continue
+            # print("partialICE_enet function:", cc) #Debug
             rv = rv + randomlysampleCC_ICEpairs(cc, m, transitionlist, B, rtfIterates)
         return rv
 
     for (i,rtf) in enumerate(T):
+        # print(rtf.b) #Debug
         rv = rv + partialICE_enet (rtf.b , P, Q, rtf.tlist, m, n, Titerates[i]) #All rft.b are in LIA form
     
 
