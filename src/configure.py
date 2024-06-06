@@ -7,6 +7,7 @@ class Configure:
     ON = 1
     OFF = 0
 
+    #CHANGE THIS FOR SERVER RUNS!!!
     REMOTE_SERVER = OFF
     REMOTE_PATH = "../../rotation-graph/"
 
