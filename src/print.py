@@ -4,17 +4,18 @@ from z3verifier import DNF_to_z3expr
 from colorama import Fore, Back, Style
 from math import floor, isnan, isinf
 from n2Invariantplotter import do_plot
+import multiprocessing
+
+lock = multiprocessing.Lock()
 
 def print_with_mode(color, s, endstr = '\n', file = None):
+    lock.acquire()
     if (conf.PRINTING_MODE == conf.TERMINAL or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
         print(color + s, end = endstr)
         print(Style.RESET_ALL, end = '')  
     if (conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
-        try:
-            file.write(s + endstr + '\n')
-        except Exception as e:
-            print("Error:", e)
-        
+        file.write(s + endstr)    
+    lock.release()
     return
 
 
@@ -146,7 +147,7 @@ def initialized(A, B, Vars, outputfile):
 
 def printTemperaturePrompt(colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        print_with_mode(colorslist[-1], "Calculating initial temp ...", endstr= '\n', file = outputfile)
+        print_with_mode(colorslist[0], "Calculating initial temp ...", endstr= '\n', file = outputfile)
     return
 
 # Fix the printing

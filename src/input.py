@@ -1003,27 +1003,41 @@ class Inputs:
             c = 1
             d = 1
              
+    class loop_acceleration:
+        class const_1_1:
+            Var = ['x','y']
+            P = list3D_to_listof2Darrays([[[1,0,0,1], [0,1,0,0]]])
+            B = list3D_to_listof2Darrays([[[0,1,-2,1024]]])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1,0,0,0]]]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array([[0,0,0], [0,1,1], [0,0,1]] ) ] , dnfTrue(len(Var))) )            
+            c = 2
+            d = 2
+
+
 
     '''
     # Var = ( , )
-    class standard_name:
-        P = list3D_to_listof2Darrays([])
-        B = list3D_to_listof2Darrays([])
-        Q = dnfdisjunction(list3D_to_listof2Darrays([]) , B , 1)
-        T = genLItransitionrel(B, ( [ np.array([] ) ] , dnfTrue(n)) )
+        class standard_name:
+            Var = []
+            P = list3D_to_listof2Darrays([])
+            B = list3D_to_listof2Darrays([])
+            Q = dnfdisjunction(list3D_to_listof2Darrays([]) , B , 1)
+            T = genLItransitionrel(B, ( [ np.array([] ) ] , dnfTrue(len(Var))) )
     '''
 
 
 def input_to_repr(obj, c, d, c_list):
-    if c is None:
-        c = obj.c
     if d is None:
         d = obj.d
     if c_list is None:
         if (not hasattr(obj, 'clist')):
+            if (c is None):
+                c = obj.c
             c_list = [c] * d
         else:
             c_list = obj.clist
+    if (c is None):
+        c = obj.c
     return Repr(obj.P, obj.B, obj.T, obj.Q, obj.Var, c, d, clist = c_list)
 
 

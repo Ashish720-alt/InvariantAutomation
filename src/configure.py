@@ -64,7 +64,11 @@ class Configure:
     STAGNANT_TIME_WINDOW = 1000
     STAGNANT_COST_RANGE = 1
     LOCAL_MINIMA_DEPTH_CHECKER = 1000
-    
+
+    #Average Acceptance Probability Checker
+    AVERAGE_ACC_PROB_CHECKER = OFF
+    AVERAGE_ACC_PROB_WINDOW = 500
+
     ''' Datapoint Sampling hyperparameters '''
     #Iterated Implication pairs
     maxiterateImplPair = 100 
@@ -108,10 +112,6 @@ class Configure:
     
 
     '''Graph Plotter hyperparameters '''
-    #Average Acceptance Probability Checker
-    AVERAGE_ACC_PROB_CHECKER = OFF
-    AVERAGE_ACC_PROB_WINDOW = 500
-    
     #CostvsTimePlotter
     COST_PLOTTER = OFF
     
