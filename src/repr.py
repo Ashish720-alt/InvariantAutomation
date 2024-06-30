@@ -11,13 +11,7 @@ from math import sqrt, log
 from preprocessing import modifiedHoudini, getIterativeP, getnonIterativeP
 from print import print_colorslist
 from enetspointcounting import getpoints
-'''
-The general single loop clause system is:
-P -> I
-I /\ B /\ T -> I'
-I -> Q
 
-'''
 
 class B_LItransitionrel:
     def __init__(self, transition_matrix_list, DNF, B):
@@ -25,7 +19,7 @@ class B_LItransitionrel:
         self.b = dnfconjunction(DNF, B, gLII = 0)
 
 def genLItransitionrel(B, *args):
-    return [B_LItransitionrel(x[0], x[1], B) for x in args ]
+    return [(x[0], x[1]) for x in args ]
 
 class Repr:
     def __init__(self, P, B, T, Q, Var, c, d, clist = []):

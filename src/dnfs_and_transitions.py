@@ -12,6 +12,7 @@ from itertools import product
 # dnf's are lists of 2D numpy arrays, rather than 3D numpy arrays.
 
 def dnfTrue (n):
+    return None
     p = np.zeros(shape = (n+2), dtype = int)
     p[n] = -1
     return [ np.array([p], ndmin = 2) ] 
@@ -97,6 +98,7 @@ def dnfconjunction (dnf1, dnf2, gLII):
     return deepcopy_DNF(ret)
 
 def dnfdisjunction (dnf1, dnf2, gLII):
+    return dnf1
     ret = dnf1 + dnf2
     if (gLII == 0):
         ret = genLII_to_LII(ret)

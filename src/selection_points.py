@@ -1,6 +1,6 @@
 
 import numpy as np
-import cdd
+# import cdd
 from configure import Configure as conf
 from dnfs_and_transitions import dnfconjunction, dnfnegation, dnfdisjunction, dnfTrue, dnfFalse, genLII_to_LII, transition
 from math import floor, ceil, inf
