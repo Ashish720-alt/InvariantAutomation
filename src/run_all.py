@@ -5,7 +5,8 @@ import multiprocessing
 import time
 import argparse
 
-lock = threading.Lock()
+task_lock = threading.Lock()
+log_lock = threading.Lock()
 tasks = []
 timeout = None
 repeat = None
@@ -13,8 +14,10 @@ log_file = None
 
 
 def log(string):
+    log_lock.acquire()
     with open(log_file, "a") as f:
         f.write(f"{string}\n")
+    log_lock.release()
 
 
 def main_wrapper(folder, name):
@@ -25,12 +28,12 @@ def main_wrapper(folder, name):
 
 def run_task():
     while True:
-        lock.acquire()
+        task_lock.acquire()
         if not tasks:
-            lock.release()
+            task_lock.release()
             break
         task_name = tasks.pop(0)
-        lock.release()
+        task_lock.release()
 
         for run in range(repeat):
             process = multiprocessing.Process(
