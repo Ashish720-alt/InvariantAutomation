@@ -18,7 +18,7 @@ def distanceNormalizer(d):
     if (d <= conf.costnormalizer_K):
         return d / conf.costnormalizer_m
     else:
-        return (conf.costnormalizer_K / conf.costnormalizer_m) * sigmoidfn(d - conf.costnormalizer_K)
+        return (conf.costnormalizer_K / conf.costnormalizer_m) - 1 + (2 * sigmoidfn(d - conf.costnormalizer_K))
     
 def distanceNormalizer2(x, K):
     return conf.costnormalizer_K *(x/(1.0 + x))
