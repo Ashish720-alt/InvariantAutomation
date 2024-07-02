@@ -1,65 +1,93 @@
-from multiprocessing import Pool
 from input import Inputs, input_to_repr
 from main import main
-import argparse
+import threading
+import multiprocessing
 import time
-from pebble import ProcessPool
-from concurrent.futures import TimeoutError, CancelledError
+import argparse
+
+lock = threading.Lock()
+tasks = []
+timeout = None
+repeat = None
+log_file = None
 
 
-def run_task(task, repeat):
-    print(f"Running Task {task} Round {repeat}")
-    start = time.time()
-    main(task)
-    # time.sleep(task)
-    print(
-        f"Task {task} Round {repeat} completed. Time taken: {time.time() - start}")
+def log(string):
+    with open(log_file, "a") as f:
+        f.write(f"{string}\n")
+
+
+def main_wrapper(folder, name):
+    input = input_to_repr(
+        getattr(getattr(Inputs, folder), name), None, None, None)
+    return main(f"{folder}.{name}", input)
+
+
+def run_task():
+    while True:
+        lock.acquire()
+        if not tasks:
+            lock.release()
+            break
+        task_name = tasks.pop(0)
+        lock.release()
+
+        for run in range(repeat):
+            process = multiprocessing.Process(
+                target=main_wrapper, args=(task_name[0], task_name[1]))
+            title = f"Task {task_name[0]}.{task_name[1]} Run {run}"
+            try:
+                log(f"Running {title}")
+                process.start()
+                process.join(timeout=timeout)
+                if process.is_alive():
+                    log(f"{title} timed out")
+                    process.terminate()
+                    process.join()
+                else:
+                    # Get result
+                    result = process.exitcode
+                    if result != 0:
+                        log(f"{title} failed with exitcode {result}")
+                    else:
+                        log(f"{title} completed successfully")
+            except Exception as e:
+                log(f"Error running {title}: {str(e)}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="run all tasks in parallel")
-    parser.add_argument('-p', '--pool_size', type=int,
-                        required=True, help='Size of the process pool')
+    parser.add_argument('-n', '--concurrent_workers', type=int,
+                        required=True, help='The number of concurrent workers that will run the tasks')
     parser.add_argument('-t', '--timeout', type=float,
                         required=True, help='Timeout in hours')
     parser.add_argument('-r', '--repeat', type=int, default=1,
-                        help='Number of times to repeat the task')
+                        help='Number of times to repeat each task')
+    parser.add_argument('-l', '--log_file', type=str, required=True,
+                        help='File to log')
+
     args = parser.parse_args()
-    pool_size = args.pool_size
+    num_threads = args.concurrent_workers
     time_out = int(args.timeout * 60 * 60)
     repeat = args.repeat
+    log_file = args.log_file
 
-    tasks = []
     for folder in Inputs.__dict__:
         if not folder.startswith("__"):
             subfolder = getattr(Inputs, folder)
             for inp in subfolder.__dict__:
                 if not inp.startswith("__"):
-                    task = input_to_repr(
-                        getattr(subfolder, inp), None, None, None)
-                    tasks.extend([(task, i) for i in range(repeat)])
-    # for i in [3*i for i in range(5)]:
-    #     tasks.extend([(i, r) for r in range(repeat)])
+                    tasks.append((f"{folder}", f"{inp}"))
 
-    results = []
-    with ProcessPool(max_workers=pool_size) as pool:
+    # Create and start threads
+    threads = []
+    for _ in range(num_threads):
+        thread = threading.Thread(target=run_task)
+        thread.start()
+        threads.append(thread)
 
-        futures = [
-            pool.schedule(run_task, [task, repeat], timeout=time_out) for (task, repeat) in tasks]
-        pool.close()
-        pool.join()
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
 
-        for ((task, repeat), future) in list(zip(tasks, futures)):
-            try:
-                # Get the result of the task
-                ret = future.result()
-                results.append(f"Task {task} Run {repeat} succeeded with result {ret}")
-            except TimeoutError:  # Catch the TimeoutError
-                results.append(f"Task {task} Run {repeat} timed out.")
-            except CancelledError:
-                results.append(f"Task {task} Run {repeat} cancelled.")
-            except Exception:
-                results.append(f"Task {task} Run {repeat} failed.")
-
-    for result in results:
-        print(result)
+    log("All tasks completed.")
