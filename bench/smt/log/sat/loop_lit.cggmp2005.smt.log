@@ -1,0 +1,14 @@
+sat
+(model 
+  (define-fun k!53 ((x!0 Int)) Int
+    (let ((a!1 (ite (<= 9 x!0) (ite (<= 10 x!0) (ite (<= 11 x!0) 11 10) 9) 8)))
+    (let ((a!2 (ite (<= 6 x!0) (ite (<= 7 x!0) (ite (<= 8 x!0) a!1 7) 6) 5)))
+    (let ((a!3 (ite (<= 3 x!0) (ite (<= 4 x!0) (ite (<= 5 x!0) a!2 4) 3) 2)))
+      (ite (<= 1 x!0) (ite (<= 2 x!0) a!3 1) (- 1))))))
+  (define-fun inv ((x!0 Int) (x!1 Int)) Bool
+    (or (and (= (k!53 x!0) 9) (= (k!53 x!1) 6))
+        (and (= (k!53 x!0) 7) (= (k!53 x!1) 7))
+        (and (= (k!53 x!0) 5) (= (k!53 x!1) 8))
+        (and (= (k!53 x!0) 3) (= (k!53 x!1) 9))
+        (and (= (k!53 x!0) 1) (= (k!53 x!1) 10))))
+)

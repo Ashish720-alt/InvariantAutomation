@@ -1,0 +1,6 @@
+sat
+(model 
+  (define-fun inv ((x!0 Int)) Bool
+    (let ((a!1 (ite (<= 2 x!0) (ite (<= 3 x!0) (ite (<= 9 x!0) 9 3) 2) 1)))
+      (or (= (ite (<= 1 x!0) a!1 0) 1) (= (ite (<= 1 x!0) a!1 0) 2))))
+)

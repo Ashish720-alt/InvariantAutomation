@@ -1,0 +1,7 @@
+{
+"../bench/smt/loop_zilu.benchmark48_linear.smt": "error: Command '['../../z3/build/z3', '../bench/smt/loop_zilu.benchmark48_linear.smt']' died with <Signals.SIGKILL: 9>.",
+"../bench/smt/loop_zilu.benchmark16_conjunctive.smt": "error: Command '['../../z3/build/z3', '../bench/smt/loop_zilu.benchmark16_conjunctive.smt']' returned non-zero exit status 1.",
+"../bench/smt/loops_crafted_1.Mono1_1_2.smt": "error: Command '['../../z3/build/z3', '../bench/smt/loops_crafted_1.Mono1_1_2.smt']' returned non-zero exit status 1.",
+{
+{
+"../bench/smt/loop_zilu.benchmark16_conjunctive.smt": "error: Command '['../../z3/build/z3', '../bench/smt/loop_zilu.benchmark16_conjunctive.smt']' returned non-zero exit status 1.",
