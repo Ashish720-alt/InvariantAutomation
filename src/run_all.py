@@ -14,9 +14,11 @@ log_file = None
 
 
 def log(string):
+    t = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{t} {string}")
     log_lock.acquire()
     with open(log_file, "a") as f:
-        f.write(f"{string}\n")
+        f.write(f"{t} {string}\n")
     log_lock.release()
 
 
@@ -34,11 +36,11 @@ def run_task():
             break
         task_name = tasks.pop(0)
         task_lock.release()
-
+        
         for run in range(repeat):
             process = multiprocessing.Process(
                 target=main_wrapper, args=(task_name[0], task_name[1]))
-            title = f"Task {task_name[0]}.{task_name[1]} Run {run}"
+            title = f"Task {task_name[0]}.{task_name[1]} Round {run}"
             try:
                 log(f"Running {title}")
                 process.start()
