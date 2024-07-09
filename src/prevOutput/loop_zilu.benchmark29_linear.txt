@@ -1,0 +1,11 @@
+Invariant Found:	((1*x + -1*y <= 99))
+
+
+Time Statistics:
+	Total Time: 580.4900144350249
+	Total Initialization and Re-initialization Time: 0.7862167290877551
+	Total MCMC time: 579.19548380794
+	Total Z3 Time: 0.5083138979971409
+	Total MCMC iterations forall threads: 236332
+	Total Z3 calls: 2
+	Number of Threads: 4

@@ -1,0 +1,429 @@
+=== Contents of loop_zilu.benchmark01_conjunctive.txt ===
+All SA threads failed to converge after5Z3 runs
+
+=== Contents of loop_zilu.benchmark02_linear.txt ===
+Invariant Found:	((0*n + 0*i + -2*l <= -1))
+
+
+Time Statistics:
+	Total Time: 14.593882724177092
+	Total Initialization and Re-initialization Time: 1.4745137859135866
+	Total MCMC time: 12.498211497208104
+	Total Z3 Time: 0.6211574410554022
+	Total MCMC iterations forall threads: 15
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark03_linear_modified.txt ===
+Invariant Found:	((2*x + -2*y + 0*i + 0*j <= 0) /\ (0*x + 0*y + 2*i + -2*j <= 1))
+
+
+Time Statistics:
+	Total Time: 97.00978708616458
+	Total Initialization and Re-initialization Time: 3.440243106102571
+	Total MCMC time: 92.81631993991323
+	Total Z3 Time: 0.7532240401487797
+	Total MCMC iterations forall threads: 845
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark04_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark05_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark06_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark08_conjunctive.txt ===
+Invariant Found:	((0*n + -2*sum + 1*i <= 1) /\ (0*n + 0*sum + -2*i <= 0))
+
+
+Time Statistics:
+	Total Time: 145.67745476635173
+	Total Initialization and Re-initialization Time: 2.2316945975180715
+	Total MCMC time: 142.02373653603718
+	Total Z3 Time: 1.4220236327964813
+	Total MCMC iterations forall threads: 4658
+	Total Z3 calls: 7
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark09_conjunctive.txt ===
+Invariant Found:	((0*x + -2*y <= 0))
+
+
+Time Statistics:
+	Total Time: 16.171131319832057
+	Total Initialization and Re-initialization Time: 1.2456155091058463
+	Total MCMC time: 14.042135591851547
+	Total Z3 Time: 0.8833802188746631
+	Total MCMC iterations forall threads: 35
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark10_conjunctive.txt ===
+Invariant Found:	((-1*i + 0*c <= 0) /\ (0*i + -2*c <= 1))
+
+
+Time Statistics:
+	Total Time: 33.682498273206875
+	Total Initialization and Re-initialization Time: 1.4674483421258628
+	Total MCMC time: 31.42613267386332
+	Total Z3 Time: 0.7889172572176903
+	Total MCMC iterations forall threads: 381
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark11_linear.txt ===
+Invariant Found:	((1*x + -1*n <= 0))
+
+
+Time Statistics:
+	Total Time: 0.85282137314789
+	Total Initialization and Re-initialization Time: 0.7504447961691767
+	Total MCMC time: 0.0005922880955040455
+	Total Z3 Time: 0.10178428888320923
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark12_linear.txt ===
+Invariant Found:	((0*x + -1*y + 1*t <= 0))
+
+
+Time Statistics:
+	Total Time: 20.525153142865747
+	Total Initialization and Re-initialization Time: 1.569490271853283
+	Total MCMC time: 18.726114277960733
+	Total Z3 Time: 0.2295485930517316
+	Total MCMC iterations forall threads: 89
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark13_conjunctive.txt ===
+Invariant Found:	((2*i + -2*j + 0*k <= 0) /\ (-1*i + 1*j + 0*k <= 0))
+
+
+Time Statistics:
+	Total Time: 32.44689639774151
+	Total Initialization and Re-initialization Time: 2.9356535798870027
+	Total MCMC time: 28.940097318030894
+	Total Z3 Time: 0.571145499823615
+	Total MCMC iterations forall threads: 13
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark14_linear.txt ===
+
+=== Contents of loop_zilu.benchmark15_conjunctive(1).txt ===
+Invariant Found:	((1*low + -2*mid + -1*high <= 1) /\ (-1*low + -2*mid + 1*high <= 0) /\ (1*low + 2*mid + -1*high <= 0))
+
+
+Time Statistics:
+	Total Time: 3686.4385184082203
+	Total Initialization and Re-initialization Time: 6.277464060811326
+	Total MCMC time: 3677.561475848779
+	Total Z3 Time: 2.599578498629853
+	Total MCMC iterations forall threads: 276714
+	Total Z3 calls: 11
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark16_conjunctive.txt ===
+Invariant Found:	((-2*i + -2*k <= -1) /\ (-1*i + 2*k <= 1) /\ (1*i + 1*k <= 2))
+
+
+Time Statistics:
+	Total Time: 153.20673114899546
+	Total Initialization and Re-initialization Time: 2.714363547740504
+	Total MCMC time: 149.2587352329865
+	Total Z3 Time: 1.2336323682684451
+	Total MCMC iterations forall threads: 6279
+	Total Z3 calls: 5
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark17_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark18_conjunctive(1).txt ===
+Invariant Found:	((0*i + 2*k + -2*n <= 1) /\ (-2*i + 2*k + 0*n <= 1) /\ (2*i + -2*k + 0*n <= 1))
+
+
+Time Statistics:
+	Total Time: 389.00757453311235
+	Total Initialization and Re-initialization Time: 6.715962236979976
+	Total MCMC time: 380.592139004264
+	Total Z3 Time: 1.699473291868344
+	Total MCMC iterations forall threads: 3007
+	Total Z3 calls: 7
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark19_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark20_conjunctive.txt ===
+Invariant Found:	((-1*i + 0*n + 0*sum <= 0) /\ (1*i + 0*n + -2*sum <= 1))
+
+
+Time Statistics:
+	Total Time: 29.503443516558036
+	Total Initialization and Re-initialization Time: 1.527586628915742
+	Total MCMC time: 27.072397160809487
+	Total Z3 Time: 0.9034597268328071
+	Total MCMC iterations forall threads: 366
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark21_disjunctive.txt ===
+Invariant Found:	((0*x + -2*y <= -2)) \/ ((-2*x + 0*y <= -2))
+
+
+Time Statistics:
+	Total Time: 49.94912476697937
+	Total Initialization and Re-initialization Time: 2.3479490019381046
+	Total MCMC time: 47.04805696406402
+	Total Z3 Time: 0.553118800977245
+	Total MCMC iterations forall threads: 279
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark22_conjunctive.txt ===
+Invariant Found:	((-1*x + -2*y <= -1) /\ (0*x + -2*y <= 4) /\ (-2*x + 2*y <= 1))
+
+
+Time Statistics:
+	Total Time: 363.6834742282517
+	Total Initialization and Re-initialization Time: 1.8401452894322574
+	Total MCMC time: 359.30432698107325
+	Total Z3 Time: 2.5390019577462226
+	Total MCMC iterations forall threads: 19391
+	Total Z3 calls: 13
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark23_conjunctive.txt ===
+All SA threads failed to converge after7Z3 runs
+
+=== Contents of loop_zilu.benchmark24_conjunctive.txt ===
+Invariant Found:	((-1*i + -2*k + 2*n <= 0) /\ (0*i + -2*k + 1*n <= 1))
+
+
+Time Statistics:
+	Total Time: 185.79306952934712
+	Total Initialization and Re-initialization Time: 3.146097439341247
+	Total MCMC time: 180.8458691907581
+	Total Z3 Time: 1.8011028992477804
+	Total MCMC iterations forall threads: 4442
+	Total Z3 calls: 7
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark25_linear.txt ===
+
+=== Contents of loop_zilu.benchmark26_linear.txt ===
+Invariant Found:	((1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 0.8544229499530047
+	Total Initialization and Re-initialization Time: 0.7530656009912491
+	Total MCMC time: 0.0006012979429215193
+	Total Z3 Time: 0.10075605101883411
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark27_linear.txt ===
+
+=== Contents of loop_zilu.benchmark28_linear.txt ===
+Invariant Found:	((1*i + -1*j <= 0))
+
+
+Time Statistics:
+	Total Time: 0.9026788070332259
+	Total Initialization and Re-initialization Time: 0.7950664681848139
+	Total MCMC time: 0.001488372916355729
+	Total Z3 Time: 0.10612396593205631
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark29_linear.txt ===
+Invariant Found:	((1*x + -1*y <= 99))
+
+
+Time Statistics:
+	Total Time: 580.4900144350249
+	Total Initialization and Re-initialization Time: 0.7862167290877551
+	Total MCMC time: 579.19548380794
+	Total Z3 Time: 0.5083138979971409
+	Total MCMC iterations forall threads: 236332
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark30_conjunctive.txt ===
+Invariant Found:	((-2*x + 2*y <= 0) /\ (1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.8470614070538431
+	Total Initialization and Re-initialization Time: 1.7332476479932666
+	Total MCMC time: 0.0016928210388869047
+	Total Z3 Time: 0.11212093802168965
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark31_disjunctive.txt ===
+Invariant Found:	((1*x + -1*y <= 0)) \/ ((1*x + 0*y <= -1)) \/ ((0*x + -1*y <= -2))
+
+
+Time Statistics:
+	Total Time: 21.348631317261606
+	Total Initialization and Re-initialization Time: 1.561891423072666
+	Total MCMC time: 18.853984093060717
+	Total Z3 Time: 0.9327558011282235
+	Total MCMC iterations forall threads: 145
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark32_linear.txt ===
+Invariant Found:	((2*x <= 8))
+
+
+Time Statistics:
+	Total Time: 2.8483043452724814
+	Total Initialization and Re-initialization Time: 2.7417780130635947
+	Total MCMC time: 0.0006261151283979416
+	Total Z3 Time: 0.1059002170804888
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark33_linear.txt ===
+
+=== Contents of loop_zilu.benchmark34_conjunctive(1).txt ===
+
+=== Contents of loop_zilu.benchmark35_linear.txt ===
+
+=== Contents of loop_zilu.benchmark36_conjunctive.txt ===
+Invariant Found:	((-1*x + 1*y <= 4) /\ (1*x + -2*y <= 2) /\ (-2*x + 0*y <= 2))
+
+
+Time Statistics:
+	Total Time: 16.8352013444528
+	Total Initialization and Re-initialization Time: 1.3855046462267637
+	Total MCMC time: 14.923120039980859
+	Total Z3 Time: 0.5265766582451761
+	Total MCMC iterations forall threads: 39
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark37_conjunctive.txt ===
+Invariant Found:	((-2*x + 2*y <= 0) /\ (1*x + -1*y <= 0) /\ (-2*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 2.0774645009078085
+	Total Initialization and Re-initialization Time: 1.9593735279049724
+	Total MCMC time: 0.001963734859600663
+	Total Z3 Time: 0.11612723814323545
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark38_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark39_conjunctive.txt ===
+All SA threads failed to converge after4Z3 runs
+
+=== Contents of loop_zilu.benchmark40_polynomial.txt ===
+Invariant Found:	((-2*x + 1*y <= 0) /\ (1*x + 0*y <= 0)) \/ ((0*x + 1*y <= 0) /\ (2*x + 0*y <= 0))
+
+
+Time Statistics:
+	Total Time: 9.423010507132858
+	Total Initialization and Re-initialization Time: 9.303731210995466
+	Total MCMC time: 0.0006902860477566719
+	Total Z3 Time: 0.11858901008963585
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark41_conjunctive.txt ===
+
+=== Contents of loop_zilu.benchmark42_conjunctive.txt ===
+Invariant Found:	((0*x + -2*y + -1*z <= 0) /\ (0*x + 0*y + 1*z <= 0) /\ (-2*x + 0*y + 0*z <= 0) /\ (0*x + -1*y + 2*z <= 0) /\ (2*x + 2*y + 2*z <= 1))
+
+
+Time Statistics:
+	Total Time: 79.22703191498294
+	Total Initialization and Re-initialization Time: 6.074503449024633
+	Total MCMC time: 72.22144382912666
+	Total Z3 Time: 0.9310846368316561
+	Total MCMC iterations forall threads: 71
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark43_conjunctive.txt ===
+Invariant Found:	((0*x + 1*y <= 100) /\ (1*x + 0*y <= 100))
+
+
+Time Statistics:
+	Total Time: 1503.4969303549733
+	Total Initialization and Re-initialization Time: 2.2500790948979557
+	Total MCMC time: 1500.5733218360692
+	Total Z3 Time: 0.6735294240061194
+	Total MCMC iterations forall threads: 291587
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark44_disjunctive.txt ===
+Invariant Found:	((1*x + -1*y <= 16))
+
+
+Time Statistics:
+	Total Time: 44.81356123439036
+	Total Initialization and Re-initialization Time: 2.510054146172479
+	Total MCMC time: 41.564659195253626
+	Total Z3 Time: 0.7388478929642588
+	Total MCMC iterations forall threads: 549
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark45_disjunctive.txt ===
+Invariant Found:	((0*x + -2*y <= -1)) \/ ((-2*x + 0*y <= -1))
+
+
+Time Statistics:
+	Total Time: 60.79321515094489
+	Total Initialization and Re-initialization Time: 2.6058397199958563
+	Total MCMC time: 57.481514075770974
+	Total Z3 Time: 0.7058613551780581
+	Total MCMC iterations forall threads: 66
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark46_disjunctive.txt ===
+Invariant Found:	((-2*x + 0*y + 0*z <= -2)) \/ ((0*x + 0*y + -2*z <= -1)) \/ ((0*x + -2*y + 0*z <= -1))
+
+
+Time Statistics:
+	Total Time: 467.40043923677877
+	Total Initialization and Re-initialization Time: 12.999233599053696
+	Total MCMC time: 453.6150521088857
+	Total Z3 Time: 0.7861535288393497
+	Total MCMC iterations forall threads: 1739
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark47_linear.txt ===
+Invariant Found:	((1*x + -1*y <= 16))
+
+
+Time Statistics:
+	Total Time: 229.79023788520135
+	Total Initialization and Re-initialization Time: 1.89613158069551
+	Total MCMC time: 227.13293566112407
+	Total Z3 Time: 0.7611706433817744
+	Total MCMC iterations forall threads: 45265
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+=== Contents of loop_zilu.benchmark48_linear.txt ===
+
+=== Contents of loop_zilu.benchmark49_linear.txt ===
+
