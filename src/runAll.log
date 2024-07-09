@@ -1,0 +1,30 @@
+Running Task handcrafted.mock Run 0
+Running Task handcrafted.c2d1_1 Run 0
+Running Task loop_lit.afnp2014_modified Run 0
+Running Task loop_lit.bhmr2007 Run 0
+Running Task loop_lit.cggmp2005 Run 0
+Running Task loop_lit.cggmp2005_variant Run 0
+Task loop_lit.afnp2014_modified Run 0 completed successfully
+Running Task loop_lit.gsv2008 Run 0
+Task handcrafted.c2d1_1 Run 0 completed successfully
+Running Task loop_lit.css2003 Run 0
+Task loop_lit.gsv2008 Run 0 completed successfully
+Running Task loop_lit.gcnr2008 Run 0
+Task handcrafted.mock Run 0 completed successfully
+Running Task loop_lit.gj2007 Run 0
+Task loop_lit.bhmr2007 Run 0 completed successfully
+Running Task loop_lit.gj2007b Run 0
+Task loop_lit.cggmp2005 Run 0 completed successfully
+Running Task loop_lit.gr2006 Run 0
+Task loop_lit.gr2006 Run 0 failed with exitcode 1
+Running Task loop_lit.hhk2008 Run 0
+Task loop_lit.css2003 Run 0 completed successfully
+Running Task loop_lit.jm2006 Run 0
+Task loop_lit.gj2007 Run 0 completed successfully
+Running Task loop_lit.jm2006_variant Run 0
+Task loop_lit.gcnr2008 Run 0 completed successfully
+Running Task loop_new.count_by_1 Run 0
+Task loop_new.count_by_1 Run 0 failed with exitcode 1
+Running Task loop_new.count_by_1_variant Run 0
+Task loop_new.count_by_1_variant Run 0 completed successfully
+Running Task loop_new.count_by_2 Run 0

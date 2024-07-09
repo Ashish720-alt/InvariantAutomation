@@ -1,0 +1,160 @@
+=== Contents of consolidated_others.txt ===
+
+
+=== Contents of handcrafted.c2d1_1.txt ===
+Invariant Found:	((0*x + -1*y <= -1) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 11.510065497946925
+	Total Initialization and Re-initialization Time: 1.0075355649460107
+	Total MCMC time: 9.916910666041076
+	Total Z3 Time: 0.5856192669598386
+	Total MCMC iterations forall threads: 300
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+
+=== Contents of handcrafted.mock.txt ===
+Invariant Found:	((1*x <= 6))
+
+
+Time Statistics:
+	Total Time: 57.07932166475803
+	Total Initialization and Re-initialization Time: 8.15138490695972
+	Total MCMC time: 48.39548251195811
+	Total Z3 Time: 0.5324542458401993
+	Total MCMC iterations forall threads: 51225
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+
+=== Contents of loop_lit.afnp2014_modified.txt ===
+Invariant Found:	((0*x + -2*y <= -1) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 9.301239508902654
+	Total Initialization and Re-initialization Time: 0.7693338639801368
+	Total MCMC time: 8.00183413294144
+	Total Z3 Time: 0.5300715119810775
+	Total MCMC iterations forall threads: 35
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+
+=== Contents of loop_lit.bhmr2007.txt ===
+Invariant Found:	((-1*a + -2*b + 1*i + 0*n <= 6) /\ (0*a + 1*b + -2*i + 0*n <= 2) /\ (0*a + 0*b + 2*i + -2*n <= 1))
+
+
+Time Statistics:
+	Total Time: 378.4833080628887
+	Total Initialization and Re-initialization Time: 11.73687035869807
+	Total MCMC time: 365.4015161290299
+	Total Z3 Time: 1.344921575160697
+	Total MCMC iterations forall threads: 1789
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+
+=== Contents of loop_lit.cggmp2005.txt ===
+Invariant Found:	((-1*i + -2*j <= -21) /\ (1*i + 2*j <= 21) /\ (2*i + 2*j <= 31))
+
+
+Time Statistics:
+	Total Time: 829.2510984714609
+	Total Initialization and Re-initialization Time: 2.8668185917194933
+	Total MCMC time: 824.1595625831978
+	Total Z3 Time: 2.224717296543531
+	Total MCMC iterations forall threads: 90259
+	Total Z3 calls: 10
+	Number of Threads: 4
+
+
+=== Contents of loop_lit.cggmp2005_variant.txt ===
+
+
+=== Contents of loop_lit.css2003.txt ===
+All SA threads failed to converge after11Z3 runs
+
+
+=== Contents of loop_lit.gcnr2008.txt ===
+All SA threads failed to converge after3Z3 runs
+
+
+=== Contents of loop_lit.gj2007b.txt ===
+
+
+=== Contents of loop_lit.gj2007.txt ===
+All SA threads failed to converge after13Z3 runs
+
+
+=== Contents of loop_lit.gr2006.txt ===
+
+
+=== Contents of loop_lit.gsv2008.txt ===
+Invariant Found:	((0*x + -2*y <= -1)) \/ ((1*x + 0*y <= -2))
+
+
+Time Statistics:
+	Total Time: 9.766444861073978
+	Total Initialization and Re-initialization Time: 0.8426016779849306
+	Total MCMC time: 8.385964793036692
+	Total Z3 Time: 0.5378783900523558
+	Total MCMC iterations forall threads: 45
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+
+=== Contents of loop_lit.hhk2008.txt ===
+
+
+=== Contents of loop_lit.jm2006.txt ===
+
+
+=== Contents of loop_lit.jm2006_variant.txt ===
+
+
+=== Contents of loop_new.count_by_1.txt ===
+
+
+=== Contents of loop_new.count_by_1_variant.txt ===
+Invariant Found:	((-1*i <= 1000000))
+
+
+Time Statistics:
+	Total Time: 2.3262708431575447
+	Total Initialization and Re-initialization Time: 2.215586339123547
+	Total MCMC time: 0.007266907952725887
+	Total Z3 Time: 0.10341759608127177
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+
+=== Contents of loop_new.count_by_2.txt ===
+
+
+=== Contents of moving.sh ===
+#!/bin/bash
+
+output_file="consolidated_others.txt"
+
+# Clear the output file if it already exists
+> "$output_file"
+
+# Loop through all files in the directory
+for file in *; do
+    # Check if the file does not start with 'loop_zilu.' and is not 'consolidated_with_names.txt'
+    if [[ "$file" != loop_zilu.* && "$file" != "consolidated_with_names.txt" && -f "$file" ]]; then
+        # Append the filename to the output file
+        echo "=== Contents of $file ===" >> "$output_file"
+        # Append the contents of the file to the output file
+        cat "$file" >> "$output_file"
+        # Add an empty line after each file's contents
+        echo -e "\n" >> "$output_file"
+    fi
+done
+
+echo "Contents have been consolidated into $output_file"
+
