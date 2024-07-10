@@ -8,7 +8,7 @@ class Configure:
     OFF = 0
 
     #CHANGE THIS FOR SERVER RUNS!!!
-    REMOTE_SERVER = ON
+    REMOTE_SERVER = OFF
     REMOTE_PATH = "../../rotation-graph/"
 
     '''Invariant Space hyperparameters'''
@@ -101,7 +101,7 @@ class Configure:
     TERMINAL = 1
     FILE = -1
     TERMINAL_AND_FILE = 0
-    PRINTING_MODE = TERMINAL 
+    PRINTING_MODE = FILE 
     
     PRINT_ITERATIONS = OFF
     PRINT_REJECT_ITERATIONS = OFF
