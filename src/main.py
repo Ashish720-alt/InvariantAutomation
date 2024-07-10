@@ -20,6 +20,8 @@ from selection_points import removeduplicates, removeduplicatesICEpair, get_long
 from costplotter import CostPlotter
 from stagnation import checkLocalMinima, isStagnant
 from colorama import Fore
+from gradientDescent import gradientDescent
+from EvolutionaryAlgorithm import geneticProgramming
 
 # @jit(nopython=False)
 def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, return_value, SA_Gamma, z3_callcount, costTimeLists, output ):
@@ -164,8 +166,15 @@ def main(inputname, repr: Repr):
             costTimeLists = manager.list()
             costTimeLists.extend([[] for i in range(conf.num_processes)])
             for i in range(conf.num_processes):
-                process_list.append(mp.Process(target = simulatedAnnealing, args = (inputname, repr, I_list, samplepoints, i, return_value,
+                if (conf.SEARCH_STRATEGY == conf.SA):
+                    process_list.append(mp.Process(target = simulatedAnnealing, args = (inputname, repr, I_list, samplepoints, i, return_value,
                                                                         SA_gammalist[i], z3_callcount, costTimeLists, outputF )))
+                elif (conf.SEARCH_STRATEGY == conf.GD):
+                    process_list.append(mp.Process(target = gradientDescent , args = (inputname, repr, I_list, samplepoints, i, return_value,
+                                                                        _ , z3_callcount, costTimeLists, outputF )))                    
+                elif (conf.SEARCH_STRATEGY == conf.EA):
+                    process_list.append(mp.Process(target = geneticProgramming , args = (inputname, repr, I_list, samplepoints, i, return_value,
+                                                                        _ , z3_callcount, costTimeLists, outputF ))) 
                 process_list[i].start()
                 
             for i in range(conf.num_processes):

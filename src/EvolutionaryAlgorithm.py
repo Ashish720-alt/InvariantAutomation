@@ -9,13 +9,15 @@ from dnfs_and_transitions import list3D_to_listof2Darrays, dnfconjunction, dnfne
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
 from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string, printTemperaturePrompt
 
-from configure import Configure as conf  # Import configuration settings
+from configure import Configure as conf  
 
 # Global variable for the number of candidates
 C = 10
 
 def geneticProgramming(inputname, repr: Repr, I_list, samplepoints, process_id, return_value, GA_Gamma, z3_callcount, costTimeLists, output):
     random.seed()
+    #IMPORTANT: Make sure only 1 thread; as there is no parallelism.
+
 
     n = repr.get_n()
     tmax = repr.get_tmax()

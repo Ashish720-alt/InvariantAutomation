@@ -95,6 +95,11 @@ class Configure:
         10: operator.ne, # "!="
     }
 
+    ''' Search Space Strategy'''
+    SA = 1
+    GD = 2
+    EA = 3
+    SEARCH_STRATEGY = SA #IF use GD or EA make sure you set number of threads to be 1.
 
 
     '''Print iterations hyperparameters'''
