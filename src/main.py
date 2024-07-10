@@ -158,10 +158,11 @@ def main(inputname, repr: Repr):
         mcmc_start = timer()
         
         if (costI != 0):
-            printTemperaturePrompt(repr.get_colorslist(), outputF)
-            SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
-            if (conf.PRINT_ITERATIONS == conf.ON):
-                print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
+            if (conf.SEARCH_STRATEGY == conf.SA):
+                printTemperaturePrompt(repr.get_colorslist(), outputF)
+                SA_gammalist = experimentalSAconstantlist( I_list, samplepoints, repr  ) 
+                if (conf.PRINT_ITERATIONS == conf.ON):
+                    print_with_mode(Fore.WHITE, "T0 values are " + list_to_string(SA_gammalist) ,endstr = '\n', file = outputF)
             
             costTimeLists = manager.list()
             costTimeLists.extend([[] for i in range(conf.num_processes)])
