@@ -1,0 +1,67 @@
+2024-07-10 03:00:01 Running Task loop_lit.css2003 Round 0
+2024-07-10 03:00:01 Running Task loop_lit.gcnr2008 Round 0
+2024-07-10 03:00:01 Task loop_lit.css2003 Round 0 failed with exitcode 31744
+2024-07-10 03:00:01 Task loop_lit.gcnr2008 Round 0 failed with exitcode 31744
+2024-07-10 03:00:01 Running Task loop_lit.cggmp2005_variant Round 0
+2024-07-10 03:00:01 Task loop_lit.cggmp2005_variant Round 0 failed with exitcode 31744
+2024-07-10 03:00:01 Running Task loop_lit.gj2007 Round 0
+2024-07-10 03:00:01 Task loop_lit.gj2007 Round 0 failed with exitcode 31744
+2024-07-10 03:00:37 Running Task loop_lit.gr2006 Round 0
+2024-07-10 03:00:37 Task loop_lit.gr2006 Round 0 failed with exitcode 31744
+2024-07-10 03:00:37 Running Task loop_lit.hhk2008 Round 0
+2024-07-10 03:00:37 Task loop_lit.hhk2008 Round 0 failed with exitcode 31744
+2024-07-10 03:00:37 Running Task loop_lit.jm2006 Round 0
+2024-07-10 03:00:37 Task loop_lit.jm2006 Round 0 failed with exitcode 31744
+2024-07-10 03:00:37 Running Task loop_lit.gj2007b Round 0
+2024-07-10 03:00:37 Task loop_lit.gj2007b Round 0 failed with exitcode 31744
+2024-07-10 03:01:03 Running Task loop_zilu.benchmark01_conjunctive Round 0
+2024-07-10 03:01:03 Task loop_zilu.benchmark01_conjunctive Round 0 completed successfully
+2024-07-10 03:01:13 Running Task loop_lit.jm2006_variant Round 0
+2024-07-10 03:01:13 Task loop_lit.jm2006_variant Round 0 failed with exitcode 31744
+2024-07-10 03:01:13 Running Task loop_zilu.benchmark04_conjunctive Round 0
+2024-07-10 03:01:13 Task loop_zilu.benchmark04_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:01:13 Running Task loop_zilu.benchmark05_conjunctive Round 0
+2024-07-10 03:01:13 Task loop_zilu.benchmark05_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:01:39 Running Task loop_zilu.benchmark06_conjunctive Round 0
+2024-07-10 03:01:39 Task loop_zilu.benchmark06_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:01:40 Running Task loop_zilu.benchmark14_linear Round 0
+2024-07-10 03:01:40 Task loop_zilu.benchmark14_linear Round 0 completed successfully
+2024-07-10 03:01:49 Running Task loop_zilu.benchmark07_linear Round 0
+2024-07-10 03:01:49 Task loop_zilu.benchmark07_linear Round 0 failed with exitcode 31744
+2024-07-10 03:01:49 Running Task loop_zilu.benchmark17_conjunctive Round 0
+2024-07-10 03:01:49 Task loop_zilu.benchmark17_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:01:51 Running Task loop_zilu.benchmark26_linear Round 0
+2024-07-10 03:01:51 Task loop_zilu.benchmark26_linear Round 0 completed successfully
+2024-07-10 03:02:15 Running Task loop_zilu.benchmark19_conjunctive Round 0
+2024-07-10 03:02:15 Task loop_zilu.benchmark19_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:02:16 Running Task loop_zilu.benchmark23_conjunctive Round 0
+2024-07-10 03:02:16 Task loop_zilu.benchmark23_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:02:18 Running Task loop_zilu.benchmark27_linear Round 0
+2024-07-10 03:02:18 Task loop_zilu.benchmark27_linear Round 0 completed successfully
+2024-07-10 03:02:25 Running Task loop_zilu.benchmark25_linear Round 0
+2024-07-10 03:02:25 Task loop_zilu.benchmark25_linear Round 0 failed with exitcode 31744
+2024-07-10 03:02:26 Running Task loop_zilu.benchmark33_linear Round 0
+2024-07-10 03:02:26 Task loop_zilu.benchmark33_linear Round 0 failed with exitcode 256
+2024-07-10 03:02:32 Running Task loop_zilu.benchmark35_linear Round 0
+2024-07-10 03:02:32 Task loop_zilu.benchmark35_linear Round 0 completed successfully
+2024-07-10 03:02:52 Running Task loop_zilu.benchmark34_conjunctive Round 0
+2024-07-10 03:02:52 Task loop_zilu.benchmark34_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:03:01 Running Task loop_zilu.benchmark38_conjunctive Round 0
+2024-07-10 03:03:01 Task loop_zilu.benchmark38_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:03:02 Running Task loop_zilu.benchmark39_conjunctive Round 0
+2024-07-10 03:03:02 Task loop_zilu.benchmark39_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:03:06 Running Task loop_zilu.benchmark50_linear Round 0
+2024-07-10 03:03:06 Task loop_zilu.benchmark50_linear Round 0 completed successfully
+2024-07-10 03:03:08 Running Task loop_zilu.benchmark41_conjunctive Round 0
+2024-07-10 03:03:08 Task loop_zilu.benchmark41_conjunctive Round 0 failed with exitcode 31744
+2024-07-10 03:03:28 Running Task loop_zilu.benchmark48_linear Round 0
+2024-07-10 03:03:28 Task loop_zilu.benchmark48_linear Round 0 failed with exitcode 31744
+2024-07-10 03:03:33 Running Task loop_zilu.benchmark52_polynomial Round 0
+2024-07-10 03:03:33 Task loop_zilu.benchmark52_polynomial Round 0 completed successfully
+2024-07-10 03:03:37 Running Task loop_zilu.benchmark49_linear Round 0
+2024-07-10 03:03:37 Task loop_zilu.benchmark49_linear Round 0 failed with exitcode 31744
+2024-07-10 03:03:42 Running Task loop_zilu.benchmark51_polynomial Round 0
+2024-07-10 03:03:42 Task loop_zilu.benchmark51_polynomial Round 0 failed with exitcode 31744
+2024-07-10 03:04:04 Running Task loop_zilu.benchmark53_polynomial Round 0
+2024-07-10 03:04:04 Task loop_zilu.benchmark53_polynomial Round 0 failed with exitcode 31744
+2024-07-10 03:04:04 All tasks completed.

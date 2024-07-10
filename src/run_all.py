@@ -1,4 +1,6 @@
 from input import Inputs, input_to_repr
+import os
+import subprocess
 from main import main
 import threading
 import multiprocessing
@@ -8,7 +10,7 @@ import argparse
 task_lock = threading.Lock()
 log_lock = threading.Lock()
 tasks = []
-timeout = None
+time_out = None
 repeat = None
 log_file = None
 
@@ -38,24 +40,17 @@ def run_task():
         task_lock.release()
         
         for run in range(repeat):
-            process = multiprocessing.Process(
-                target=main_wrapper, args=(task_name[0], task_name[1]))
+            command = f"timeout {time_out} python main.py -i {task_name[0]}.{task_name[1]}"
+            exitcode = os.system(command)
             title = f"Task {task_name[0]}.{task_name[1]} Round {run}"
             try:
                 log(f"Running {title}")
-                process.start()
-                process.join(timeout=timeout)
-                if process.is_alive():
+                if exitcode == 31744:
                     log(f"{title} timed out")
-                    process.terminate()
-                    process.join()
+                elif exitcode == 0:
+                    log(f"{title} completed successfully")
                 else:
-                    # Get result
-                    result = process.exitcode
-                    if result != 0:
-                        log(f"{title} failed with exitcode {result}")
-                    else:
-                        log(f"{title} completed successfully")
+                    log(f"{title} failed with exitcode {exitcode}")
             except Exception as e:
                 log(f"Error running {title}: {str(e)}")
 
