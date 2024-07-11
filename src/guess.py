@@ -88,7 +88,8 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
     counter = 0
     while (len(rv) < conf.T0_COSTLISTLENGTH):    
         if (counter >= 3*conf.T0_COSTLISTLENGTH):
-            break
+            rv.append((0,1))
+            return rv
         LII = dnfconjunction(list3D_to_listof2Darrays(I), repr.get_affineSubspace() , 0)
         (c2, _) = cost(LII, samplepoints)  
         if (c2 > c1): #only positive transitions
