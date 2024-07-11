@@ -119,7 +119,6 @@ def prettyprint_invariant(I, endstring , Vars):
 
 def SAsuccess(process_id, colorslist, outputfile):
     if (conf.PRINT_ITERATIONS == conf.ON):
-        outputfile.write("HEE\n")
         print_with_mode(colorslist[process_id], "Process " + str(process_id) + " found approximate invariant!", endstr = '\n', file = outputfile)
           
 

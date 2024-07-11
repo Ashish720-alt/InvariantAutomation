@@ -182,18 +182,18 @@ class Inputs:
             d = 1
              
 
-        class jm2006:
-            Var = ['i', 'j', 'x', 'y']
-            P = list3D_to_listof2Darrays(
-                [[[1, 0, 0, 0, 1, 0], [0, 1, 0, 0, 1, 0], [-1, 0, 1, 0, 0, 0], [0, -1, 0, 1, 0, 0]]])
-            B = list3D_to_listof2Darrays(
-                [[[0, 0, 1, 0, 2, 0]], [[0, 0, 1, 0, -2, 0]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[1, -1, 0, 0, -2, 0]], [[1, -1, 0, 0, 2, 0]], [[0, 0, 0, 1, 0, 0]]]), B, 1)
-            T = genLItransitionrel(B, ([np.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [
-                                   0, 0, 1, 0, -1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]])], dnfTrue(4)))
-            c = 2
-            d = 1
+        # class jm2006:
+        #     Var = ['i', 'j', 'x', 'y']
+        #     P = list3D_to_listof2Darrays(
+        #         [[[1, 0, 0, 0, 1, 0], [0, 1, 0, 0, 1, 0], [-1, 0, 1, 0, 0, 0], [0, -1, 0, 1, 0, 0]]])
+        #     B = list3D_to_listof2Darrays(
+        #         [[[0, 0, 1, 0, 2, 0]], [[0, 0, 1, 0, -2, 0]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays(
+        #         [[[1, -1, 0, 0, -2, 0]], [[1, -1, 0, 0, 2, 0]], [[0, 0, 0, 1, 0, 0]]]), B, 1)
+        #     T = genLItransitionrel(B, ([np.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [
+        #                            0, 0, 1, 0, -1], [0, 0, 0, 1, -1], [0, 0, 0, 0, 1]])], dnfTrue(4)))
+        #     c = 2
+        #     d = 1
              
 
         class jm2006_variant:
@@ -270,15 +270,15 @@ class Inputs:
              
 
     class loop_zilu:
-        class benchmark01_conjunctive:
-            Var = ['x', 'y']
-            P = list3D_to_listof2Darrays([[[1, 0, 0, 1], [0, 1, 0, 1]]])
-            B = dnfTrue(2)
-            Q = list3D_to_listof2Darrays([[[0, 1, 1, 1]]])
-            T = genLItransitionrel(
-                B, ([np.array([[1, 1, 0], [1, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 3
-            d = 1
+        # class benchmark01_conjunctive:
+        #     Var = ['x', 'y']
+        #     P = list3D_to_listof2Darrays([[[1, 0, 0, 1], [0, 1, 0, 1]]])
+        #     B = dnfTrue(2)
+        #     Q = list3D_to_listof2Darrays([[[0, 1, 1, 1]]])
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 1, 0], [1, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+        #     c = 3
+        #     d = 1
              
 
         # class benchmark02_linear:
@@ -305,17 +305,17 @@ class Inputs:
         #     d = 1
              
 
-        class benchmark04_conjunctive:
-            Var = ['k', 'j', 'n']
-            P = list3D_to_listof2Darrays(
-                [[[0, 0, 1, 1, 1], [1, 0, -1, 1, 0], [0, 1, 0, 0, 0]]])
-            B = list3D_to_listof2Darrays([[[0, 1, -1, -1, -1]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[1, 0, 0, 1, 0]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, 0, 0, -1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]])], dnfTrue(3)))
-            c = 2
-            d = 1
+        # class benchmark04_conjunctive:
+        #     Var = ['k', 'j', 'n']
+        #     P = list3D_to_listof2Darrays(
+        #         [[[0, 0, 1, 1, 1], [1, 0, -1, 1, 0], [0, 1, 0, 0, 0]]])
+        #     B = list3D_to_listof2Darrays([[[0, 1, -1, -1, -1]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays(
+        #         [[[1, 0, 0, 1, 0]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 0, 0, -1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]])], dnfTrue(3)))
+        #     c = 2
+        #     d = 1
              
 
         # correct version!
@@ -457,15 +457,15 @@ class Inputs:
         #     d = 1
              
 
-        class benchmark14_linear:
-            Var = ['i']
-            P = list3D_to_listof2Darrays([[[1, 1, 0], [1, -1, 200]]])
-            B = list3D_to_listof2Darrays([[[1, 2, 0]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 1, 0]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, -1], [0, 1]])], dnfTrue(1)))
-            c = 2
-            d = 1
+        # class benchmark14_linear:
+        #     Var = ['i']
+        #     P = list3D_to_listof2Darrays([[[1, 1, 0], [1, -1, 200]]])
+        #     B = list3D_to_listof2Darrays([[[1, 2, 0]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 1, 0]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, -1], [0, 1]])], dnfTrue(1)))
+        #     c = 2
+        #     d = 1
              
 
         # class benchmark15_conjunctive:
@@ -494,16 +494,16 @@ class Inputs:
         #     d = 1
              
 
-        class benchmark17_conjunctive:
-            Var = ['i', 'k', 'n']
-            P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]]])
-            B = list3D_to_listof2Darrays([[[1, 0, -1, -2, 0]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[0, 1, -1, 1, 0]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]])], dnfTrue(3)))
-            c = 2
-            d = 1
+        # class benchmark17_conjunctive:
+        #     Var = ['i', 'k', 'n']
+        #     P = list3D_to_listof2Darrays([[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]]])
+        #     B = list3D_to_listof2Darrays([[[1, 0, -1, -2, 0]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays(
+        #         [[[0, 1, -1, 1, 0]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]])], dnfTrue(3)))
+        #     c = 2
+        #     d = 1
             
         # class benchmark18_conjunctive:
         #     Var = ['i', 'k', 'n']
@@ -568,16 +568,16 @@ class Inputs:
         #     d = 1
              
 
-        class benchmark23_conjunctive:
-            Var = ['i', 'j']
-            P = list3D_to_listof2Darrays([[[1, 0, 0, 0], [0, 1, 0, 0]]])
-            B = list3D_to_listof2Darrays([[[1, 0, -2, 100]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[0, 1, 0, 200]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, 0, 1], [0, 1, 2], [0, 0, 1]])], dnfTrue(2)))
-            c = 3
-            d = 1
+        # class benchmark23_conjunctive:
+        #     Var = ['i', 'j']
+        #     P = list3D_to_listof2Darrays([[[1, 0, 0, 0], [0, 1, 0, 0]]])
+        #     B = list3D_to_listof2Darrays([[[1, 0, -2, 100]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays(
+        #         [[[0, 1, 0, 200]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 0, 1], [0, 1, 2], [0, 0, 1]])], dnfTrue(2)))
+        #     c = 3
+        #     d = 1
         
         # class benchmark24_conjunctive:
         #     Var = ['i', 'k', 'n']
@@ -592,26 +592,26 @@ class Inputs:
         #     d = 1
              
 
-        class benchmark25_linear:
-            Var = ['x']
-            P = list3D_to_listof2Darrays([[[1, -2, 0]]])
-            B = list3D_to_listof2Darrays([[[1, -2, 10]]])
-            Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 10]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
-            c = 1
-            d = 1
+        # class benchmark25_linear:
+        #     Var = ['x']
+        #     P = list3D_to_listof2Darrays([[[1, -2, 0]]])
+        #     B = list3D_to_listof2Darrays([[[1, -2, 10]]])
+        #     Q = dnfdisjunction(list3D_to_listof2Darrays([[[1, 0, 10]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
+        #     c = 1
+        #     d = 1
         
-        class benchmark26_linear:
-            Var = ['x', 'y']
-            P = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
-            B = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
-            Q = dnfdisjunction(
-                list3D_to_listof2Darrays([[[1, -1, 0, 0]]]), B, 1)
-            T = genLItransitionrel(
-                B, ([np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
-            d = 1
+        # class benchmark26_linear:
+        #     Var = ['x', 'y']
+        #     P = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
+        #     B = list3D_to_listof2Darrays([[[1, -1, -2, 0]]])
+        #     Q = dnfdisjunction(
+        #         list3D_to_listof2Darrays([[[1, -1, 0, 0]]]), B, 1)
+        #     T = genLItransitionrel(
+        #         B, ([np.array([[1, 0, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+        #     c = 1
+        #     d = 1
              
 
         class benchmark27_linear:

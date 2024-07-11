@@ -71,7 +71,7 @@ def geneticProgramming(inputname, repr: Repr, I_list, samplepoints, process_id, 
             I, costI, costlist = candidate
             descent = 1 if costI < population[0][1] else 0
             reject = 0 if descent == 1 else 1
-            statistics(process_id, t, I, costI, descent, reject, costlist, -1, repr.get_Var(), repr.get_colorslist(), output)
+            statistics(process_id, t, I, costI, descent, reject, costlist, 1, repr.get_Var(), repr.get_colorslist(), output)
 
     # Process 'process_id' Failed!
     SAfail(process_id, repr.get_colorslist(), output)
