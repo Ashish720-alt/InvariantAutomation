@@ -40,11 +40,11 @@ def run_task():
         task_lock.release()
         
         for run in range(repeat):
+            log(f"Running {title}")
             command = f"timeout {time_out} python main.py -i {task_name[0]}.{task_name[1]}"
             exitcode = os.system(command)
             title = f"Task {task_name[0]}.{task_name[1]} Round {run}"
             try:
-                log(f"Running {title}")
                 if exitcode == 31744:
                     log(f"{title} timed out")
                 elif exitcode == 0:
