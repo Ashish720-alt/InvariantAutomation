@@ -1,0 +1,11 @@
+Invariant Found:	((2*x <= 8))
+
+
+Time Statistics:
+	Total Time: 2.8483043452724814
+	Total Initialization and Re-initialization Time: 2.7417780130635947
+	Total MCMC time: 0.0006261151283979416
+	Total Z3 Time: 0.1059002170804888
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4

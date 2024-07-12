@@ -1,0 +1,11 @@
+Invariant Found:	((-1*i + -2*j <= -21) /\ (1*i + 2*j <= 21) /\ (2*i + 2*j <= 31))
+
+
+Time Statistics:
+	Total Time: 829.2510984714609
+	Total Initialization and Re-initialization Time: 2.8668185917194933
+	Total MCMC time: 824.1595625831978
+	Total Z3 Time: 2.224717296543531
+	Total MCMC iterations forall threads: 90259
+	Total Z3 calls: 10
+	Number of Threads: 4

@@ -1,0 +1,11 @@
+Invariant Found:	((1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 0.8544229499530047
+	Total Initialization and Re-initialization Time: 0.7530656009912491
+	Total MCMC time: 0.0006012979429215193
+	Total Z3 Time: 0.10075605101883411
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4

@@ -1,0 +1,11 @@
+Invariant Found:	((0*x + 1*y <= 100) /\ (1*x + 0*y <= 100))
+
+
+Time Statistics:
+	Total Time: 1503.4969303549733
+	Total Initialization and Re-initialization Time: 2.2500790948979557
+	Total MCMC time: 1500.5733218360692
+	Total Z3 Time: 0.6735294240061194
+	Total MCMC iterations forall threads: 291587
+	Total Z3 calls: 3
+	Number of Threads: 4

@@ -1,0 +1,11 @@
+Invariant Found:	((-1*x + -2*y <= -1) /\ (0*x + -2*y <= 4) /\ (-2*x + 2*y <= 1))
+
+
+Time Statistics:
+	Total Time: 363.6834742282517
+	Total Initialization and Re-initialization Time: 1.8401452894322574
+	Total MCMC time: 359.30432698107325
+	Total Z3 Time: 2.5390019577462226
+	Total MCMC iterations forall threads: 19391
+	Total Z3 calls: 13
+	Number of Threads: 4

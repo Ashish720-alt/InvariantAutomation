@@ -1,0 +1,11 @@
+Invariant Found:	((0*n + -2*sum + 1*i <= 1) /\ (0*n + 0*sum + -2*i <= 0))
+
+
+Time Statistics:
+	Total Time: 145.67745476635173
+	Total Initialization and Re-initialization Time: 2.2316945975180715
+	Total MCMC time: 142.02373653603718
+	Total Z3 Time: 1.4220236327964813
+	Total MCMC iterations forall threads: 4658
+	Total Z3 calls: 7
+	Number of Threads: 4
