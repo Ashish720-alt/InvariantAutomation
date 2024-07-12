@@ -62,7 +62,7 @@ def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, 
             I_list[process_id] = I
             return
         
-        neighbors = SearchSpaceNeighbors(I, repr, repr.get_d(), repr.get_cList(), repr.get_k1(), n) 
+        neighbors = SearchSpaceNeighbors(I, repr, repr.get_d(), repr.get_cList(), repr.get_k1(), n, process_id) 
         deg = len(neighbors)
         P = neighbors[random.choice(range(deg))]
         oldpredicate = I[P[0]][P[1]] 
@@ -136,11 +136,11 @@ def main(inputname, repr: Repr):
     I_list = manager.list()
     
     
-    (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), 
-                                    repr.get_affineSubspace(), repr.get_Dp())
-    LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
-    (costI, costlist) = cost(LII, samplepoints)  
+
     for i in range(conf.num_processes):
+        (I_guess, _) = initialInvariant(i, samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), repr.get_affineSubspace(), repr.get_Dp())
+        LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
+        (costI, costlist) = cost(LII, samplepoints)  
         statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist(), outputF ) 
         I_list.append(I_guess.copy())
     initialize_end = timer()
@@ -248,12 +248,13 @@ def main(inputname, repr: Repr):
         if (conf.INVARIANTSPACE_PLOTTER == conf.ON):
             plotinvariantspace(conf.INVARIANTSPACE_MAXCONST, repr.get_coeffedges(), samplepoints, repr.get_c(), repr.get_d(), z3_callcount)
         
-        #For n = 1, random sampling again gives better results.
-        if (repr.get_n() == 1):
-            (I_guess, _) = initialInvariant(samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), 
-                                    repr.get_affineSubspace(), repr.get_Dp())        
+  
             for i in range(conf.num_processes):
-                # statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist(), outputF ) 
+                #For n = 1, random sampling again gives better results.
+                if (repr.get_n() == 1):
+                    (I_guess, _) = initialInvariant(i, samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), 
+                                            repr.get_affineSubspace(), repr.get_Dp())      
+                statistics(i, 0, I_guess, costI, 0, 0, costlist, -1, repr.get_Var(), repr.get_colorslist(), outputF ) 
                 I_list.append(I_guess.copy())        
         #samplepoints has changed, so cost and f changes for same invariant
         for i in range(conf.num_processes):

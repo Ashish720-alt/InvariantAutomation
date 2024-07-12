@@ -29,7 +29,7 @@ def LargeTranslationConstant(oldcoeff, oldconst, k1):
     translation_indices.remove(oldconst)
     return translation_indices
 
-def rotation_neighbors(i, j, coeff, const, repr: Repr, k1, n):
+def rotation_neighbors(i, j, coeff, const, repr: Repr, k1, n, tID):
     if (conf.BASIC_ROTATION == conf.OFF):
         if (n <= 3):
             rotneighbors = repr.get_coeffneighbors(coeff)
@@ -54,9 +54,9 @@ def rotation_neighbors(i, j, coeff, const, repr: Repr, k1, n):
             newcoeff2 = coeff.copy()
             newcoeff1[k] = newcoeff1[k] + 1
             newcoeff2[k] = newcoeff2[k] - 1 
-            if (newcoeff1[k] <= conf.BASIC_ROTATION_k0 and newcoeff1 != unallowedcoeff):
+            if (newcoeff1[k] <= conf.BASIC_ROTATION_k0List[tID] and newcoeff1 != unallowedcoeff):
                 rv.append((i,j, newcoeff1 + [-1, const]))
-            if (newcoeff2[k] >= -conf.BASIC_ROTATION_k0 and newcoeff2 != unallowedcoeff):
+            if (newcoeff2[k] >= -conf.BASIC_ROTATION_k0List[tID] and newcoeff2 != unallowedcoeff):
                 rv.append((i,j, newcoeff2 + [-1, const]))
         return rv
 
@@ -79,7 +79,7 @@ def theoreticalSAconstantlist( TS, k0, n, c, d, k1_list):
     return [SAconstant( TS, k0, k1 , n, c, d ) for k1 in k1_list]  
 
 
-def FasterBiased_RWcostlist(I, samplepoints, repr): 
+def FasterBiased_RWcostlist(tID, I, samplepoints, repr): 
     n = repr.get_n()
     c1 = float('inf')
     c2 = 0
@@ -97,7 +97,7 @@ def FasterBiased_RWcostlist(I, samplepoints, repr):
         i = np.random.randint(0, repr.get_d())
         j = np.random.randint(0, repr.get_cList()[i])
         if (np.random.rand() < conf.T0_rotationMaxProb): #Choose rotation or translation
-            neighbors = rotation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr, repr.get_k1(), n)
+            neighbors = rotation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr, repr.get_k1(), n, tID)
         else:
             neighbors = translation_neighbors(i, j, I[i][j][:-2], I[i][j][-1], repr.get_k1())
         I[i][j] = neighbors[np.random.choice(range(len(neighbors)))][2]
@@ -116,8 +116,8 @@ def experimentalSAconstantlist(Ilist, samplepoints, repr):
             result = 0
         return result
     rv = []
-    for I0 in Ilist:
-        S = FasterBiased_RWcostlist(I0, samplepoints, repr)    
+    for (tID,I0) in enumerate(Ilist):
+        S = FasterBiased_RWcostlist(tID, I0, samplepoints, repr)    
         T = -sum( [ i[1] - i[0] for i in S ] ) / (log(conf.T0_X0) * len(S))
         N = [ ExponentialWithError(i[1], T) for i in S ] 
         D = [ ExponentialWithError(i[0], T) for i in S ]
@@ -143,9 +143,9 @@ def experimentalSAconstantlist(Ilist, samplepoints, repr):
 def randomlysampleelementfromList(l):
     return l[np.random.choice( len(l))]
 
-def uniformlysample_I( rotation_vertices, k1, cList, d, n, Dp):
-    def uniformlysample_cc(rotation_vertices, k1, n, c, Dp):
-        def uniformlysample_p(rotation_vertices, k1, n, Dp):
+def uniformlysample_I( tID, rotation_vertices, k1, cList, d, n, Dp):
+    def uniformlysample_cc(tID, rotation_vertices, k1, n, c, Dp):
+        def uniformlysample_p(tID, rotation_vertices, k1, n, Dp):
             if (conf.BASIC_ROTATION == conf.OFF):
                 coeff = randomlysampleelementfromList(rotation_vertices)
             else:
@@ -154,23 +154,23 @@ def uniformlysample_I( rotation_vertices, k1, cList, d, n, Dp):
                 while (coeff == unallowedcoeff):
                     coeff = []
                     for _ in range(n):
-                        coeff.append(np.random.choice(range(-conf.BASIC_ROTATION_k0, conf.BASIC_ROTATION_k0+1)))
-            # const = np.random.choice( list(range(-k1-1, k1 + 1 )) )
+                        # coeff.append(np.random.choice(range(-conf.BASIC_ROTATION_k0, conf.BASIC_ROTATION_k0+1)))
+                        coeff.append(np.random.choice(range(-conf.BASIC_ROTATION_k0List[tID], conf.BASIC_ROTATION_k0List[tID]+1)))
             if (n > 1):
                 const = 0 # This gives  better results
             else:
                 const = randomlysampleelementfromList(Dp)
             return list(coeff) + [-1,const]
-        return  [ uniformlysample_p(rotation_vertices, k1, n, Dp) for _ in range(c)  ]
-    return [ uniformlysample_cc(rotation_vertices, k1, n, ci, Dp) for ci in cList  ]
+        return  [ uniformlysample_p(tID, rotation_vertices, k1, n, Dp) for _ in range(c)  ]
+    return [ uniformlysample_cc(tID, rotation_vertices, k1, n, ci, Dp) for ci in cList  ]
 
 
-def initialInvariant( samplepoints, rotation_vertices, k1, cList, d, n, affinespace, Dp):
+def initialInvariant( tID, samplepoints, rotation_vertices, k1, cList, d, n, affinespace, Dp):
     I = []
     costI = inf
-    samplesize = conf.I0_samples if n > 1 else conf.I0_samples_n1
+    samplesize = conf.I0_samples if (n > 1) else conf.I0_samples_n1
     for _ in range(samplesize):
-        Inew = uniformlysample_I( rotation_vertices, k1, cList, d, n, Dp)
+        Inew = uniformlysample_I(tID, rotation_vertices, k1, cList, d, n, Dp)
         LII = dnfconjunction( list3D_to_listof2Darrays(Inew), affinespace , 0)
         (costInew, _ ) = cost(LII, samplepoints)
         if (costInew < costI):
@@ -181,14 +181,14 @@ def initialInvariant( samplepoints, rotation_vertices, k1, cList, d, n, affinesp
 
 
 
-def SearchSpaceNeighbors(I, repr: Repr, d, cList, k1, n):
+def SearchSpaceNeighbors(I, repr: Repr, d, cList, k1, n, tID):
     neighbors = []
     for i in range(d):
         for j in range(cList[i]):
             oldcoeff = I[i][j][:-2]
             oldconst = I[i][j][-1]
             if (conf.GUESS_SCHEME != conf.ONLY_TRANSLATION):
-                neighbors = neighbors + rotation_neighbors(i, j, oldcoeff, oldconst, repr, k1, n)
+                neighbors = neighbors + rotation_neighbors(i, j, oldcoeff, oldconst, repr, k1, n, tID)
             if (conf.GUESS_SCHEME != conf.ONLY_ROTATION):
                 neighbors = neighbors + translation_neighbors(i, j, oldcoeff, oldconst, k1)
     return neighbors  

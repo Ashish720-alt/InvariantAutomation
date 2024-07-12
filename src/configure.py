@@ -32,12 +32,13 @@ class Configure:
     num_processes = 4 #Number of threads
     t0 = 2
     maxSArun =  1000000 #1000000
-    I0_samples = 100 #Initial Invariant Samples.
+    I0_samples = 30 #Initial Invariant Samples.
     I0_samples_n1 = 1000
     
     #Search Space Graph Choices
     BASIC_ROTATION = ON
     BASIC_ROTATION_k0 = 2
+    BASIC_ROTATION_k0List = [1, 1, 2, 2] #This list must be same size as number of threads
     COR_SIMPLIFIED = ON
     TRANSLATION_SMALL = ON
     ONLY_ROTATION = -1
@@ -106,14 +107,14 @@ class Configure:
     TERMINAL = 1
     FILE = -1
     TERMINAL_AND_FILE = 0
-    PRINTING_MODE = FILE
+    PRINTING_MODE = TERMINAL
     
-    PRINT_ITERATIONS = OFF
+    PRINT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_COSTLIST = OFF
-    PRINT_Z3_ITERATIONS = OFF
+    PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
-    PRINT_COLORED_THREADS = OFF
+    PRINT_COLORED_THREADS = ON
     
 
     '''Graph Plotter hyperparameters '''
