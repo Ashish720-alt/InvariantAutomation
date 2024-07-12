@@ -29,7 +29,7 @@ class Configure:
     rotation_degree = 5
     rotation_rad = rotation_degree * (pi/180) 
     rotation_probability = 0.5
-    num_processes = 4 #Number of threads
+    num_processes = 1 #Number of threads
     t0 = 2
     maxSArun =  1000000 #1000000
     I0_samples = 100 #Initial Invariant Samples.

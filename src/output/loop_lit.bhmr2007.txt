@@ -1,0 +1,11 @@
+Invariant Found:	((0*a + 0*b + 1*i + -1*n <= 0) /\ (0*a + 0*b + 1*i + -1*n <= 43) /\ (0*a + -1*b + -1*i + -2*n <= 8))
+
+
+Time Statistics:
+	Total Time: 766.3938041270594
+	Total Initialization and Re-initialization Time: 10.536693614034448
+	Total MCMC time: 754.9760756350588
+	Total Z3 Time: 0.8810348779661581
+	Total MCMC iterations forall threads: 5791
+	Total Z3 calls: 6
+	Number of Threads: 1

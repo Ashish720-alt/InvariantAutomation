@@ -1,0 +1,11 @@
+Invariant Found:	((-2*xa + -2*ya <= 0))
+
+
+Time Statistics:
+	Total Time: 2.428951740032062
+	Total Initialization and Re-initialization Time: 2.1209401430096477
+	Total MCMC time: 0.031990805990062654
+	Total Z3 Time: 0.27602079103235155
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4

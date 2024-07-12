@@ -1,0 +1,11 @@
+Invariant Found:	((1*x <= 10))
+
+
+Time Statistics:
+	Total Time: 10.309097314951941
+	Total Initialization and Re-initialization Time: 9.909237867977936
+	Total MCMC time: 0.03199244599090889
+	Total Z3 Time: 0.36786700098309666
+	Total MCMC iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4

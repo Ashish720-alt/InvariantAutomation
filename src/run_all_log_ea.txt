@@ -1,0 +1,34 @@
+2024-07-11 13:56:34 Running Task loop_lit.afnp2014_modified Round 0
+2024-07-11 13:56:34 Running Task loop_lit.bhmr2007 Round 0
+2024-07-11 13:56:34 Running Task loop_lit.cggmp2005 Round 0
+2024-07-11 13:56:34 Running Task loop_lit.cggmp2005_variant Round 0
+2024-07-11 13:56:34 Running Task loop_lit.gsv2008 Round 0
+2024-07-11 13:56:34 Running Task loop_lit.css2003 Round 0
+2024-07-11 13:56:34 Running Task loop_lit.gcnr2008 Round 0
+2024-07-11 13:56:34 Running Task loop_lit.gj2007 Round 0
+2024-07-11 13:56:38 Task loop_lit.gsv2008 Round 0 completed successfully
+2024-07-11 13:56:38 Running Task loop_lit.gj2007b Round 0
+2024-07-11 14:09:23 Task loop_lit.bhmr2007 Round 0 completed successfully
+2024-07-11 14:09:23 Running Task loop_lit.gr2006 Round 0
+2024-07-11 14:26:34 Task loop_lit.css2003 Round 0 timed out
+2024-07-11 14:26:34 Running Task loop_lit.hhk2008 Round 0
+2024-07-11 14:26:34 Task loop_lit.afnp2014_modified Round 0 timed out
+2024-07-11 14:26:34 Task loop_lit.gj2007 Round 0 timed out
+2024-07-11 14:26:34 Running Task loop_lit.jm2006_variant Round 0
+2024-07-11 14:26:34 Running Task loop_lit.jm2006 Round 0
+2024-07-11 14:26:34 Task loop_lit.cggmp2005 Round 0 timed out
+2024-07-11 14:26:34 Running Task loop_new.count_by_1 Round 0
+2024-07-11 14:26:34 Task loop_lit.cggmp2005_variant Round 0 timed out
+2024-07-11 14:26:34 Running Task loop_new.count_by_1_variant Round 0
+2024-07-11 14:26:34 Task loop_lit.gcnr2008 Round 0 timed out
+2024-07-11 14:26:34 Running Task loop_new.count_by_2 Round 0
+2024-07-11 14:26:38 Task loop_lit.gj2007b Round 0 timed out
+2024-07-11 14:26:38 Running Task loop_new.count_by_k Round 0
+2024-07-11 14:26:44 Task loop_new.count_by_1_variant Round 0 failed with exitcode 256
+2024-07-11 14:26:44 Running Task loop_simple.nested_1 Round 0
+2024-07-11 14:26:54 Task loop_new.count_by_1 Round 0 completed successfully
+2024-07-11 14:26:54 Running Task loop_zilu.benchmark01_conjunctive Round 0
+2024-07-11 14:27:00 Task loop_zilu.benchmark01_conjunctive Round 0 completed successfully
+2024-07-11 14:27:00 Running Task loop_zilu.benchmark02_linear Round 0
+2024-07-11 14:27:06 Task loop_zilu.benchmark02_linear Round 0 completed successfully
+2024-07-11 14:27:06 Running Task loop_zilu.benchmark03_linear_modified Round 0

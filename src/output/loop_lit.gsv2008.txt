@@ -1,0 +1,11 @@
+Invariant Found:	((2*x + -2*y <= -1)) \/ ((2*x + -2*y <= -1))
+
+
+Time Statistics:
+	Total Time: 2.5899735670536757
+	Total Initialization and Re-initialization Time: 0.7731563080451451
+	Total MCMC time: 1.5804624580196105
+	Total Z3 Time: 0.23635480098892003
+	Total MCMC iterations forall threads: 13
+	Total Z3 calls: 2
+	Number of Threads: 1

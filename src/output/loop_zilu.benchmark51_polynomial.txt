@@ -1,0 +1,11 @@
+Invariant Found:	((-1*x <= 0) /\ (1*x <= 50))
+
+
+Time Statistics:
+	Total Time: 284.6290667569265
+	Total Initialization and Re-initialization Time: 105.21714668493951
+	Total MCMC time: 177.79953003302217
+	Total Z3 Time: 1.6123900389648043
+	Total MCMC iterations forall threads: 3316
+	Total Z3 calls: 3
+	Number of Threads: 4
