@@ -5,6 +5,10 @@ from dnfs_and_transitions import dnfconjunction, dnfnegation, transition, deepco
 from selection_points import Dstate, removeduplicatesICEpair, removeduplicates, v_representation, pointsatisfiescc
 from math import floor, ceil, sqrt
 
+
+def z3_Abs(x):
+    return If(x >= 0,x,-x)
+
 def DNF_to_z3expr(I, primed):
     p = 'p' if primed else ''
     if len(I) == 0 or np.size(I[0]) == 0:
@@ -39,13 +43,14 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 return [cex.evaluate(Int("x%s" % i), model_completion=True).as_long() for i in range(n)]     
         return [convert_cex(cex, ICEpair, n) for cex in cexlist]
 
-    def __get_cex(C):
+    def __get_cex(C, cexmax):
         result = []
         s = Solver()
+        s2 = Solver() #s2 is reserve solver, needed if we cant get cexmax number of dispersed cex - in that case remaining cex can be non dispersed
         s.add(Not(C))
+        s2.add(Not(C))
         
-        while len(result) < conf.s and s.check() == sat: 
-  
+        while len(result) < cexmax and s.check() == sat: 
             m = s.model()
             
             result.append(m)
@@ -60,13 +65,33 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
                     raise Z3Exception("arrays and uninterpreted sorts are not supported")
                 block.append(c != m[d])    
-     
-            s.add(Or(block))
-        
+            
+            s2.add(Or(block))         
+            s.add(Sum([z3_Abs(m[d] - s.model()[d]) for d in m]) > conf.d0)
+
         else:
-            if len(result) < conf.s and s.check() != unsat: 
+            if len(result) < cexmax and s.check() != unsat: 
                 print("Solver can't verify or disprove")
                 return result
+            if len(result) < cexmax and s.check() == unsat: 
+                while len(result) < cexmax and s2.check() == sat: 
+                    m = s2.model()
+                    
+                    result.append(m)
+                    # Create a new constraint that blocks the current model
+                    block = []
+                    for d in m:
+                        # d is a declaration
+                        if d.arity() > 0:
+                            raise Z3Exception("uninterpreted functions are not supported")
+                        # create a constant from declaration
+                        c = d()
+                        if is_array(c) or c.sort().kind() == Z3_UNINTERPRETED_SORT:
+                            raise Z3Exception("arrays and uninterpreted sorts are not supported")
+                        
+                        block.append(c != m[d])    
+                    s2.add(Or(block))          
+                           
         return result
 
     # t > 0 => enlarge ; t < 0 => shrink
@@ -77,13 +102,12 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 magnitude = sqrt(sum(i*i for i in p[:-2]))
                 p[-1] = p[-1] + floor( magnitude * t )
         return I_copy
-
-    #P -> I
+    
     def __get_cex_plus(P_z3, I, n):
         for t in conf.z3_C1_Tmax:
             I_enlarge = dnfconjunction(__get_enlargedI(I, t) , Dstate(n), 1)
             I_z3 = DNF_to_z3expr( I_enlarge, primed = 0)
-            plus = convert_cexlist(__get_cex(Implies(P_z3, I_z3)), 0, n)
+            plus = convert_cexlist(__get_cex(Implies(P_z3, I_z3), conf.s), 0, n)
             if (len(plus) > 0):
                 return plus
         return []
@@ -91,7 +115,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
     #B & I & T => I'
     def __get_cex_ICE(B_z3, I, T_z3, n):
         def __get_cex_ICE_givenI(B_z3, T_z3, n, I_z3, Ip_z3):
-            return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3)), 1, n) 
+            return convert_cexlist(__get_cex(Implies(And(B_z3, I_z3, T_z3), Ip_z3), conf.s), 1, n) 
             
     
         rv = []
@@ -112,7 +136,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         for t in conf.z3_C3_Tmax:
             I_enlarge = dnfconjunction(__get_enlargedI(I, -t), Dstate(n), 1) 
             I_z3 = DNF_to_z3expr( I_enlarge, primed = 0)
-            minus = convert_cexlist(__get_cex(Implies(I_z3, Q_z3)), 0, n) 
+            minus = convert_cexlist(__get_cex(Implies(I_z3, Q_z3), conf.s), 0, n) 
             if (len(minus) > 0):
                 return minus
         return []

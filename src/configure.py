@@ -82,9 +82,10 @@ class Configure:
 
     #z3 parameters
     s = 5 
-    z3_C1_Tmax = [0]
-    z3_C2_Tmax = [100, 0]
-    z3_C3_Tmax = [100, 0]
+    d0 = 30
+    z3_C1_Tmax = [0] #This lists can be any size, but must be strictly decreasing and final element must be 0.
+    z3_C2_Tmax = [0] #This lists can be any size, but must be strictly decreasing and final element must be 0.
+    z3_C3_Tmax = [0] #This lists can be any size, but must be strictly decreasing and final element must be 0.
 
     # Operators
     OP = {
