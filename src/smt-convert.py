@@ -65,11 +65,11 @@ def convert_pred(cond: list[np.ndarray], var: list) -> str:
             raise Exception("Conjunctive matrix shape is not correct")
         if conj.shape[0] == 1:
             return f"{convert_clause(conj[0])}"
-        return f"(and {" ".join([convert_clause(conj[i]) for i in range(conj.shape[0])])})"
+        return f'(and {" ".join([convert_clause(conj[i]) for i in range(conj.shape[0])])})'
 
     if len(cond) == 1:
         return f"{convert_conj(cond[0])}"
-    return f"(or {" ".join([convert_conj(i) for i in cond])})"
+    return f'(or {" ".join([convert_conj(i) for i in cond])})'
 
 # len(var) == len(var_p) == var_n
 # trans is of shape (var_n + 1, var_n + 1)
@@ -83,11 +83,16 @@ def convert_trans(trans: np.ndarray, var: list, var_p: list) -> str:
         raise Exception("Transition matrix shape is not correct")
     if not (n == var_np + 1 and m == var_np + 1):
         raise Exception("Transition matrix shape is not correct")
-    return f"""(and {" ".join([f"(= {var_p[i]} {f"(+ {convert_rhs(trans[i][:-1], var)} {trans[i][-1]})" if trans[i][-1] != 0 else convert_rhs(trans[i][:-1], var)})" for i in range(var_n)])})"""
+    inner = []
+    for i in range(var_n):
+        right = f"(+ {convert_rhs(trans[i][:-1], var)} {trans[i][-1]})" if trans[i][-1] != 0 else convert_rhs(trans[i][:-1], var)
+        left = var_p[i]
+        inner.append(f"(= {left} {right})")
+    return f'(and {" ".join(inner)})'
 
 
 def convert_inv(inv: str, vars: list[str]) -> str:
-    return f"({inv} {" ".join(vars)})"
+    return f'({inv} {" ".join(vars)})'
 
 
 def convert(i) -> str:
@@ -97,12 +102,11 @@ def convert(i) -> str:
     trans, cond = [], []
     print(tlist)
     for t in tlist:
-        # print(t)
+        # print(t[1])
         (_trans, _cond) = (np.array(t[0]), t[1])
-        (dnf, _, _) = _trans.shape
-        for i in range(dnf):
-            trans.append(_trans[i])
-            cond.append(_cond)
+        # (dnf, _, _) = _trans.shape
+        trans.append(_trans)
+        cond.append(_cond)
 
     # validate input
     var_n = len(vars)
@@ -142,18 +146,39 @@ def convert(i) -> str:
     I_x = convert_inv(inv_name, vars)
     I_xp = convert_inv(inv_name, vars_p)
     assert_lhs = f"(and (not {B}) {I_x})" if b is not None else f"{I_x}"
+    
+    T = []
+    prev_cond = []
+    for i in range(len(trans)):
+        if prev_cond != []:
+            prev_cond_guard = f"(not (or  {' '.join(prev_cond)}))"
+        if cond[i] is not None:
+            guard = convert_pred(cond[i], vars)
+    
+        for t in trans[i]:
+            if B is not None:
+                ret = f"(=> (and {I_x} {B} {convert_trans(t, vars, vars_p)}) {I_xp})"
+            else:
+                ret = f"(=> (and {I_x} {convert_trans(t, vars, vars_p)}) {I_xp})"
+            if cond[i] is not None:
+                ret = f"(=> {guard} {ret})"
+            if prev_cond != []:
+                ret = f"(=> {prev_cond_guard} {ret})"
+            T.append(ret)                
+            
+        if cond[i] is not None:
+            prev_cond.append(guard)
+
+    T = "\n".join(T)    
+    
+    
     return f"""
     (declare-fun |{inv_name}| ({" ".join(["Int" for _ in vars])}) Bool)
     (assert 
       (forall ({' '.join(map(lambda v: f"({v} Int)", vars + vars_p))}) 
         (and 
           (=> {P} {I_x})
-          {"\n".join(map(lambda t:
-                         (f"(=> {convert_pred(t[1], vars)}" if t[1] is not None else f"") +
-                         (f"(=> (and {I_x} {B} {convert_trans(t[0], vars, vars_p)}) {I_xp})"
-                         if B is not None else f"(=> (and {I_x} {convert_trans(t[0], vars, vars_p)}) {I_xp})") +
-                         (")" if t[1] is not None else ""),
-                         zip(trans, cond)))}
+          {T}
           (=> {assert_lhs} {Q})
         )
       )
@@ -164,6 +189,7 @@ def convert(i) -> str:
 
 
 def output_to_file(output: str, filename: str):
+    print(output)
     with open(filename, "w") as f:
         f.write(output)
 
