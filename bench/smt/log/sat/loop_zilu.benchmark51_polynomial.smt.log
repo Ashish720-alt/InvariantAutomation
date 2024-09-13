@@ -1,8 +1,0 @@
-sat
-(model 
-  (define-fun inv ((x!0 Int)) Bool
-    (let ((a!1 (ite (<= 1 x!0) (ite (<= 50 x!0) (ite (<= 51 x!0) 51 50) 1) 0)))
-      (or (= (ite (<= 0 x!0) a!1 (- 1)) 0)
-          (= (ite (<= 0 x!0) a!1 (- 1)) 1)
-          (= (ite (<= 0 x!0) a!1 (- 1)) 50))))
-)

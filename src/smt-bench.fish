@@ -34,4 +34,5 @@ for file in (find $folder_path -name "*.smt")
   # Run the command with a timeout and redirect output to the log file
   echo "Processing $file"
   timeout $timeout ../../z3/build/z3 $file >> $log_file 2>&1
+  echo "$file Done"
 end

@@ -367,7 +367,7 @@ class Inputs:
 
         class benchmark07_linear:  # modified to make it provable; see solve-by-hand.ipynb
             Var = ['i', 'n', 'k', 'flag']
-            P = list3D_to_listof2Darrays([[[0, 0, 1, 0, 2, 0], [0, 1, 0, 0, 2, 0], [0, 1, 0, 0, -2, 10], [0, 0, 0, 0, 0, 0]]])
+            P = list3D_to_listof2Darrays([[[0, 0, 1, 0, 2, 0], [0, 1, 0, 0, 2, 0], [0, 1, 0, 0, -2, 10], [1, 0, 0, 0, 0, 0]]])
             B = list3D_to_listof2Darrays([[[1, -1, 0, 0, -2, 0]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays(
                 [[[0, -1, 1, 0, 2, 0]]]), B, 1)

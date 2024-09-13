@@ -1,0 +1,5 @@
+sat
+(
+  (define-fun inv ((x!0 Int)) Bool
+    (not (and (<= 999999 x!0) (<= 1000000 x!0) (<= 1000001 x!0))))
+)

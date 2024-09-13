@@ -1,0 +1,5 @@
+sat
+(
+  (define-fun inv ((x!0 Int)) Bool
+    (not (and (<= 1 x!0) (<= 2 x!0) (<= 3 x!0) (<= 9 x!0))))
+)
