@@ -1,3 +1,4 @@
+(set-logic HORN)
 
     (declare-fun |inv| (Int Int) Bool)
     (assert 

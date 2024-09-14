@@ -1,17 +1,17 @@
-    (declare-var x Int)
-    (declare-var xp Int)
-    (declare-var y Int)
-    (declare-var yp Int)
-    (declare-var N Int)
+(set-logic HORN)
 
+    (declare-fun |inv| (Int Int) Bool)
     (assert 
-       (and 
-        (> N 10)
-      ;  (not (=> (and (= x 0) (= y 1)) (or (<= x (* 2 N)) (>= y N))))
-      ;  (not (=> (and (or (<= x (* 2 N)) (>= y N)) (< x (* 10 N)) (< x N) (= xp (+ x y)) (= yp y)) (or (<= xp (* 2 N)) (>= yp N))))
-        (not (=> (and (or (<= x (* 2 N)) (>= y N)) (< x (* 10 N)) (>= x N) (= xp (- x N)) (= yp (+ y 1))) (or (<= xp (* 2 N)) (>= yp N))))
-      ;  (not (=> (and (not (< x (* 10 N))) (or (<= x (* 2 N)) (>= y N))) (>= y N)))
-       )
+      (forall ((N Int) (x Int) (xp Int) (y Int) (yp Int)) 
+        (and 
+          (= N 100000000)
+          (=> (and (= x 0) (= y 1)) (inv x y))
+          (=> (and (inv x y) (< x (* 10 N)) (and (=> (< x N) (and (= xp (+ x y)) (= yp y)))  (=> (>= x N) (and (= xp (- x N)) (= yp (+ y 1))) ))) 
+                                                                                                      (inv xp yp))
+          (=> (and (not (< x (* 10 N))) (inv x y)) (>= y N))
+        )
       )
+    )
     (check-sat)
-    (get-model)
+
+    
