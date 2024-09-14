@@ -4,7 +4,7 @@
       (forall ((i Int) (j Int) (r Int) (ip Int) (jp Int) (rp Int)) 
         (and 
           (=> (> (+ (* -1 i) (+ (* -1 j) r)) 0) (inv i j r))
-          (=> (and (inv i j r) (> i 0) (and (= ip (+ i -1)) (= jp (+ j 1)) (= rp r))) (inv ip jp rp))
+          (=> (and (inv i j r) (> i 0)   (and (= ip (+ i -1)) (= jp (+ j 1)) (= rp r))) (inv ip jp rp))
           (=> (and (not (> i 0)) (inv i j r)) (> (+ (* -1 i) (+ (* -1 j) r)) 0))
         )
       )

@@ -85,7 +85,8 @@ def convert_trans(trans: np.ndarray, var: list, var_p: list) -> str:
         raise Exception("Transition matrix shape is not correct")
     inner = []
     for i in range(var_n):
-        right = f"(+ {convert_rhs(trans[i][:-1], var)} {trans[i][-1]})" if trans[i][-1] != 0 else convert_rhs(trans[i][:-1], var)
+        right = f"(+ {convert_rhs(trans[i][:-1], var)} {trans[i][-1]})" if trans[i][-1] != 0 else convert_rhs(
+            trans[i][:-1], var)
         left = var_p[i]
         inner.append(f"(= {left} {right})")
     return f'(and {" ".join(inner)})'
@@ -146,7 +147,7 @@ def convert(i) -> str:
     I_x = convert_inv(inv_name, vars)
     I_xp = convert_inv(inv_name, vars_p)
     assert_lhs = f"(and (not {B}) {I_x})" if b is not None else f"{I_x}"
-    
+
     T = []
     prev_cond = []
     for i in range(len(trans)):
@@ -154,24 +155,16 @@ def convert(i) -> str:
             prev_cond_guard = f"(not (or  {' '.join(prev_cond)}))"
         if cond[i] is not None:
             guard = convert_pred(cond[i], vars)
-    
+
         for t in trans[i]:
-            if B is not None:
-                ret = f"(=> (and {I_x} {B} {convert_trans(t, vars, vars_p)}) {I_xp})"
-            else:
-                ret = f"(=> (and {I_x} {convert_trans(t, vars, vars_p)}) {I_xp})"
-            if cond[i] is not None:
-                ret = f"(=> {guard} {ret})"
-            if prev_cond != []:
-                ret = f"(=> {prev_cond_guard} {ret})"
-            T.append(ret)                
-            
+            T.append(
+                f"(=> (and {I_x} {B or ''} {guard if cond[i] is not None else ''} {prev_cond_guard if prev_cond != [] else ''} {convert_trans(t, vars, vars_p)}) {I_xp})")
+
         if cond[i] is not None:
             prev_cond.append(guard)
 
-    T = "\n".join(T)    
-    
-    
+    T = "\n".join(T)
+
     return f"""
     (declare-fun |{inv_name}| ({" ".join(["Int" for _ in vars])}) Bool)
     (assert 
@@ -189,7 +182,6 @@ def convert(i) -> str:
 
 
 def output_to_file(output: str, filename: str):
-    print(output)
     with open(filename, "w") as f:
         f.write(output)
 

@@ -4,7 +4,7 @@
       (forall ((x Int) (n Int) (xp Int) (np Int)) 
         (and 
           (=> (and (= x 0) (> n 0)) (inv x n))
-          (=> (and (inv x n) (< (+ x (* -1 n)) 0) (and (= xp (+ x 1)) (= np n))) (inv xp np))
+          (=> (and (inv x n) (< (+ x (* -1 n)) 0)   (and (= xp (+ x 1)) (= np n))) (inv xp np))
           (=> (and (not (< (+ x (* -1 n)) 0)) (inv x n)) (= (+ x (* -1 n)) 0))
         )
       )

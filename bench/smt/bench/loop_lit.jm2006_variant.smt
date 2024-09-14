@@ -4,7 +4,7 @@
       (forall ((i Int) (j Int) (x Int) (y Int) (z Int) (ip Int) (jp Int) (xp Int) (yp Int) (zp Int)) 
         (and 
           (=> (and (>= i 0) (<= i 1000000) (>= j 0) (= (+ (* -1 i) x) 0) (= (+ (* -1 j) y) 0) (= z 0)) (inv i j x y z))
-          (=> (and (inv i j x y z) (or (> x 0) (< x 0)) (and (= ip i) (= jp j) (= xp (+ x -1)) (= yp (+ y -2)) (= zp (+ z 1)))) (inv ip jp xp yp zp))
+          (=> (and (inv i j x y z) (or (> x 0) (< x 0))   (and (= ip i) (= jp j) (= xp (+ x -1)) (= yp (+ y -2)) (= zp (+ z 1)))) (inv ip jp xp yp zp))
           (=> (and (not (or (> x 0) (< x 0))) (inv i j x y z)) (or (< (+ i (* -1 j)) 0) (> (+ i (* -1 j)) 0) (= (+ y z) 0)))
         )
       )
