@@ -156,9 +156,11 @@ def convert(i) -> str:
         if cond[i] is not None:
             guard = convert_pred(cond[i], vars)
 
-        for t in trans[i]:
-            T.append(
-                f"(=> (and {I_x} {B or ''} {guard if cond[i] is not None else ''} {prev_cond_guard if prev_cond != [] else ''} {convert_trans(t, vars, vars_p)}) {I_xp})")
+        ts = [convert_trans(t, vars, vars_p) for t in trans[i]]
+        ts = f"(or {' '.join(ts)})" if len(ts) > 1 else ts[0]
+
+        T.append(
+            f"(=> (and {I_x} {B or ''} {guard if cond[i] is not None else ''} {prev_cond_guard if prev_cond != [] else ''} {ts}) {I_xp})")
 
         if cond[i] is not None:
             prev_cond.append(guard)

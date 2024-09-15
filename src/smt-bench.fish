@@ -33,6 +33,11 @@ for file in (find $folder_path -name "*.smt")
   echo (date)  
   # Run the command with a timeout and redirect output to the log file
   echo "Processing $file"
+  set start_time (date +%s)
   timeout $timeout ../../z3/build/z3 $file >> $log_file 2>&1
-  echo "$file Done"
+  set end_time (date +%s)
+  set total_time (math $end_time - $start_time)
+  echo "$file Done in $total_time seconds"
+  echo $total_time >> $log_file
+  echo "-----------------------------------"
 end
