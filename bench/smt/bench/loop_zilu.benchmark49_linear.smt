@@ -1,14 +1,7 @@
-
-    (declare-fun |inv| (Int Int Int) Bool)
-    (assert 
-      (forall ((i Int) (j Int) (r Int) (ip Int) (jp Int) (rp Int)) 
-        (and 
-          (=> (> (+ (* -1 i) (+ (* -1 j) r)) 0) (inv i j r))
-          (=> (and (inv i j r) (> i 0)   (and (= ip (+ i -1)) (= jp (+ j 1)) (= rp r))) (inv ip jp rp))
-          (=> (and (not (> i 0)) (inv i j r)) (> (+ (* -1 i) (+ (* -1 j) r)) 0))
-        )
-      )
-    )
-    (check-sat)
-    (get-model)
-    
+(set-logic HORN)
+(declare-fun |inv| (Int Int Int) Bool)
+(assert (forall ((i Int) (j Int) (r Int) (ip Int) (jp Int) (rp Int)) (=> (> (+ (* -1 i) (+ (* -1 j) r)) 0) (inv i j r))))
+(assert (forall ((i Int) (j Int) (r Int) (ip Int) (jp Int) (rp Int)) (=> (and (inv i j r) (> i 0)   (and (= ip (+ i -1)) (= jp (+ j 1)) (= rp r))) (inv ip jp rp))))
+(assert (forall ((i Int) (j Int) (r Int) (ip Int) (jp Int) (rp Int)) (=> (and (not (> i 0)) (inv i j r)) (> (+ (* -1 i) (+ (* -1 j) r)) 0))))
+(check-sat)
+(get-model)

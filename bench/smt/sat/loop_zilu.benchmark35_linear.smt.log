@@ -1,8 +1,5 @@
 sat
 (
   (define-fun inv ((x!0 Int)) Bool
-    (let ((a!1 (or (not (<= 9 x!0))
-                   (and (<= 9 x!0) (<= 10 x!0))
-                   (and (<= 9 x!0) (not (<= 10 x!0))))))
-      (and a!1 (<= 0 x!0))))
+    (not (<= x!0 (- 1))))
 )

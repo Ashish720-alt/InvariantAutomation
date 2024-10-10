@@ -1,0 +1,5 @@
+sat
+(
+  (define-fun inv ((x!0 Int) (x!1 Int) (x!2 Int) (x!3 Int)) Bool
+    (not (>= (+ x!2 (* (- 1) x!3)) 1)))
+)

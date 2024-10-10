@@ -165,22 +165,17 @@ def convert(i) -> str:
         if cond[i] is not None:
             prev_cond.append(guard)
 
+    forall = f"(forall ({' '.join(map(lambda v: f"({v} Int)", vars + vars_p))})"
+    T = [f"(assert {forall} {t}))" for t in T]
     T = "\n".join(T)
 
-    return f"""
-    (declare-fun |{inv_name}| ({" ".join(["Int" for _ in vars])}) Bool)
-    (assert 
-      (forall ({' '.join(map(lambda v: f"({v} Int)", vars + vars_p))}) 
-        (and 
-          (=> {P} {I_x})
-          {T}
-          (=> {assert_lhs} {Q})
-        )
-      )
-    )
-    (check-sat)
-    (get-model)
-    """
+    return f"""(set-logic HORN)
+(declare-fun |{inv_name}| ({" ".join(["Int" for _ in vars])}) Bool)
+(assert {forall} (=> {P} {I_x})))
+{T}
+(assert {forall} (=> {assert_lhs} {Q})))
+(check-sat)
+(get-model)"""
 
 
 def output_to_file(output: str, filename: str):

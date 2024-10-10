@@ -1,7 +1,5 @@
 sat
 (
   (define-fun inv ((x!0 Int) (x!1 Int)) Bool
-    (or (and (<= 1 x!0) (not (<= 1 x!1)))
-        (and (not (<= 1 x!0)) (<= 1 x!1))
-        (and (<= 1 x!0) (<= 1 x!1))))
+    (or (not (<= x!0 0)) (not (<= x!1 0))))
 )
