@@ -1015,7 +1015,58 @@ class Inputs:
             c = 2
             d = 2
 
+    class breakGSpacer:
+        class b:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 1
+            d = 1
+            #  
 
+        class b1:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 2, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 1
+            d = 1
+            #  
+
+        class b2:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[2, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 1
+            d = 1
+
+        class b3:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 1
+            d = 1
+
+        class b4:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
+            c = 1
+            d = 1
 
     '''
     # Var = ( , )
