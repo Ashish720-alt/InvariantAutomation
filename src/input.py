@@ -1023,7 +1023,7 @@ class Inputs:
     #         c = 2
     #         d = 2
 
-class breakGSpacer:
+    class breakGSpacer:
         class b:
             Var = ['x', 'y']
             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
@@ -1031,7 +1031,7 @@ class breakGSpacer:
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(
                 B, ([np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
+            c = 2
             d = 1
             #  
 
@@ -1042,7 +1042,7 @@ class breakGSpacer:
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(
                 B, ([np.array([[1, 2, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
+            c = 2
             d = 1
             #  
 
@@ -1053,7 +1053,7 @@ class breakGSpacer:
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(
                 B, ([np.array([[2, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
+            c = 2
             d = 1
 
         class b3:
@@ -1063,7 +1063,7 @@ class breakGSpacer:
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(
                 B, ([np.array([[1, 1, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
+            c = 2
             d = 1
 
         class b4:
@@ -1073,9 +1073,70 @@ class breakGSpacer:
             Q = [np.array([[1, -1, 1, 0]])]
             T = genLItransitionrel(
                 B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
-            c = 1
+            c = 3
             d = 1
 
+            '''  
+            For b4: this is invariant found:
+            Invariant Found:	((0*x + -1*y <= 0) /\ (-1*x + 1*y <= 0) /\ (-1*x + -1*y <= -1))
+                    Time Statistics:
+                        Total Time: 51.92798399899982
+                        Total Initialization and Re-initialization Time: 2.2624670229998856
+                        Total MCMC time: 48.84573149100004
+                        Total Z3 Time: 0.8197854849998976
+                        Total MCMC iterations forall threads: 423
+                        Total Z3 calls: 3
+                        Number of Threads: 4
+            '''
+            
+
+        class b5:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[3, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
+
+        class b6:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 3, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
+
+        class b7:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[4, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 3
+            d = 1
+        '''
+            For b7, invariant found:
+            Invariant Found:	((0*x + -1*y <= 0) /\ (-1*x + 1*y <= 0) /\ (0*x + 1*y <= 0))
+
+
+            Time Statistics:
+                Total Time: 72.69041660200037
+                Total Initialization and Re-initialization Time: 2.4581777250000414
+                Total MCMC time: 69.45298488800017
+                Total Z3 Time: 0.7792539890001535
+                Total MCMC iterations forall threads: 560
+                Total Z3 calls: 3
+                Number of Threads: 4
+
+
+        '''
+
+        ''' For other bx programs, where x != 4,7: Program finds invariant almost instantly.'''
 
     '''
     # Var = ( , )
