@@ -65,6 +65,11 @@ def translation_neighbors(i, j, coeff, const, k1):
     if (conf.TRANSLATION_SMALL == conf.OFF ):
         transconslist = LargeTranslationConstant(coeff, const, k1)
     else:
+        # if (const == 10):
+        #    transconslist = [const - 1]
+        # elif (const == -10):
+        #    transconslist = [const + 1]
+        #else:    
         transconslist = [const + 1, const - 1] 
     for co in transconslist:
         rv.append( ( i, j, coeff + [-1,co]) )  

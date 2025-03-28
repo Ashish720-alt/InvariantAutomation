@@ -8,7 +8,7 @@ class Configure:
     OFF = 0
 
     #CHANGE THIS FOR SERVER RUNS!!!
-    REMOTE_SERVER = OFF
+    REMOTE_SERVER = ON
     REMOTE_PATH = "../../rotation-graph/"
 
     '''Invariant Space hyperparameters'''
@@ -31,7 +31,7 @@ class Configure:
     rotation_probability = 0.5
     num_processes = 4 #Number of threads
     t0 = 2
-    maxSArun =  1000000 #1000000
+    maxSArun =  10000 #1000000
     I0_samples = 30 #Initial Invariant Samples.
     I0_samples_n1 = 1000
     
@@ -108,14 +108,14 @@ class Configure:
     TERMINAL = 1
     FILE = -1
     TERMINAL_AND_FILE = 0
-    PRINTING_MODE = TERMINAL
+    PRINTING_MODE = TERMINAL_AND_FILE
     
-    PRINT_ITERATIONS = ON
+    PRINT_ITERATIONS = OFF
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_COSTLIST = OFF
-    PRINT_Z3_ITERATIONS = ON
+    PRINT_Z3_ITERATIONS = OFF
     PRINT_TIME_STATISTICS = ON
-    PRINT_COLORED_THREADS = ON
+    PRINT_COLORED_THREADS = OFF
     
 
     '''Graph Plotter hyperparameters '''
@@ -139,6 +139,8 @@ class Configure:
     n2PLOTTER_CUSTOMIZEDSCALEINTERVAL = [0, 0] #Insert Required Interval
     
     ''' Optimizations hyperparameters'''
+    DISTANCE_SEPARATED_CEX = OFF
+    ITERATED_IMPLICATION_PAIR = OFF
     NONITERATIVE_PRECONDITION = OFF
     AFFINE_SPACES = OFF
-    # Implement terminating inductive invariant?
+

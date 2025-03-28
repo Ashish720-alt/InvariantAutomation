@@ -429,7 +429,10 @@ def TIterates (T):
             T_curr = ptf
             T_list = [np.copy(T_curr)]
 
-            maxiterate = max(conf.maxiterateICE, conf.maxiterateImplPair)
+            if (conf.ITERATED_IMPLICATION_PAIR == conf.ON):
+                maxiterate = max(conf.maxiterateICE, conf.maxiterateImplPair)
+            else:
+                maxiterate = 1
             
             for _ in range(2, maxiterate + 1):
                 T_curr = T_curr @ ptf #Matrix multiplication

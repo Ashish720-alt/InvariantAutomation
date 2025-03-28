@@ -49,6 +49,11 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
         s2 = Solver() #s2 is reserve solver, needed if we cant get cexmax number of dispersed cex - in that case remaining cex can be non dispersed
         s.add(Not(C))
         s2.add(Not(C))
+
+        if (conf.DISTANCE_SEPARATED_CEX == conf.ON):
+            distance_sep_cex = conf.d0
+        else:
+            distance_sep_cex = 0
         
         while len(result) < cexmax and s.check() == sat: 
             m = s.model()
@@ -67,7 +72,7 @@ def z3_verifier(P_z3, B_z3, T_z3, Q_z3, I):
                 block.append(c != m[d])    
             
             s2.add(Or(block))         
-            s.add(Sum([z3_Abs(m[d] - s.model()[d]) for d in m]) > conf.d0)
+            s.add(Sum([z3_Abs(m[d] - s.model()[d]) for d in m]) > distance_sep_cex)
 
         else:
             if len(result) < cexmax and s.check() != unsat: 
