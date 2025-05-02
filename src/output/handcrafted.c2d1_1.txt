@@ -1,0 +1,11 @@
+Invariant Found:	((-2*x + 2*y <= 0) /\ (0*x + -2*y <= -1))
+
+
+Time Statistics:
+	Total Time: 18.60516680000012
+	Total Initialization and Re-initialization Time: 2.019558459000109
+	Total SA time: 15.878868419000014
+	Total Z3 Time: 0.706739921999997
+	Total SA iterations forall threads: 284
+	Total Z3 calls: 2
+	Number of Threads: 4

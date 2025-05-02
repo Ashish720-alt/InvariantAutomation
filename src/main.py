@@ -8,7 +8,7 @@ from repr import Repr
 from numpy import random
 from z3verifier import z3_verifier
 from print import initialized, statistics, z3statistics, invariantfound, timestatistics, prettyprint_samplepoints, noInvariantFound
-from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string, printTemperaturePrompt
+from print import SAexit, SAsuccess, n2plotter, SAfail, print_with_mode, list_to_string, printTemperaturePrompt, printBenchmarkName
 from dnfs_and_transitions import  list3D_to_listof2Darrays, dnfconjunction, dnfnegation
 from timeit import default_timer as timer
 from math import log, floor, e
@@ -112,10 +112,18 @@ def simulatedAnnealing(inputname, repr: Repr, I_list, samplepoints, process_id, 
 def main(inputname, repr: Repr):
     """ ===== Initialization starts. ===== """
 
+    
+
     if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
         outputF = open("output/" + inputname + ".txt", 'w')
+    elif(conf.PRINTING_MODE == conf.SINGLE_FILE_ALL_PROGRAMS):
+        outputF = open("output/AllResultsAblation.txt", 'a')
     else:
         outputF = None
+    
+    
+    printBenchmarkName( inputname, outputF)
+    
     
     mcmc_time = 0
     z3_time = 0
@@ -138,6 +146,7 @@ def main(inputname, repr: Repr):
     
 
     for i in range(conf.num_processes):
+        
         (I_guess, _) = initialInvariant(i, samplepoints, repr.get_coeffvertices(), repr.get_k1(), repr.get_cList(), repr.get_d(), repr.get_n(), repr.get_affineSubspace(), repr.get_Dp())
         LII = dnfconjunction( list3D_to_listof2Darrays(I_guess), repr.get_affineSubspace() , 0)
         (costI, costlist) = cost(LII, samplepoints)  
@@ -214,7 +223,7 @@ def main(inputname, repr: Repr):
             noInvariantFound(z3_callcount, outputfile = outputF)
             z3_end = timer()
             z3_time = z3_time + (z3_end - z3_start)        
-            if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+            if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE or conf.PRINTING_MODE == conf.SINGLE_FILE_ALL_PROGRAMS):
                 outputF.close()
             return ("All threads time out", z3_callcount)
         
@@ -268,7 +277,7 @@ def main(inputname, repr: Repr):
 
     invariantfound(repr.get_nonItersP(), repr.get_affineSubspace(), I, repr.get_Var(), outputF)
     timestatistics(mcmc_time, mcmc_iterations, z3_time, initialize_time, z3_callcount, conf.num_processes, outputfile = outputF )
-    if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+    if(conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE or conf.PRINTING_MODE == conf.SINGLE_FILE_ALL_PROGRAMS):
         outputF.close()
     
     
@@ -281,26 +290,31 @@ if __name__ == "__main__":
     parser.add_argument('-d', type=int, help='Number of disjunctions')
     parser.add_argument('-clist', type=list, help='List of c values')
     parser.add_argument('-i', '--input', type=str, help='Input object name')
-    # parser.add_argument('-a', '--all', action='store_true', help='Run all inputs')
+    parser.add_argument('-a', '--all', action='store_true', help='Run all inputs') #Remove this!
     parse_res = vars(parser.parse_args())
-    # This code doesn't work!
-    # if parse_res['all']:
-    #     if (parse_res['input'] is not None):
-    #         print(parser.print_help())
-    #         print("Please specify either input object name or all inputs")
-    #         exit(1)
-    #     for subfolder in dir(Inputs):
-    #         for inp in dir(getattr(Inputs, subfolder)):
-    #             main("a.b", input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d']))
-    # else:
-    if parse_res['input'] is None:
-        print(parser.print_help())
-        print("Please specify input object name")
-        exit(1)
+    if parse_res['all']:
+        print("Running all benchmarks...\n")
+        for subfolder in dir(Inputs):
+            if subfolder.startswith("__"):
+                continue
+            subfolder_obj = getattr(Inputs, subfolder)
+            for inp in dir(subfolder_obj):
+                if inp.startswith("__"):
+                    continue
+                input_obj = getattr(subfolder_obj, inp)
+                full_name = f"{subfolder}.{inp}"
+                print(f"Running {full_name}")
+                main(full_name, input_to_repr(input_obj, parse_res['c'], parse_res['d'], parse_res['clist']))
+
     else:
-        (first_name, last_name) = parse_res['input'].split('.')
-        for subfolder in Inputs.__dict__:
-            if subfolder == first_name:
-                for inp in getattr(Inputs, subfolder).__dict__:
-                    if inp == last_name:
-                        main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'], parse_res['clist']))
+        if parse_res['input'] is None:
+            print(parser.print_help())
+            print("Please specify input object name")
+            exit(1)
+        else:
+            (first_name, last_name) = parse_res['input'].split('.')
+            for subfolder in Inputs.__dict__:
+                if subfolder == first_name:
+                    for inp in getattr(Inputs, subfolder).__dict__:
+                        if inp == last_name:
+                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'], parse_res['clist']))

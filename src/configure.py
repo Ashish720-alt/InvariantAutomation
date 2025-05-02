@@ -31,7 +31,7 @@ class Configure:
     rotation_probability = 0.5
     num_processes = 4 #Number of threads
     t0 = 2
-    maxSArun =  10000 #1000000
+    maxSArun =  5000 #1000000
     I0_samples = 30 #Initial Invariant Samples.
     I0_samples_n1 = 1000
     
@@ -108,7 +108,8 @@ class Configure:
     TERMINAL = 1
     FILE = -1
     TERMINAL_AND_FILE = 0
-    PRINTING_MODE = TERMINAL_AND_FILE
+    SINGLE_FILE_ALL_PROGRAMS = -2
+    PRINTING_MODE = SINGLE_FILE_ALL_PROGRAMS
     
     PRINT_ITERATIONS = OFF
     PRINT_REJECT_ITERATIONS = OFF

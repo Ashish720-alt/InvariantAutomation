@@ -8,12 +8,16 @@ import multiprocessing
 
 lock = multiprocessing.Lock()
 
+
+def printBenchmarkName( inputname, outputfile):
+    print_with_mode(Fore.WHITE, "Working on " + inputname, endstr = '\n', file = outputfile)
+
 def print_with_mode(color, s, endstr = '\n', file = None):
     lock.acquire()
     if (conf.PRINTING_MODE == conf.TERMINAL or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
         print(color + s, end = endstr)
         print(Style.RESET_ALL, end = '')  
-    if (conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE):
+    if (conf.PRINTING_MODE == conf.FILE or conf.PRINTING_MODE == conf.TERMINAL_AND_FILE or conf.PRINTING_MODE == conf.SINGLE_FILE_ALL_PROGRAMS ):
         file.write(s + endstr)    
     lock.release()
     return
