@@ -31,7 +31,7 @@ class Configure:
     rotation_probability = 0.5
     num_processes = 4 #Number of threads
     t0 = 2
-    maxSArun =  5000 #1000000
+    maxSArun =  750 #1000000
     I0_samples = 30 #Initial Invariant Samples.
     I0_samples_n1 = 1000
     

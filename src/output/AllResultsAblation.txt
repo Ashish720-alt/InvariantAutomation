@@ -1,0 +1,158 @@
+
+Working on breakGSpacer.b
+Invariant Found:	((0*x + -2*y <= 0) /\ (-1*x + 2*y <= 0))
+
+
+Time Statistics:
+	Total Time: 14.306993799999418
+	Total Initialization and Re-initialization Time: 1.4810155700001815
+	Total SA time: 12.496897892999641
+	Total Z3 Time: 0.3290803369995956
+	Total SA iterations forall threads: 12
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b1
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 14.410283511000216
+	Total Initialization and Re-initialization Time: 1.4577483620000748
+	Total SA time: 12.725052239999968
+	Total Z3 Time: 0.2274829090001731
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b10
+Invariant Found:	((0*u + -1*x + -1*y + -1*z <= -2) /\ (-2*u + 2*x + 2*y + 2*z <= 1) /\ (-1*u + -2*x + 1*y + 0*z <= 1) /\ (0*u + 1*x + 1*y + -2*z <= 1))
+
+
+Time Statistics:
+	Total Time: 541.305704637999
+	Total Initialization and Re-initialization Time: 9.451145901000018
+	Total SA time: 530.0899929659995
+	Total Z3 Time: 1.7645657709995248
+	Total SA iterations forall threads: 2449
+	Total Z3 calls: 7
+	Number of Threads: 4
+
+Working on breakGSpacer.b2
+Invariant Found:	((0*x + -1*y <= 0) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.6173929640003735
+	Total Initialization and Re-initialization Time: 1.4914941330002875
+	Total SA time: 0.001699669000117865
+	Total Z3 Time: 0.12419916199996806
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b3
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.926578169000095
+	Total Initialization and Re-initialization Time: 1.6387445440000192
+	Total SA time: 0.0013312010000845476
+	Total Z3 Time: 0.28650242399999115
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b4
+Invariant Found:	((-2*x + -1*y <= -2) /\ (-1*x + 1*y <= 0) /\ (0*x + -2*y <= 2))
+
+
+Time Statistics:
+	Total Time: 68.30262101100016
+	Total Initialization and Re-initialization Time: 2.5235111590000088
+	Total SA time: 64.53823752800054
+	Total Z3 Time: 1.2408723239996107
+	Total SA iterations forall threads: 592
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+Working on breakGSpacer.b5
+Invariant Found:	((-1*x + 1*y <= 0) /\ (-1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.720339874000274
+	Total Initialization and Re-initialization Time: 1.486553596000249
+	Total SA time: 0.0008292640000036045
+	Total Z3 Time: 0.23295701400002145
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b6
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.8408340380001391
+	Total Initialization and Re-initialization Time: 1.4886014809999324
+	Total SA time: 0.0008423260001109156
+	Total Z3 Time: 0.3513902310000958
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b7
+Invariant Found:	((-1*x + 0*y <= 0) /\ (-1*x + 1*y <= 0) /\ (-1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 2.247331347000454
+	Total Initialization and Re-initialization Time: 2.13186179000013
+	Total SA time: 0.0009200340000461438
+	Total Z3 Time: 0.11454952300027799
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b8
+Invariant Found:	((0*x + 1*y + -1*z <= 1) /\ (0*x + -1*y + -1*z <= 0) /\ (-1*x + 1*y + 1*z <= -1))
+
+
+Time Statistics:
+	Total Time: 230.49953532399968
+	Total Initialization and Re-initialization Time: 4.515778568999849
+	Total SA time: 224.6178965830004
+	Total Z3 Time: 1.3658601719994294
+	Total SA iterations forall threads: 2514
+	Total Z3 calls: 6
+	Number of Threads: 4
+
+Working on breakGSpacer.b9
+Invariant Found:	((-1*x + 1*y + 0*z <= -1) /\ (0*x + -1*y + -1*z <= 0) /\ (-1*x + 0*y + 1*z <= -1))
+
+
+Time Statistics:
+	Total Time: 174.6587189360016
+	Total Initialization and Re-initialization Time: 4.269663621000291
+	Total SA time: 168.94364159900033
+	Total Z3 Time: 1.445413716000985
+	Total SA iterations forall threads: 802
+	Total Z3 calls: 5
+	Number of Threads: 4
+
+
+
+Working on loop_lit.afnp2014_modified
+Invariant Found:	((0*x + -1*y <= -2) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 44.935874807999426
+	Total Initialization and Re-initialization Time: 1.6374968210002407
+	Total SA time: 42.38581660800082
+	Total Z3 Time: 0.9125613789983618
+	Total SA iterations forall threads: 527
+	Total Z3 calls: 3
+	Number of Threads: 4
