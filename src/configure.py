@@ -8,17 +8,17 @@ class Configure:
     OFF = 0
 
     #CHANGE THIS FOR SERVER RUNS!!!
-    REMOTE_SERVER = ON
-    REMOTE_PATH = "../../rotation-graph/"
+    # REMOTE_SERVER = ON
+    # REMOTE_PATH = "../../rotation-graph/"
 
     '''Invariant Space hyperparameters'''
     coeff_k = 2
     coeff_r = 1
 
     '''State Space hyperparameters'''
-    dspace_full = ON #Change this
+    dspace_full = ON 
     dspace_maxradius = 1.5 * 1000000
-    dspace_scaledradius = 100 #Change testing Radius
+    dspace_scaledradius = 100 #Testing Radius
     dspace_radius = dspace_maxradius if (dspace_full == ON) else dspace_scaledradius 
     dspace_intmin = -1 * dspace_radius
     dspace_intmax = 1 * dspace_radius
@@ -31,13 +31,13 @@ class Configure:
     rotation_probability = 0.5
     num_processes = 4 #Number of threads
     t0 = 2
-    maxSArun =  750 #1000000
+    maxSArun = 1000000
     I0_samples = 30 #Initial Invariant Samples.
     I0_samples_n1 = 1000
     
     #Search Space Graph Choices
     BASIC_ROTATION = ON
-    BASIC_ROTATION_k0 = 2
+    BASIC_ROTATION_k0 = 2 #Sometimes put k0 = 1
     BASIC_ROTATION_k0List = [1, 1, 2, 2] #This list must be same size as number of threads
     COR_SIMPLIFIED = ON
     TRANSLATION_SMALL = ON
@@ -108,15 +108,15 @@ class Configure:
     TERMINAL = 1
     FILE = -1
     TERMINAL_AND_FILE = 0
-    SINGLE_FILE_ALL_PROGRAMS = -2
-    PRINTING_MODE = SINGLE_FILE_ALL_PROGRAMS
+    SINGLE_FILE_ALL_PROGRAMS = -2 #Doesn't work, don't use!
+    PRINTING_MODE = TERMINAL
     
-    PRINT_ITERATIONS = OFF
+    PRINT_ITERATIONS = ON
     PRINT_REJECT_ITERATIONS = OFF
     PRINT_COSTLIST = OFF
-    PRINT_Z3_ITERATIONS = OFF
+    PRINT_Z3_ITERATIONS = ON
     PRINT_TIME_STATISTICS = ON
-    PRINT_COLORED_THREADS = OFF
+    PRINT_COLORED_THREADS = ON
     
 
     '''Graph Plotter hyperparameters '''
@@ -140,8 +140,8 @@ class Configure:
     n2PLOTTER_CUSTOMIZEDSCALEINTERVAL = [0, 0] #Insert Required Interval
     
     ''' Optimizations hyperparameters'''
-    DISTANCE_SEPARATED_CEX = OFF
-    ITERATED_IMPLICATION_PAIR = OFF
+    DISTANCE_SEPARATED_CEX = ON
+    ITERATED_IMPLICATION_PAIR = ON
     NONITERATIVE_PRECONDITION = OFF
     AFFINE_SPACES = OFF
 

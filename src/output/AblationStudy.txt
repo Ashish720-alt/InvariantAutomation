@@ -1,0 +1,848 @@
+
+no iip + no dsc:
+Working on breakGSpacer.b
+Invariant Found:	((0*x + -2*y <= 0) /\ (-1*x + 2*y <= 0))
+
+
+Time Statistics:
+	Total Time: 14.306993799999418
+	Total Initialization and Re-initialization Time: 1.4810155700001815
+	Total SA time: 12.496897892999641
+	Total Z3 Time: 0.3290803369995956
+	Total SA iterations forall threads: 12
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b1
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 14.410283511000216
+	Total Initialization and Re-initialization Time: 1.4577483620000748
+	Total SA time: 12.725052239999968
+	Total Z3 Time: 0.2274829090001731
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b10
+Invariant Found:	((0*u + -1*x + -1*y + -1*z <= -2) /\ (-2*u + 2*x + 2*y + 2*z <= 1) /\ (-1*u + -2*x + 1*y + 0*z <= 1) /\ (0*u + 1*x + 1*y + -2*z <= 1))
+
+
+Time Statistics:
+	Total Time: 541.305704637999
+	Total Initialization and Re-initialization Time: 9.451145901000018
+	Total SA time: 530.0899929659995
+	Total Z3 Time: 1.7645657709995248
+	Total SA iterations forall threads: 2449
+	Total Z3 calls: 7
+	Number of Threads: 4
+
+Working on breakGSpacer.b2
+Invariant Found:	((0*x + -1*y <= 0) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.6173929640003735
+	Total Initialization and Re-initialization Time: 1.4914941330002875
+	Total SA time: 0.001699669000117865
+	Total Z3 Time: 0.12419916199996806
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b3
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.926578169000095
+	Total Initialization and Re-initialization Time: 1.6387445440000192
+	Total SA time: 0.0013312010000845476
+	Total Z3 Time: 0.28650242399999115
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b4
+Invariant Found:	((-2*x + -1*y <= -2) /\ (-1*x + 1*y <= 0) /\ (0*x + -2*y <= 2))
+
+
+Time Statistics:
+	Total Time: 68.30262101100016
+	Total Initialization and Re-initialization Time: 2.5235111590000088
+	Total SA time: 64.53823752800054
+	Total Z3 Time: 1.2408723239996107
+	Total SA iterations forall threads: 592
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+Working on breakGSpacer.b5
+Invariant Found:	((-1*x + 1*y <= 0) /\ (-1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.720339874000274
+	Total Initialization and Re-initialization Time: 1.486553596000249
+	Total SA time: 0.0008292640000036045
+	Total Z3 Time: 0.23295701400002145
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b6
+Invariant Found:	((-1*x + 1*y <= 0) /\ (0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.8408340380001391
+	Total Initialization and Re-initialization Time: 1.4886014809999324
+	Total SA time: 0.0008423260001109156
+	Total Z3 Time: 0.3513902310000958
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b7
+Invariant Found:	((-1*x + 0*y <= 0) /\ (-1*x + 1*y <= 0) /\ (-1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 2.247331347000454
+	Total Initialization and Re-initialization Time: 2.13186179000013
+	Total SA time: 0.0009200340000461438
+	Total Z3 Time: 0.11454952300027799
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on breakGSpacer.b8
+Invariant Found:	((0*x + 1*y + -1*z <= 1) /\ (0*x + -1*y + -1*z <= 0) /\ (-1*x + 1*y + 1*z <= -1))
+
+
+Time Statistics:
+	Total Time: 230.49953532399968
+	Total Initialization and Re-initialization Time: 4.515778568999849
+	Total SA time: 224.6178965830004
+	Total Z3 Time: 1.3658601719994294
+	Total SA iterations forall threads: 2514
+	Total Z3 calls: 6
+	Number of Threads: 4
+
+Working on breakGSpacer.b9
+Invariant Found:	((-1*x + 1*y + 0*z <= -1) /\ (0*x + -1*y + -1*z <= 0) /\ (-1*x + 0*y + 1*z <= -1))
+
+
+Time Statistics:
+	Total Time: 174.6587189360016
+	Total Initialization and Re-initialization Time: 4.269663621000291
+	Total SA time: 168.94364159900033
+	Total Z3 Time: 1.445413716000985
+	Total SA iterations forall threads: 802
+	Total Z3 calls: 5
+	Number of Threads: 4
+
+Working on breakGSpacer.b10
+All SA threads failed to converge after2Z3 runs
+
+Working on loop_lit.afnp2014_modified
+Invariant Found:	((0*x + -1*y <= -2) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 44.935874807999426
+	Total Initialization and Re-initialization Time: 1.6374968210002407
+	Total SA time: 42.38581660800082
+	Total Z3 Time: 0.9125613789983618
+	Total SA iterations forall threads: 527
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+Working on loop_lit.bhmr2007
+Invariant Found:	((1*a + -1*b + -1*i + 0*n <= 0) /\ (0*a + 0*b + 1*i + -1*n <= 0) /\ (-1*a + 0*b + 0*i + 0*n <= 1))
+
+
+Time Statistics:
+	Total Time: 403.4837954929998
+	Total Initialization and Re-initialization Time: 16.004682311999886
+	Total SA time: 386.0658458099998
+	Total Z3 Time: 1.4132673710000745
+	Total SA iterations forall threads: 1451
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+Working on loop_lit.cggmp2005
+All SA threads failed to converge after7Z3 runs
+
+Working on loop_lit.cggmp2005_variant
+Invariant Found:	((0*lo + -2*mid + 0*hi <= 1) /\ (1*lo + 2*mid + -1*hi <= 0) /\ (-1*lo + -2*mid + 1*hi <= 0))
+
+
+Time Statistics:
+	Total Time: 356.9287026050001
+	Total Initialization and Re-initialization Time: 7.476759411000103
+	Total SA time: 347.3510644180003
+	Total Z3 Time: 2.1008787759997176
+	Total SA iterations forall threads: 1773
+	Total Z3 calls: 5
+	Number of Threads: 4
+
+Working on loop_lit.gsv2008
+Invariant Found:	((1*x + 0*y <= -1)) \/ ((1*x + -1*y <= -1))
+
+
+Time Statistics:
+	Total Time: 17.680741186000205
+	Total Initialization and Re-initialization Time: 2.0324824950000675
+	Total SA time: 15.068816257000208
+	Total Z3 Time: 0.5794424339999296
+	Total SA iterations forall threads: 12
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_lit.css2003
+All SA threads failed to converge after5Z3 runs
+
+Working on loop_lit.gj2007
+All SA threads failed to converge after3Z3 runs
+
+
+Working on loop_lit.gj2007b
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_lit.gr2006
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_lit.hhk2008
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_lit.jm2006
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_lit.jm2006_variant
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_new.count_by_1
+Invariant Found:	((-1*i <= 0))
+
+
+Time Statistics:
+	Total Time: 7.789123456012345
+	Total Initialization and Re-initialization Time: 7.409876543210987
+	Total SA time: 0.0010000345853918
+	Total Z3 Time: 0.2302606050034003
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_new.count_by_1_variant
+Invariant Found:	((-1*i <= 0))
+
+
+Time Statistics:
+	Total Time: 8.281791450999663
+	Total Initialization and Re-initialization Time: 8.179800756000077
+	Total SA time: 0.0009100919996853918
+	Total Z3 Time: 0.1010806029999003
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_simple.nested_1
+Invariant Found:	((1*i <= 6))
+
+
+Time Statistics:
+	Total Time: 12.665890259000662
+	Total Initialization and Re-initialization Time: 12.38440812800036
+	Total SA time: 0.0011337559999446967
+	Total Z3 Time: 0.2803483750003579
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark01_conjunctive
+Invariant Found:	((-1*x + 0*y <= -1) /\ (-1*x + 1*y <= 0) /\ (1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 44.51899830599996
+	Total Initialization and Re-initialization Time: 2.2931802230004905
+	Total SA time: 41.53723019900008
+	Total Z3 Time: 0.6885878839993893
+	Total SA iterations forall threads: 21
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark02_linear
+Invariant Found:	((0*n + 0*i + -1*l <= -1))
+
+
+Time Statistics:
+	Total Time: 17.060839402000965
+	Total Initialization and Re-initialization Time: 2.0271957570002996
+	Total SA time: 14.461429638000482
+	Total Z3 Time: 0.5722140070001842
+	Total SA iterations forall threads: 42
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark03_linear_modified
+Invariant Found:	((0*x + 0*y + 1*i + -1*j <= 0) /\ (1*x + -1*y + 0*i + 0*j <= 0))
+
+
+Time Statistics:
+	Total Time: 80.60189142799936
+	Total Initialization and Re-initialization Time: 7.265105939000023
+	Total SA time: 73.16014354699928
+	Total Z3 Time: 0.17664194200006023
+	Total SA iterations forall threads: 41
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark04_conjunctive
+Invariant Found:	((-1*k + -1*j + 1*n <= 0) /\ (-1*k + 0*j + 0*n <= 0))
+
+
+Time Statistics:
+	Total Time: 150.07693630999802
+	Total Initialization and Re-initialization Time: 4.454926787999284
+	Total SA time: 143.84298711099927
+	Total Z3 Time: 1.7790224109994597
+	Total SA iterations forall threads: 827
+	Total Z3 calls: 5
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark05_conjunctive
+Invariant Found:	((1*x + -1*y + 0*n <= 0) /\ (0*x + 1*y + -1*n <= 0))
+
+
+Time Statistics:
+	Total Time: 177.62563562800096
+	Total Initialization and Re-initialization Time: 7.8464739070004725
+	Total SA time: 168.41470225000012
+	Total Z3 Time: 1.364459471000373
+	Total SA iterations forall threads: 593
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark06_conjunctive
+z3 Verifier Fails causing Bug!
+
+
+Working on loop_zilu.benchmark08_conjunctive
+Invariant Found:	((0*n + 0*sum + -2*i <= 0) /\ (0*n + -2*sum + 0*i <= 1))
+
+
+Time Statistics:
+	Total Time: 137.05621088499993
+	Total Initialization and Re-initialization Time: 3.7035891390005418
+	Total SA time: 132.15932949699982
+	Total Z3 Time: 1.193292248999569
+	Total SA iterations forall threads: 3113
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark09_conjunctive
+Invariant Found:	((0*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.6049966790005783
+	Total Initialization and Re-initialization Time: 1.4709163370007445
+	Total SA time: 0.000945800999943458
+	Total Z3 Time: 0.1331345409998903
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark10_conjunctive
+Invariant Found:	((0*i + -1*c <= 0) /\ (-1*i + 0*c <= 0))
+
+
+Time Statistics:
+	Total Time: 2.4726947110002584
+	Total Initialization and Re-initialization Time: 2.1996956049997607
+	Total SA time: 0.000808789000075194
+	Total Z3 Time: 0.2721903170004225
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark11_linear
+Invariant Found:	((1*x + -1*n <= 0))
+
+
+Time Statistics:
+	Total Time: 1.2995889619996888
+	Total Initialization and Re-initialization Time: 1.1597251299999698
+	Total SA time: 0.0009370739999212674
+	Total Z3 Time: 0.1389267579997977
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark12_linear
+Invariant Found:	((0*x + -1*y + 1*t <= 0))
+
+
+Time Statistics:
+	Total Time: 40.55410258200027
+	Total Initialization and Re-initialization Time: 3.819889127999886
+	Total SA time: 36.59703644900037
+	Total Z3 Time: 0.1371770050000123
+	Total SA iterations forall threads: 40
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark13_conjunctive
+Invariant Found:	((-1*i + 1*j + 0*k <= 0) /\ (1*i + -1*j + 0*k <= 0))
+
+
+Time Statistics:
+	Total Time: 52.32557861799978
+	Total Initialization and Re-initialization Time: 4.923076287000185
+	Total SA time: 47.26043836899953
+	Total Z3 Time: 0.14206396200006566
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark14_linear
+Invariant Found:	((1*i <= 200) /\ (-1*i <= 0))
+
+
+Time Statistics:
+	Total Time: 28.05158863499946
+	Total Initialization and Re-initialization Time: 27.920236556999953
+	Total SA time: 0.0011825919991679257
+	Total Z3 Time: 0.13016948600034084
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark15_conjunctive:
+All SA threads failed to converge after4Z3 runs
+
+
+Working on loop_zilu.benchmark16_conjunctive
+Invariant Found:	((-1*i + -1*k <= -1) /\ (-1*i + 0*k <= -1) /\ (1*i + 1*k <= 2))
+
+
+Time Statistics:
+	Total Time: 72.54297909199886
+	Total Initialization and Re-initialization Time: 3.8580262619998393
+	Total SA time: 68.06953372299904
+	Total Z3 Time: 0.6154191069999797
+	Total SA iterations forall threads: 259
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark17_conjunctive
+Invariant Found:	((1*i + -1*k + 0*n <= 0) /\ (-1*i + 0*k + 0*n <= 0))
+
+
+Time Statistics:
+	Total Time: 36.08906056199885
+	Total Initialization and Re-initialization Time: 3.3951407999993535
+	Total SA time: 32.57260411599964
+	Total Z3 Time: 0.12131564599985722
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark18_conjunctive
+Invariant Found:	((2*i + -2*k + 0*n <= 1) /\ (1*i + 1*k + -2*n <= 0) /\ (-2*i + 2*k + 0*n <= 1))
+
+
+Time Statistics:
+	Total Time: 182.32766272200024
+	Total Initialization and Re-initialization Time: 9.167670688999351
+	Total SA time: 171.91037562199926
+	Total Z3 Time: 1.2496164110016252
+	Total SA iterations forall threads: 936
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark19_conjunctive
+Invariant Found:	((-1*j + -1*k + 0*n <= 1) /\ (0*j + 1*k + -1*n <= 0) /\ (-1*j + 1*k + 0*n <= 0) /\ (1*j + -1*k + 0*n <= 0))
+
+
+Time Statistics:
+	Total Time: 696.5925951629979
+	Total Initialization and Re-initialization Time: 19.457285815000432
+	Total SA time: 675.8438189359986
+	Total Z3 Time: 1.2914904119988933
+	Total SA iterations forall threads: 699
+	Total Z3 calls: 4
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark20_conjunctive
+Invariant Found:	((-1*i + 0*n + 0*sum <= 0) /\ (0*i + 0*n + -1*sum <= 0))
+
+
+Time Statistics:
+	Total Time: 51.67110544699972
+	Total Initialization and Re-initialization Time: 2.9304081150003185
+	Total SA time: 48.15549576000012
+	Total Z3 Time: 0.5852015719992778
+	Total SA iterations forall threads: 191
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark21_disjunctive
+Invariant Found:	((1*x + -2*y <= -2)) \/ ((-1*x + 0*y <= -1))
+
+
+Time Statistics:
+	Total Time: 26.50273186800041
+	Total Initialization and Re-initialization Time: 2.839309557000888
+	Total SA time: 23.199502740999378
+	Total Z3 Time: 0.4639195700001437
+	Total SA iterations forall threads: 78
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark22_conjunctive
+Invariant Found:	((-1*x + -2*y <= -1) /\ (0*x + -2*y <= 0) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 38.36917113399977
+	Total Initialization and Re-initialization Time: 2.1630125020001287
+	Total SA time: 35.4399543239997
+	Total Z3 Time: 0.7662043079999421
+	Total SA iterations forall threads: 82
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark23_conjunctive
+All SA threads failed to converge after3Z3 runs
+
+
+Working on loop_zilu.benchmark24_conjunctive
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_zilu.benchmark25_linear
+z3 Verifier Fails causing Bug!
+
+
+Working on loop_zilu.benchmark26_linear
+Invariant Found:	((1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 1.2352374649999547
+	Total Initialization and Re-initialization Time: 1.11590157199862
+	Total SA time: 0.0008594200007792097
+	Total Z3 Time: 0.11847647300055542
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark27_linear
+Invariant Found:	((1*i + -1*j + -1*k <= -1))
+
+
+Time Statistics:
+	Total Time: 36.56527657500192
+	Total Initialization and Re-initialization Time: 2.2213072540016583
+	Total SA time: 33.75523932900069
+	Total Z3 Time: 0.5887299919995712
+	Total SA iterations forall threads: 23
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark28_linear
+Invariant Found:	((1*i + -1*j <= 0))
+
+
+Time Statistics:
+	Total Time: 1.7606613019997894
+	Total Initialization and Re-initialization Time: 1.641608167999948
+	Total SA time: 0.0009319670007243985
+	Total Z3 Time: 0.11812116699911712
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark29_linear
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_zilu.benchmark30_conjunctive
+Invariant Found:	((1*x + -1*y <= 0) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 28.231629030999102
+	Total Initialization and Re-initialization Time: 2.5310471189986856
+	Total SA time: 25.590781939999943
+	Total Z3 Time: 0.10979997200047364
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark31_disjunctive
+Invariant Found:	((1*x + -2*y <= 1)) \/ ((2*x + -1*y <= -3)) \/ ((2*x + 0*y <= -2))
+
+
+Time Statistics:
+	Total Time: 57.52162647500154
+	Total Initialization and Re-initialization Time: 2.964838627000063
+	Total SA time: 53.93650040000102
+	Total Z3 Time: 0.6202874480004539
+	Total SA iterations forall threads: 250
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark32_linear
+Invariant Found:	((1*x <= 2))
+
+
+Time Statistics:
+	Total Time: 19.291231402998164
+	Total Initialization and Re-initialization Time: 19.185480677999294
+	Total SA time: 0.0010402539992355742
+	Total Z3 Time: 0.10471047099963471
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark33_linear
+Invariant Found:	((-2*x <= 0))
+
+
+Time Statistics:
+	Total Time: 15.049570386001506
+	Total Initialization and Re-initialization Time: 14.728112038999825
+	Total SA time: 0.0010945240010187263
+	Total Z3 Time: 0.3203638230006618
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark34_conjunctive
+Invariant Found:	((1*j + 0*k + -1*n <= 0) /\ (1*j + 1*k + -1*n <= 0) /\ (-1*j + -1*k + 1*n <= 0) /\ (-1*j + 0*k + -1*n <= -1))
+
+
+Time Statistics:
+	Total Time: 160.77893478699662
+	Total Initialization and Re-initialization Time: 16.394704092997927
+	Total SA time: 143.7761821369986
+	Total Z3 Time: 0.6080485570000747
+	Total SA iterations forall threads: 43
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark35_linear
+Invariant Found:	((-1*x <= 0))
+
+
+Time Statistics:
+	Total Time: 9.384623722999095
+	Total Initialization and Re-initialization Time: 8.997373484999116
+	Total SA time: 0.0009616309998818906
+	Total Z3 Time: 0.3862886070000968
+	Total SA iterations forall threads: 8
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark36_conjunctive
+Invariant Found:	((-1*x + 0*y <= 0) /\ (-1*x + 1*y <= 0) /\ (-1*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 17.097021367000707
+	Total Initialization and Re-initialization Time: 1.5130381239996495
+	Total SA time: 15.051008487000217
+	Total Z3 Time: 0.53297475600084
+	Total SA iterations forall threads: 11
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark37_conjunctive
+Invariant Found:	((0*x + -1*y <= 0) /\ (0*x + -1*y <= 0) /\ (1*x + -1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 3.0460531299995637
+	Total Initialization and Re-initialization Time: 2.8351859989998047
+	Total SA time: 0.0008644879999337718
+	Total Z3 Time: 0.21000264299982518
+	Total SA iterations forall threads: 4
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark38_conjunctive
+All SA threads failed to converge after2Z3 runs
+
+Working on loop_zilu.benchmark39_conjunctive
+All SA threads failed to converge after4Z3 runs
+
+Working on loop_zilu.benchmark40_polynomial
+Invariant Found:	((2*x + -2*y <= 0) /\ (-1*x + 2*y <= 0)) \/ ((2*x + 0*y <= 0) /\ (0*x + 1*y <= 0))
+
+
+Time Statistics:
+	Total Time: 163.0621505750023
+	Total Initialization and Re-initialization Time: 14.374770197000544
+	Total SA time: 148.3435219260009
+	Total Z3 Time: 0.34385845200085896
+	Total SA iterations forall threads: 62
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark41_conjunctive
+All SA threads failed to converge after3Z3 runs
+
+Working on loop_zilu.benchmark42_conjunctive
+Invariant Found:	((-1*x + 0*y + 1*z <= 0) /\ (1*x + -2*y + 1*z <= 0) /\ (2*x + -2*y + 0*z <= 0) /\ (-1*x + -1*y + 2*z <= 0) /\ (1*x + 1*y + 1*z <= 0))
+
+
+Time Statistics:
+	Total Time: 8.494137225001396
+	Total Initialization and Re-initialization Time: 8.123427008000363
+	Total SA time: 0.0014039550005691126
+	Total Z3 Time: 0.3693062620004639
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark43_conjunctive
+All SA threads failed to converge after6Z3 runs
+
+
+Working on loop_zilu.benchmark44_disjunctive
+Invariant Found:	((1*x + -1*y <= 16))
+
+
+Time Statistics:
+	Total Time: 43.40046822600016
+	Total Initialization and Re-initialization Time: 2.158628624998528
+	Total SA time: 40.491718786001
+	Total Z3 Time: 0.7501208150006278
+	Total SA iterations forall threads: 764
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark45_disjunctive
+Invariant Found:	((-1*x + 0*y <= -1)) \/ ((0*x + -1*y <= -1))
+
+
+Time Statistics:
+	Total Time: 63.84593894399768
+	Total Initialization and Re-initialization Time: 3.329467167997791
+	Total SA time: 59.91411364799933
+	Total Z3 Time: 0.6023581280005601
+	Total SA iterations forall threads: 68
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark46_disjunctive
+All SA threads failed to converge after3Z3 runs
+
+
+Working on loop_zilu.benchmark47_linear
+Invariant Found:	((1*x + -1*y <= 16))
+
+
+Time Statistics:
+	Total Time: 43.485908033999294
+	Total Initialization and Re-initialization Time: 2.392580417999852
+	Total SA time: 40.235153019999416
+	Total Z3 Time: 0.8581745960000262
+	Total SA iterations forall threads: 440
+	Total Z3 calls: 3
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark48_linear
+Invariant Found:	((0*i + 0*j + -1*k <= -1))
+
+
+Time Statistics:
+	Total Time: 15.900769469000807
+	Total Initialization and Re-initialization Time: 2.0007043730001897
+	Total SA time: 13.319932358001097
+	Total Z3 Time: 0.58013273799952
+	Total SA iterations forall threads: 26
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark49_linear
+Invariant Found:	((1*i + 1*j + -1*r <= -1))
+
+
+Time Statistics:
+	Total Time: 17.10342517800018
+	Total Initialization and Re-initialization Time: 2.0767010800009302
+	Total SA time: 14.407534394000322
+	Total Z3 Time: 0.6191897039989271
+	Total SA iterations forall threads: 17
+	Total Z3 calls: 2
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark50_linear
+Invariant Found:	((-1*xa + -1*ya <= 0))
+
+
+Time Statistics:
+	Total Time: 1.2524166549992515
+	Total Initialization and Re-initialization Time: 1.1345315660000779
+	Total SA time: 0.0008791939999355236
+	Total Z3 Time: 0.11700589499923808
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark51_polynomial
+Invariant Found:	((1*x <= 50) /\ (-2*x <= 1))
+
+
+Time Statistics:
+	Total Time: 52.32912122000016
+	Total Initialization and Re-initialization Time: 52.02221940199888
+	Total SA time: 0.0008497540002281312
+	Total Z3 Time: 0.3060520640010509
+	Total SA iterations forall threads: 6
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark52_polynomial
+Invariant Found:	((1*i <= 10) /\ (-1*i <= 9))
+
+
+Time Statistics:
+	Total Time: 21.454963793999923
+	Total Initialization and Re-initialization Time: 21.315142851999553
+	Total SA time: 0.001229572000738699
+	Total Z3 Time: 0.13859136999963084
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+
+Working on loop_zilu.benchmark53_polynomial
+Invariant Found:	((1*x + -1*y <= 0) /\ (0*x + 1*y <= 0)) \/ ((-1*x + 1*y <= 0) /\ (1*x + 0*y <= 0))
+
+
+Time Statistics:
+	Total Time: 175.73821035499896
+	Total Initialization and Re-initialization Time: 16.527264513000773
+	Total SA time: 159.07069494799907
+	Total Z3 Time: 0.1402508939991094
+	Total SA iterations forall threads: 2
+	Total Z3 calls: 1
+	Number of Threads: 4
+	
+	
+Only dispersed cex:
+
++ loop_zilu.benchmark46_disjunctive
+
+Only iterated implication pairs:
+
++ loop_zilu.benchmark24_conjunctive
++ loop_zilu.benchmark29_linear
++ loop_zilu.benchmark38_conjunctive
++ loop_zilu.benchmark39_conjunctive
+

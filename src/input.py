@@ -9,27 +9,27 @@ from repr import genLItransitionrel, Repr
 
 
 class Inputs:
-    # class handcrafted:
-    #     class mock:
-    #         Var = ['x']
-    #         P = [np.array([[1, 0, 0]])]
-    #         B = [np.array([[1, -1, 5]])]
-    #         Q = [np.array([[1, -1, 6]])]
-    #         T = genLItransitionrel(
-    #             B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
-    #         c = 1
-    #         d = 1
+    class handcrafted:
+        class mock:
+            Var = ['x']
+            P = [np.array([[1, 0, 0]])]
+            B = [np.array([[1, -1, 5]])]
+            Q = [np.array([[1, -1, 6]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
+            c = 1
+            d = 1
             
 
-    #     class c2d1_1:
-    #         Var = ['x', 'y']
-    #         P = [np.array([[1, 0, 0, 1], [0, 1, 0, 1]])]
-    #         B = dnfTrue(2)
-    #         Q = [np.array([[1, -1, 1, 0], [0, 1, 1, 1]])]
-    #         T = genLItransitionrel(
-    #             B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
-    #         c = 2  # c = 3 Value here shows larger c also converges
-    #         d = 1
+        class c2d1_1:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1], [0, 1, 0, 1]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0], [0, 1, 1, 1]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
+            c = 2  # c = 3 Value here shows larger c also converges
+            d = 1
              
 
     class loop_lit:
@@ -90,7 +90,6 @@ class Inputs:
             c = 1
             d = 2
              
-
         class css2003:
             Var = ['i', 'j', 'k']
             P = list3D_to_listof2Darrays(
@@ -190,16 +189,18 @@ class Inputs:
 
     class loop_new:
 
+
         class count_by_1:
-            Var = ['i']
-            P = list3D_to_listof2Darrays([[[1, 0, 0]]])
+            Var = ['x']
+            P = list3D_to_listof2Darrays([[[1, 0, 5]]])
             B = list3D_to_listof2Darrays([[[1, -2, 1000000]]])
             Q = dnfdisjunction(list3D_to_listof2Darrays(
-                [[[1, 0, 1000000]]]), B, 1)
+                [[[1, -1, 1000000]]]), dnfnegation(B), 1)
             T = genLItransitionrel(
                 B, ([np.array([[1, 1], [0, 1]])], dnfTrue(1)))
             c = 1
             d = 1
+
         class count_by_1_variant:
             Var = ['i']
             P = list3D_to_listof2Darrays([[[1, 0, 0]]])
@@ -895,58 +896,58 @@ class Inputs:
             d = 2
 
 
-#     class breakGSpacer:
-#         class b:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
-#             #  
+    class complexT:
+        class b:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
+            #  
 
-#         class b1:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 2, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
-#             #  
+        class b1:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 2, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
+            #  
 
-#         class b2:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[2, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
+        class b2:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[2, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
 
-#         class b3:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 1, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
+        class b3:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 1], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
 
-#         class b4:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
-#             c = 3
-#             d = 1
+        class b4:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 0], [0, 1, 1], [0, 0, 1]])], dnfTrue(2)))
+            c = 3
+            d = 1
 
 #             '''  
 #             For b4: this is invariant found:
@@ -962,35 +963,35 @@ class Inputs:
 #             '''
             
 
-#         class b5:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[3, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
+        class b5:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[3, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
 
-#         class b6:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 3, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 2
-#             d = 1
+        class b6:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 3, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 2
+            d = 1
 
-#         class b7:
-#             Var = ['x', 'y']
-#             P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
-#             B = dnfTrue(2)
-#             Q = [np.array([[1, -1, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[4, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
-#             c = 3
-#             d = 1
+        class b7:
+            Var = ['x', 'y']
+            P = [np.array([[1, 0, 0, 1] , [0, 1, 0, 0]])]
+            B = dnfTrue(2)
+            Q = [np.array([[1, -1, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[4, 1, 0], [0, 1, 0], [0, 0, 1]])], dnfTrue(2)))
+            c = 3
+            d = 1
 #         '''
 #             For b7, invariant found:
 #             Invariant Found:	((0*x + -1*y <= 0) /\ (-1*x + 1*y <= 0) /\ (0*x + 1*y <= 0))
@@ -1008,15 +1009,15 @@ class Inputs:
 
 #         '''
 
-#         class b8:
-#                 Var = ['x', 'y', 'z']
-#                 P = [np.array([[1, 0, 0, 0, 1] , [0, 1, 0, 0, 0] , [0, 0, 1, 0, 0]])]
-#                 B = dnfTrue(3)
-#                 Q = [np.array([[1, -1, 0, 1, 0]])]
-#                 T = genLItransitionrel(
-#                     B, ([np.array([[3, 2, 3, 0], [0, 1, 1, 0], [0, 1, 2, 0], [0, 0, 0, 1]])], dnfTrue(3)))
-#                 c = 3
-#                 d = 1                
+        class b8:
+                Var = ['x', 'y', 'z']
+                P = [np.array([[1, 0, 0, 0, 1] , [0, 1, 0, 0, 0] , [0, 0, 1, 0, 0]])]
+                B = dnfTrue(3)
+                Q = [np.array([[1, -1, 0, 1, 0]])]
+                T = genLItransitionrel(
+                    B, ([np.array([[3, 2, 3, 0], [0, 1, 1, 0], [0, 1, 2, 0], [0, 0, 0, 1]])], dnfTrue(3)))
+                c = 3
+                d = 1                
 #         '''    
 #             Invariant Found:        ((0*x + -2*y + 0*z <= 1) /\ (-1*x + 2*y + 2*z <= -1) /\ (0*x + 2*y + -2*z <= 1))
 
@@ -1031,15 +1032,15 @@ class Inputs:
 #         Number of Threads: 4
  
 #             ''' 
-#         class b9:
-#             Var = ['x', 'y', 'z']
-#             P = [np.array([[1, 0, 0, 0, 1] , [0, 1, 0, 0, 0] , [0, 0, 1, 0, 0]])]
-#             B = dnfTrue(3)
-#             Q = [np.array([[1, -1, 0, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[1, 1, 1, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]])], dnfTrue(3)))
-#             c = 3
-#             d = 1        
+        class b9:
+            Var = ['x', 'y', 'z']
+            P = [np.array([[1, 0, 0, 0, 1] , [0, 1, 0, 0, 0] , [0, 0, 1, 0, 0]])]
+            B = dnfTrue(3)
+            Q = [np.array([[1, -1, 0, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[1, 1, 1, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]])], dnfTrue(3)))
+            c = 3
+            d = 1        
 #         '''
 #         Invariant Found:        ((0*x + -1*y + 0*z <= 0) /\ (0*x + 0*y + -1*z <= 0) /\ (-1*x + 1*y + 0*z <= 0))
 
@@ -1058,15 +1059,15 @@ class Inputs:
 
 #         '''
 
-#         class b10:
-#             Var = ['u', 'x', 'y', 'z']
-#             P = [np.array([[1, 0, 0, 0, 0, 3] , [0, 1, 0, 0, 0, 1] , [0, 0, 1, 0, 0, 1], [0, 0, 0, 1, 0, 0]])]
-#             B = dnfTrue(4)
-#             Q = [np.array([[1, -1, -1, -3, 1, 0]])]
-#             T = genLItransitionrel(
-#                 B, ([np.array([[2654, 3, 9, 2, 2], [0, 1, 0, 0, 1], [0, 0, 1, 1, 0], [0, 0, 0, 2, 1] , [0, 0, 0, 0, 1]])], dnfTrue(4)))
-#             c = 4
-#             d = 1        
+        class b10:
+            Var = ['u', 'x', 'y', 'z']
+            P = [np.array([[1, 0, 0, 0, 0, 3] , [0, 1, 0, 0, 0, 1] , [0, 0, 1, 0, 0, 1], [0, 0, 0, 1, 0, 0]])]
+            B = dnfTrue(4)
+            Q = [np.array([[1, -1, -1, -3, 1, 0]])]
+            T = genLItransitionrel(
+                B, ([np.array([[2654, 3, 9, 2, 2], [0, 1, 0, 0, 1], [0, 0, 1, 1, 0], [0, 0, 0, 2, 1] , [0, 0, 0, 0, 1]])], dnfTrue(4)))
+            c = 4
+            d = 1        
 
         ''' For other bx programs, where x != 4,7,8,9: Program finds invariant almost instantly.'''
 

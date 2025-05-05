@@ -10,7 +10,7 @@ lock = multiprocessing.Lock()
 
 
 def printBenchmarkName( inputname, outputfile):
-    print_with_mode(Fore.WHITE, "\nWorking on " + inputname, endstr = '\n', file = outputfile)
+    print_with_mode(Fore.WHITE, "\nWorking on " + inputname + '(Note: 1 fixed color per thread.)', endstr = '\n', file = outputfile)
 
 def print_with_mode(color, s, endstr = '\n', file = None):
     lock.acquire()

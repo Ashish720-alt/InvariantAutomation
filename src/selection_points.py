@@ -619,11 +619,15 @@ def randomlysampleCC_ICEpairs (cc, m, transitions, loopGuard, rtfIterates):
 
 
 def removeduplicates (l):
+    if (len(l) == 0):
+        return l
     L = copy.deepcopy(l)
     L.sort()
     return list(L for L,_ in itertools.groupby(L))
 
 def removeduplicatesICEpair(input_list):
+    if (len(input_list) == 0):
+        return input_list
     seen_pairs = set()
     result = []
     

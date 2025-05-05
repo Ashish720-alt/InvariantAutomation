@@ -290,31 +290,31 @@ if __name__ == "__main__":
     parser.add_argument('-d', type=int, help='Number of disjunctions')
     parser.add_argument('-clist', type=list, help='List of c values')
     parser.add_argument('-i', '--input', type=str, help='Input object name')
-    parser.add_argument('-a', '--all', action='store_true', help='Run all inputs') #Remove this!
+    # parser.add_argument('-a', '--all', action='store_true', help='Run all inputs') #Remove this!
     parse_res = vars(parser.parse_args())
-    if parse_res['all']:
-        print("Running all benchmarks...\n")
-        for subfolder in dir(Inputs):
-            if subfolder.startswith("__"):
-                continue
-            subfolder_obj = getattr(Inputs, subfolder)
-            for inp in dir(subfolder_obj):
-                if inp.startswith("__"):
-                    continue
-                input_obj = getattr(subfolder_obj, inp)
-                full_name = f"{subfolder}.{inp}"
-                print(f"Running {full_name}")
-                main(full_name, input_to_repr(input_obj, parse_res['c'], parse_res['d'], parse_res['clist']))
+    # if parse_res['all']: #Doesn't work, throws bug
+    #     print("Running all benchmarks...\n")
+    #     for subfolder in dir(Inputs):
+    #         if subfolder.startswith("__"):
+    #             continue
+    #         subfolder_obj = getattr(Inputs, subfolder)
+    #         for inp in dir(subfolder_obj):
+    #             if inp.startswith("__"):
+    #                 continue
+    #             input_obj = getattr(subfolder_obj, inp)
+    #             full_name = f"{subfolder}.{inp}"
+    #             print(f"Running {full_name}")
+    #             main(full_name, input_to_repr(input_obj, parse_res['c'], parse_res['d'], parse_res['clist']))
 
+    # else:
+    if parse_res['input'] is None:
+        print(parser.print_help())
+        print("Please specify input object name")
+        exit(1)
     else:
-        if parse_res['input'] is None:
-            print(parser.print_help())
-            print("Please specify input object name")
-            exit(1)
-        else:
-            (first_name, last_name) = parse_res['input'].split('.')
-            for subfolder in Inputs.__dict__:
-                if subfolder == first_name:
-                    for inp in getattr(Inputs, subfolder).__dict__:
-                        if inp == last_name:
-                            main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'], parse_res['clist']))
+        (first_name, last_name) = parse_res['input'].split('.')
+        for subfolder in Inputs.__dict__:
+            if subfolder == first_name:
+                for inp in getattr(Inputs, subfolder).__dict__:
+                    if inp == last_name:
+                        main(first_name + "." + last_name, input_to_repr(getattr(getattr(Inputs, subfolder), inp), parse_res['c'], parse_res['d'], parse_res['clist']))
